@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Unique Plant</string>
+    <string name="email_placeholder">Enter your email</string>
+    <string name="password_placeholder">Enter your password</string>
+    <string name="email_label">Email</string>
+    <string name="password_label">Password</string>
+    <string name="sign_in_headline">Welcome Back</string>
+    <string name="sign_in_prompt">Sign in to continue</string>
+    <string name="sign_up_suggestion">Don\'t have an account? Sign up</string>
+    <string name="login_button">Login</string>
+</resources>
