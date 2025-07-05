@@ -23,6 +23,9 @@ class SignUpViewModel @Inject constructor(
 
     fun onEvent(event: SignUpEvent) {
         when(event) {
+            is SignUpEvent.UsernameChanged -> {
+                _state.update { it.copy(username = event.username) }
+            }
             is SignUpEvent.EmailChanged -> {
                 _state.update { it.copy(email = event.email) }
             }

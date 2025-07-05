@@ -1,11 +1,17 @@
 <resources>
     <string name="app_name">Unique Plant</string>
-    <string name="email_placeholder">Enter your email</string>
-    <string name="password_placeholder">Enter your password</string>
+    <string name="username_label">Username</string>
+    <string name="username_placeholder">Enter Username</string>
     <string name="email_label">Email</string>
+    <string name="email_placeholder">Enter your email</string>
     <string name="password_label">Password</string>
+    <string name="password_placeholder">Enter your password</string>
     <string name="sign_in_headline">Welcome Back</string>
+    <string name="sign_up_headline">Sign Up</string>
     <string name="sign_in_prompt">Sign in to continue</string>
-    <string name="sign_up_suggestion">Don\'t have an account? Sign up</string>
-    <string name="login_button">Login</string>
+    <string name="sign_up_prompt">Enter details to register</string>
+    <string name="sign_in_button">Login</string>
+    <string name="sign_up_button">Sign Up</string>
+    <string name="create_account">Don\'t have an account? Sign up</string>
+    <string name="already_have_account">Already have an account? Sign In</string>
 </resources>

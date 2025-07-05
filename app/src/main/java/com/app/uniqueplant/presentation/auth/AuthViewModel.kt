@@ -1,20 +1,20 @@
 package com.app.uniqueplant.presentation.auth
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.uniqueplant.domain.model.Resource
 import com.app.uniqueplant.domain.usecase.auth.LoginUseCase
+import com.app.uniqueplant.domain.usecase.auth.SessionUseCase
 import com.app.uniqueplant.domain.usecase.auth.SignUpUseCase
+import com.app.uniqueplant.presentation.auth.events.AuthEvent
+import com.app.uniqueplant.presentation.auth.states.AuthScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import com.app.uniqueplant.domain.model.Resource
-import com.app.uniqueplant.domain.usecase.auth.SessionUseCase
-import com.app.uniqueplant.presentation.auth.states.LoginState
+import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
@@ -23,57 +23,92 @@ class AuthViewModel @Inject constructor(
     private val sessionUseCase: SessionUseCase
 ) : ViewModel() {
 
-    private val _authResult = MutableStateFlow<AuthResult>(AuthResult.Idle)
-    val authResult: StateFlow<AuthResult> = _authResult.asStateFlow()
-
-    private val _email = mutableStateOf("")
-    val email: State<String> = _email
-
-    private val _password = mutableStateOf("")
-    val password: State<String> = _password
-
-
-    fun onEmailChange(email: String) {
-        _email.value = email
-    }
-
-    fun onPasswordChange(password: String) {
-        _password.value = password
-    }
+    private val _state = MutableStateFlow(AuthScreenState())
+    val state: StateFlow<AuthScreenState> = _state.asStateFlow()
 
     fun resetFields() {
-        _email.value = ""
-        _password.value = ""
+        _state.update {
+            it.copy(
+                username = "", email = "", password = ""
+            )
+        }
     }
 
+    fun onEvent(event: AuthEvent) {
+        when (event) {
+            is AuthEvent.UsernameChanged -> {
+                _state.update { it.copy(username = event.username) }
+            }
+
+            is AuthEvent.EmailChanged -> {
+                _state.update { it.copy(email = event.email) }
+            }
+
+            is AuthEvent.PasswordChanged -> {
+                _state.update { it.copy(password = event.password) }
+            }
+
+            is AuthEvent.LoginClicked -> {
+                signIn(state.value.email, state.value.password)
+            }
+
+            is AuthEvent.SignUpClicked -> {
+                signUp(state.value.email, state.value.password)
+            }
+
+            is AuthEvent.SwitchState -> {
+                _state.update { it.copy(isSignUp = !it.isSignUp) }
+            }
+        }
+    }
+
+
     fun signUp(email: String, password: String) {
-        _authResult.value = AuthResult.Loading
+        _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             signUpUseCase(email, password).collect { result ->
-                _authResult.value = when (result) {
-                    is Resource.Loading -> AuthResult.Loading
-                    is Resource.Success -> AuthResult.Success
-                    is Resource.Error -> AuthResult.Error(result.message ?: "Sign up failed")
+                _state.update {
+                    when (result) {
+                        is Resource.Loading -> it.copy(isLoading = true, error = "")
+                        is Resource.Success -> it.copy(
+                            isLoading = false, isSuccess = true, error = ""
+                        )
+                        is Resource.Error -> it.copy(
+                            isLoading = false, error = result.message ?: "Sign up failed"
+                        )
+                    }
                 }
             }
         }
     }
 
     fun signIn(email: String, password: String) {
-        _authResult.value = AuthResult.Loading
+        _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             loginUseCase(email, password).collect { result ->
-                _authResult.value = when (result) {
-                    is Resource.Loading -> AuthResult.Loading
-                    is Resource.Success -> AuthResult.Success
-                    is Resource.Error -> AuthResult.Error(result.message ?: "Sign in failed")
+                _state.update {
+                    when (result) {
+                        is Resource.Loading -> it.copy(isLoading = true, error = "")
+                        is Resource.Success -> it.copy(
+                            isLoading = false,
+                            isSuccess = true,
+                            error = ""
+                        )
+
+                        is Resource.Error -> it.copy(
+                            isLoading = false,
+                            error = result.message ?: "Login failed"
+                        )
+                    }
                 }
             }
         }
     }
 
+
     fun logout() {
         sessionUseCase.logout()
     }
+
     fun isUserLoggedIn(): Boolean = sessionUseCase.isUserLoggedIn()
 }

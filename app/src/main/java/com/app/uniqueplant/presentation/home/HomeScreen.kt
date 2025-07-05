@@ -1,6 +1,7 @@
 package com.app.uniqueplant.presentation.home
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -13,6 +14,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.app.uniqueplant.presentation.auth.AuthViewModel
+import com.app.uniqueplant.presentation.navigation.Screen
 
 @Composable
 fun HomeScreen(
@@ -23,7 +25,7 @@ fun HomeScreen(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        androidx.compose.foundation.layout.Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "Welcome to Unique Plant",
                 fontSize = 24.sp,
@@ -31,7 +33,7 @@ fun HomeScreen(
             )
             Button(onClick = {
                 authViewModel.logout()
-                navController.navigate("login_screen") {
+                navController.navigate(Screen.Auth.route) {
                     popUpTo("home_screen") { inclusive = true }
                 }
             }) {

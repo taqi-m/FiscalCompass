@@ -7,6 +7,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.app.uniqueplant.presentation.auth.AuthScreen
 import com.app.uniqueplant.presentation.auth.AuthViewModel
 import com.app.uniqueplant.presentation.auth.LoginScreen
 import com.app.uniqueplant.presentation.auth.LoginViewModel
@@ -20,42 +21,24 @@ fun AppNavigation(navController: NavHostController) {
 
     NavHost(
         navController = navController,
-        startDestination = if (authViewModel.isUserLoggedIn()) Screen.Home.route else Screen.Login.route
+        startDestination = if (authViewModel.isUserLoggedIn()) Screen.Home.route else Screen.Auth.route
     ) {
-        composable(route = Screen.Login.route) {
-            val loginViewModel: LoginViewModel = hiltViewModel()
-            val loginState by loginViewModel.state.collectAsState()
 
-            LoginScreen(
-                state = loginState,
-                onEvent = loginViewModel::onEvent,
-                isUserLoggedIn = loginViewModel::isUserLoggedIn,
+        composable(route = Screen.Auth.route) {
+            val authViewModel: AuthViewModel = hiltViewModel()
+            val authState by authViewModel.state.collectAsState()
+
+            AuthScreen(
+                state = authState,
+                onEvent = authViewModel::onEvent,
+                isUserLoggedIn = authViewModel::isUserLoggedIn,
                 onLoginSuccess = {
                     navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
+                        popUpTo(Screen.Auth.route) { inclusive = true }
                     }
-                },
-                onNavigateToSignUp = {
-                    navController.navigate(Screen.SignUp.route) {
-                        popUpTo(Screen.Login.route) { inclusive = false }
-                    }
-                }
-            )
+                })
         }
-        composable(route = Screen.SignUp.route) {
-            val signUpViewModel: SignUpViewModel = hiltViewModel()
-            val signUpState by signUpViewModel.state.collectAsState()
 
-            SignUpScreen(
-                state = signUpState,
-                onEvent = signUpViewModel::onEvent,
-                onNavigateToLogin = {
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(Screen.SignUp.route) { inclusive = true }
-                    }
-                }
-            )
-        }
         composable(route = Screen.Home.route) {
             HomeScreen(navController = navController, authViewModel = authViewModel)
         }

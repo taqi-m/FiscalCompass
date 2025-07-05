@@ -24,12 +24,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -53,25 +51,24 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.Wallpapers
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.app.uniqueplant.R
-import com.app.uniqueplant.presentation.auth.events.LoginEvent
-import com.app.uniqueplant.presentation.auth.states.LoginScreenState
+import com.app.uniqueplant.presentation.auth.events.AuthEvent
+import com.app.uniqueplant.presentation.auth.states.AuthScreenState
+import com.app.uniqueplant.ui.components.FormTextField
 import com.app.uniqueplant.ui.components.MountainSpikes
 import com.app.uniqueplant.ui.components.RelativeCircle
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
 @Composable
-fun LoginScreen(
-    state: LoginScreenState,
-    onEvent: (LoginEvent) -> Unit,
+fun AuthScreen(
+    state: AuthScreenState,
+    onEvent: (AuthEvent) -> Unit,
     isUserLoggedIn: () -> Boolean,
     onLoginSuccess: () -> Unit,
-    onNavigateToSignUp: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val bottomPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -136,10 +133,11 @@ fun LoginScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.8f)
+                    .fillMaxHeight()
                     .padding(padding)
                     .consumeWindowInsets(padding) // Consume insets to prevent double padding
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -152,7 +150,9 @@ fun LoginScreen(
                         .size(96.dp) // Adjust size as needed
                 )
                 Text(
-                    text = stringResource(R.string.sign_in_headline),
+                    text = stringResource(
+                        if (state.isSignUp) R.string.sign_up_headline else R.string.sign_in_headline
+                    ),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -160,7 +160,9 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = stringResource(R.string.sign_in_prompt),
+                    text = stringResource(
+                        if (state.isSignUp) R.string.sign_up_prompt else R.string.sign_in_prompt
+                    ),
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.onGloballyPositioned { coordinates ->
@@ -172,78 +174,84 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.email_label),
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(start = 4.dp)
-                    )
-                    OutlinedTextField(
-                        value = state.email,
-                        onValueChange = { onEvent(LoginEvent.EmailChanged(it)) },
-                        placeholder = { Text(stringResource(R.string.email_placeholder)) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .widthIn(max = 500.dp), // Limit width for better readability on large screens
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_email_24),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        },
-                    )
+                AnimatedContent(
+                    targetState = state.isSignUp,
+                    label = "UsernameFieldAnimation"
+                ) { isSignUp ->
+                    if (isSignUp) {
+                        FormTextField(
+                            value = state.username,
+                            label = stringResource(R.string.username_label),
+                            placeholder = stringResource(R.string.username_placeholder),
+                            onValueChange = { onEvent(AuthEvent.UsernameChanged(it)) },
+                            keyboardType = KeyboardType.Text,
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_person_24),
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            },
+                            imeAction = ImeAction.Next
+                        )
+                    } else {
+                        // Empty composable when not showing username field
+                        Spacer(modifier = Modifier.height(0.dp))
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.password_label),
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(start = 4.dp)
-                    )
-                    OutlinedTextField(
-                        value = state.password,
-                        onValueChange = { onEvent(LoginEvent.PasswordChanged(it)) },
-                        placeholder = { Text(stringResource(R.string.password_placeholder)) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .widthIn(max = 500.dp), // Limit width for better readability on large screens
-                        visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Password,
-                            imeAction = ImeAction.Done
-                        ),
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_password_24),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        },
-                    )
-                }
+                FormTextField(
+                    value = state.email,
+                    label = stringResource(R.string.email_label),
+                    placeholder = stringResource(R.string.email_placeholder),
+                    onValueChange = { onEvent(AuthEvent.EmailChanged(it)) },
+                    keyboardType = KeyboardType.Email,
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_email_24),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    imeAction = ImeAction.Next
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                FormTextField(
+                    value = state.password,
+                    label = stringResource(R.string.password_label),
+                    placeholder = stringResource(R.string.password_placeholder),
+                    onValueChange = { onEvent(AuthEvent.PasswordChanged(it)) },
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done,
+                    isPassword = true,
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_password_24),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                )
 
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
                     onClick = {
                         if (!state.isLoading)
-                            onEvent(LoginEvent.LoginClicked)
+                        {
+                            if (state.isSignUp) {
+                                onEvent(AuthEvent.SignUpClicked)
+                            } else {
+                                onEvent(AuthEvent.LoginClicked)
+                            }
+                        }
                     },
                     modifier = Modifier.widthIn(min = 250.dp, max = 250.dp),
-                    enabled = state.email.isNotEmpty() && state.password.isNotEmpty()
+                    enabled = state.email.isNotEmpty() && state.password.isNotEmpty() && if (state.isSignUp) state.username.isNotEmpty() else true
                 ) {
                     AnimatedContent(
                         targetState = state.isLoading,
@@ -272,7 +280,11 @@ fun LoginScreen(
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Text(stringResource(R.string.sign_in_button))
+                            Text(
+                                stringResource(
+                                    if (state.isSignUp) R.string.sign_up_button else R.string.sign_in_button
+                                )
+                            )
                         }
                     }
                 }
@@ -281,11 +293,15 @@ fun LoginScreen(
 
                 TextButton(
                     onClick = {
-                        onEvent(LoginEvent.ResetState)
-                        onNavigateToSignUp()
-                    }, enabled = !state.isLoading
+                        onEvent(AuthEvent.SwitchState)
+                    },
+                    enabled = !state.isLoading
                 ) {
-                    Text(stringResource(R.string.create_account))
+                    Text(
+                        stringResource(
+                            if (state.isSignUp) R.string.already_have_account else R.string.create_account
+                        )
+                    )
                 }
             }
         }
@@ -299,16 +315,17 @@ fun LoginScreen(
     device = "spec:parent=pixel_5,navigation=gesture",
 )
 @Composable
-fun LoginScreenPreview() {
+fun AuthScreenPreview() {
     UniquePlantTheme {
-        LoginScreen(
-            state = LoginScreenState(
+        AuthScreen(
+            state = AuthScreenState(
                 email = "secret@s.com",
                 password = "11",
+                isSignUp = true
             ),
             onEvent = {},
             isUserLoggedIn = { false },
-            onLoginSuccess = {},
-            onNavigateToSignUp = {})
+            onLoginSuccess = {}
+        )
     }
 }

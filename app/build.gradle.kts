@@ -6,8 +6,17 @@ plugins {
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
 }
+val myValue by extra("testConfig.jks")
 
 android {
+    signingConfigs {
+        create("test-releas") {
+            storeFile = file("testConfig.jks")
+            storePassword = "testConfig"
+            keyAlias = "testConfig"
+            keyPassword = "testConfig"
+        }
+    }
     namespace = "com.app.uniqueplant"
     compileSdk = 36
 
@@ -28,6 +37,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("test-releas")
         }
     }
     compileOptions {
