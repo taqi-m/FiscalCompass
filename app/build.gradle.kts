@@ -3,14 +3,13 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
-    id("kotlin-kapt")
-    id("com.google.dagger.hilt.android")
+    alias(libs.plugins.hiltAndroid)
+    alias(libs.plugins.devtools.ksp)
 }
-val myValue by extra("testConfig.jks")
 
 android {
     signingConfigs {
-        create("test-releas") {
+        create("test-release") {
             storeFile = file("testConfig.jks")
             storePassword = "testConfig"
             keyAlias = "testConfig"
@@ -37,7 +36,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("test-releas")
+            signingConfig = signingConfigs.getByName("test-release")
         }
     }
     compileOptions {
@@ -56,7 +55,7 @@ dependencies {
 
     // Hilt dependencies
     implementation(libs.hilt.android)
-    kapt(libs.hilt.android.compiler)
+    ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose) // Optional for Compose integration
 
     implementation(libs.androidx.core.ktx)
@@ -68,12 +67,16 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
+    //Room Libraries
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+
 
     //Firebase dependencies
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
-
-
+    implementation(libs.firebase.firestore)
 
 
     testImplementation(libs.junit)

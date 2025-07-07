@@ -1,44 +1,78 @@
 package com.app.uniqueplant.presentation.home
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
+import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
-import com.app.uniqueplant.presentation.auth.AuthViewModel
-import com.app.uniqueplant.presentation.navigation.Screen
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.app.uniqueplant.presentation.navigation.HomeBottomScreen
+import com.app.uniqueplant.presentation.navigation.HomeNavGraph
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
 @Composable
 fun HomeScreen(
-    navController: NavController,
-    authViewModel: AuthViewModel = viewModel()
+    appNavController: NavHostController,
+    state: HomeScreenState,
+    onEvent: (HomeEvent) -> Unit = {},
 ) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "Welcome to Unique Plant",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Button(onClick = {
-                authViewModel.logout()
-                navController.navigate(Screen.Auth.route) {
-                    popUpTo("home_screen") { inclusive = true }
+    val homeNavController =  rememberNavController()
+    val items = listOf(
+        HomeBottomScreen.Dashboard,
+        HomeBottomScreen.Transactions,
+        HomeBottomScreen.Analysis
+    )
+
+    Scaffold(
+        bottomBar = {
+            NavigationBar {
+                val currentRoute = homeNavController.currentBackStackEntryAsState().value?.destination?.route
+                items.forEach { screen ->
+                    NavigationBarItem(
+                        icon = { Icon(painterResource(screen.iconResource), contentDescription = null) },
+                        label = { Text(screen.label) },
+                        selected = currentRoute == screen.route,
+                        onClick = {
+                            if (currentRoute != screen.route) {
+                                homeNavController.navigate(screen.route) {
+                                    popUpTo(homeNavController.graph.startDestinationId) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        }
+                    )
                 }
-            }) {
-                Text("Logout")
             }
         }
+    ) { paddingValues ->
+        HomeNavGraph(homeNavController, appNavController, Modifier.padding(paddingValues))
+    }
+}
+
+
+@Preview(
+    apiLevel = 33
+)
+@Composable
+fun HomeScreenPreview() {
+    UniquePlantTheme {
+        HomeScreen(
+            appNavController = rememberNavController(),
+            HomeScreenState(),
+            onEvent = {}
+        )
     }
 }

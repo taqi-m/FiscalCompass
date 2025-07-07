@@ -47,7 +47,7 @@ class SignUpViewModel @Inject constructor(
     private fun signUp() {
         _state.update { it.copy(isLoading = true, error = "") }
         viewModelScope.launch {
-            signUpUseCase(_state.value.email, _state.value.password).collect { result ->
+            signUpUseCase(_state.value.username,_state.value.email, _state.value.password).collect { result ->
                 when (result) {
                     is Resource.Loading -> {
                         _state.update { it.copy(isLoading = true) }

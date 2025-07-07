@@ -9,11 +9,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.app.uniqueplant.presentation.auth.AuthScreen
 import com.app.uniqueplant.presentation.auth.AuthViewModel
-import com.app.uniqueplant.presentation.auth.LoginScreen
-import com.app.uniqueplant.presentation.auth.LoginViewModel
-import com.app.uniqueplant.presentation.auth.SignUpScreen
-import com.app.uniqueplant.presentation.auth.SignUpViewModel
 import com.app.uniqueplant.presentation.home.HomeScreen
+import com.app.uniqueplant.presentation.home.HomeViewModel
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
@@ -21,26 +18,36 @@ fun AppNavigation(navController: NavHostController) {
 
     NavHost(
         navController = navController,
-        startDestination = if (authViewModel.isUserLoggedIn()) Screen.Home.route else Screen.Auth.route
+        startDestination = if (authViewModel.isUserLoggedIn()) {
+            MainScreens.Home.route
+        } else {
+            MainScreens.Auth.route
+        }
     ) {
 
-        composable(route = Screen.Auth.route) {
+        composable(route = MainScreens.Auth.route) {
             val authViewModel: AuthViewModel = hiltViewModel()
             val authState by authViewModel.state.collectAsState()
 
             AuthScreen(
                 state = authState,
                 onEvent = authViewModel::onEvent,
-                isUserLoggedIn = authViewModel::isUserLoggedIn,
                 onLoginSuccess = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Auth.route) { inclusive = true }
+                    navController.navigate(MainScreens.Home.route) {
+                        popUpTo(MainScreens.Auth.route) { inclusive = true }
                     }
                 })
         }
 
-        composable(route = Screen.Home.route) {
-            HomeScreen(navController = navController, authViewModel = authViewModel)
+        // TODO: handle view model injection properly
+        composable(route = MainScreens.Home.route) {
+            val homeViewModel: HomeViewModel = hiltViewModel()
+            val homeState by homeViewModel.state.collectAsState()
+            HomeScreen(
+                appNavController = navController,
+                state = homeState,
+                onEvent = homeViewModel::onEvent
+            )
         }
     }
 }

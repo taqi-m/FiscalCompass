@@ -12,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -53,7 +54,7 @@ class AuthViewModel @Inject constructor(
             }
 
             is AuthEvent.SignUpClicked -> {
-                signUp(state.value.email, state.value.password)
+                signUp(state.value.username, state.value.email, state.value.password)
             }
 
             is AuthEvent.SwitchState -> {
@@ -63,10 +64,10 @@ class AuthViewModel @Inject constructor(
     }
 
 
-    fun signUp(email: String, password: String) {
+    fun signUp(username: String, email: String, password: String) {
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            signUpUseCase(email, password).collect { result ->
+            signUpUseCase(username ,email, password).collect { result ->
                 _state.update {
                     when (result) {
                         is Resource.Loading -> it.copy(isLoading = true, error = "")
@@ -111,4 +112,5 @@ class AuthViewModel @Inject constructor(
     }
 
     fun isUserLoggedIn(): Boolean = sessionUseCase.isUserLoggedIn()
+
 }

@@ -67,7 +67,6 @@ import com.app.uniqueplant.ui.theme.UniquePlantTheme
 fun AuthScreen(
     state: AuthScreenState,
     onEvent: (AuthEvent) -> Unit,
-    isUserLoggedIn: () -> Boolean,
     onLoginSuccess: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -77,12 +76,6 @@ fun AuthScreen(
     var promptTextPosition by remember { mutableStateOf(Offset.Zero) }
     var promptTextHeight by remember { mutableFloatStateOf(0f) }
 
-    // Check if user is already logged in
-    LaunchedEffect(key1 = true) {
-        if (isUserLoggedIn()) {
-            onLoginSuccess()
-        }
-    }
 
     // Show error message if login fails
     LaunchedEffect(key1 = state.error) {
@@ -324,7 +317,6 @@ fun AuthScreenPreview() {
                 isSignUp = true
             ),
             onEvent = {},
-            isUserLoggedIn = { false },
             onLoginSuccess = {}
         )
     }

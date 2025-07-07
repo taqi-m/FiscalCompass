@@ -9,8 +9,12 @@ import javax.inject.Inject
 class SignUpUseCase @Inject constructor(
     private val authRepository: AuthRepository
 ) {
-    operator fun invoke(email: String, password: String): Flow<Resource<AuthResult>> {
-        return authRepository.signUpUser(email, password)
+    operator fun invoke(name: String, email: String, password: String): Flow<Resource<AuthResult>> {
+        return authRepository.signUpUser(
+            name = name,
+            email = email,
+            password = password
+        )
     }
 }
 
