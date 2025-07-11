@@ -1,4 +1,4 @@
-package com.app.uniqueplant.presentation.home.supervisor
+package com.app.uniqueplant.presentation.admin.supervisor
 
 import androidx.compose.runtime.Composable
 

@@ -1,18 +1,18 @@
 package com.app.uniqueplant.presentation.auth
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavHostController
 import com.app.uniqueplant.domain.model.Resource
 import com.app.uniqueplant.domain.usecase.auth.LoginUseCase
 import com.app.uniqueplant.domain.usecase.auth.SessionUseCase
 import com.app.uniqueplant.domain.usecase.auth.SignUpUseCase
-import com.app.uniqueplant.presentation.auth.events.AuthEvent
-import com.app.uniqueplant.presentation.auth.states.AuthScreenState
+import com.app.uniqueplant.presentation.navigation.MainScreens
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -50,6 +50,8 @@ class AuthViewModel @Inject constructor(
             }
 
             is AuthEvent.LoginClicked -> {
+
+                Log.d("AuthViewModel", "Login Click Triggered")
                 signIn(state.value.email, state.value.password)
             }
 
@@ -60,6 +62,43 @@ class AuthViewModel @Inject constructor(
             is AuthEvent.SwitchState -> {
                 _state.update { it.copy(isSignUp = !it.isSignUp) }
             }
+
+            is AuthEvent.LoginSuccess -> {
+                // Handle login success, e.g., navigate to home screen
+                Log.d("AuthViewModel", "Login Success Triggered")
+                navigateToHomeScreen(event.appNavController)
+            }
+        }
+    }
+
+    private fun navigateToHomeScreen(appNavController: NavHostController) {
+        Log.d("AuthViewModel", "Hone Navigation Triggered")
+        viewModelScope.launch {
+            sessionUseCase.getUserType().collect { resource ->
+                when (resource) {
+                    is Resource.Success -> {
+                        _state.update { it.copy(isLoading = false) }
+                        var route: String = MainScreens.Home.route
+                        if (resource.data == "employee") {
+                            route = MainScreens.EmployeeHome.route
+                        } else if (resource.data == "admin") {
+                            route = MainScreens.AdminHome.route
+                        }
+                        appNavController.navigate(route) {
+                            popUpTo(MainScreens.Auth.route) { inclusive = true }
+                        }
+                    }
+
+                    is Resource.Error -> {
+                        // Handle error case, maybe show a message to the user
+                        _state.update { it.copy(error = resource.message ?: "Unknown error") }
+                    }
+
+                    is Resource.Loading -> {
+                        // Show loading state if needed
+                    }
+                }
+            }
         }
     }
 
@@ -67,7 +106,7 @@ class AuthViewModel @Inject constructor(
     fun signUp(username: String, email: String, password: String) {
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            signUpUseCase(username ,email, password).collect { result ->
+            signUpUseCase(username, email, password).collect { result ->
                 _state.update {
                     when (result) {
                         is Resource.Loading -> it.copy(isLoading = true, error = "")
@@ -90,11 +129,13 @@ class AuthViewModel @Inject constructor(
                 _state.update {
                     when (result) {
                         is Resource.Loading -> it.copy(isLoading = true, error = "")
-                        is Resource.Success -> it.copy(
-                            isLoading = false,
-                            isSuccess = true,
-                            error = ""
-                        )
+                        is Resource.Success -> {
+                            Log.d("AuthViewModel", "Login Success: ${result.data?.user?.email}")
+                            it.copy(
+                                isSuccess = true,
+                                error = ""
+                            )
+                        }
 
                         is Resource.Error -> it.copy(
                             isLoading = false,

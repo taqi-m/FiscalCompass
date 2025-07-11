@@ -1,5 +1,6 @@
 package com.app.uniqueplant.presentation.auth
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
@@ -55,9 +56,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.Wallpapers
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.R
-import com.app.uniqueplant.presentation.auth.events.AuthEvent
-import com.app.uniqueplant.presentation.auth.states.AuthScreenState
+import com.app.uniqueplant.presentation.auth.AuthEvent
+import com.app.uniqueplant.presentation.auth.AuthScreenState
 import com.app.uniqueplant.ui.components.FormTextField
 import com.app.uniqueplant.ui.components.MountainSpikes
 import com.app.uniqueplant.ui.components.RelativeCircle
@@ -65,9 +68,9 @@ import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
 @Composable
 fun AuthScreen(
+    appNavController: NavHostController,
     state: AuthScreenState,
-    onEvent: (AuthEvent) -> Unit,
-    onLoginSuccess: () -> Unit,
+    onEvent: (AuthEvent) -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val bottomPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -86,8 +89,10 @@ fun AuthScreen(
 
     // Navigate if login is successful
     LaunchedEffect(key1 = state.isSuccess) {
+        Log.d("AuthScreen", "Auth Success Detected")
         if (state.isSuccess) {
-            onLoginSuccess()
+            Log.d("AuthScreen", "Login Success Called")
+            onEvent(AuthEvent.LoginSuccess(appNavController))
         }
     }
 
@@ -317,7 +322,7 @@ fun AuthScreenPreview() {
                 isSignUp = true
             ),
             onEvent = {},
-            onLoginSuccess = {}
+            appNavController = rememberNavController(),
         )
     }
 }

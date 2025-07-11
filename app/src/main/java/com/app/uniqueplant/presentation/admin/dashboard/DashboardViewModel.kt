@@ -1,4 +1,4 @@
-package com.app.uniqueplant.presentation.home.dashboard
+package com.app.uniqueplant.presentation.admin.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -27,9 +27,27 @@ class DashboardViewModel @Inject constructor(
     fun onEvent(event: DashboardEvent) {
         when (event) {
             is DashboardEvent.LogoutClicked -> {
-                // Handle logout logic here
-                // For example, clear session or navigate to login screen
-                sessionUseCase.logout()
+                logout()
+            }
+        }
+    }
+
+    private fun logout() {
+        viewModelScope.launch {
+            sessionUseCase.logout().collect { resource ->
+                when (resource) {
+                    is Resource.Success -> {
+                        // Handle successful logout, maybe navigate to login screen
+                        _state.value = _state.value.copy(isLoggedOut = true)
+                    }
+                    is Resource.Error -> {
+                        // Handle error case, maybe show a message to the user
+                        _state.value = _state.value.copy(isLoggedOut = false)
+                    }
+                    is Resource.Loading -> {
+                        // Show loading state if needed
+                    }
+                }
             }
         }
     }

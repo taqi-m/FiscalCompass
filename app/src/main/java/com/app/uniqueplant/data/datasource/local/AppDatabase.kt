@@ -26,23 +26,4 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun expenseDao(): ExpenseDao
     abstract fun incomeDao(): IncomeDao
     abstract fun categoryDao(): CategoryDao
-    
-    companion object {
-        @Volatile
-        private var INSTANCE: AppDatabase? = null
-        
-        fun getDatabase(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    AppDatabase::class.java,
-                    "finance_tracker_database"
-                )
-                    .fallbackToDestructiveMigration(true)
-                .build()
-                INSTANCE = instance
-                instance
-            }
-        }
-    }
 }

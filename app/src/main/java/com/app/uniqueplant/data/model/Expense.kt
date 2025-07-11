@@ -13,7 +13,7 @@ import java.util.Date
             entity = Category::class,
             parentColumns = ["categoryId"],
             childColumns = ["categoryId"],
-            onDelete = ForeignKey.SET_NULL
+            onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
             entity = User::class,

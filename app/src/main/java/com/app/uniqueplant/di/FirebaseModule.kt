@@ -1,5 +1,6 @@
 package com.app.uniqueplant.di
 
+import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesRepository
 import com.app.uniqueplant.data.repository.AuthRepository
 import com.app.uniqueplant.data.repository.AuthRepositoryImpl
 import com.google.firebase.auth.FirebaseAuth
@@ -27,8 +28,8 @@ object FirebaseModule {
 
     @Provides
     @Singleton
-    fun provideAuthRepository(auth: FirebaseAuth, firestore: FirebaseFirestore): AuthRepository {
-        return AuthRepositoryImpl(auth,firestore)
+    fun provideAuthRepository(auth: FirebaseAuth, firestore: FirebaseFirestore, prefRepository: SharedPreferencesRepository): AuthRepository {
+        return AuthRepositoryImpl(auth,firestore, prefRepository)
     }
 
     @Provides

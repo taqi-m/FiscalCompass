@@ -13,8 +13,8 @@ import javax.inject.Singleton
 
 interface AuthRepository {
     fun loginUser(email: String, password: String): Flow<Resource<AuthResult>>
-    fun signUpUser(name: String, email: String, password: String): Flow<Resource<AuthResult>>
-    fun logout()
+    fun signUpUser(name: String, email: String, password: String, userType: String = "employee"): Flow<Resource<AuthResult>>
+    fun logout(): Flow<Resource<String>>
     fun getCurrentUser(): FirebaseUser?
     fun isUserLoggedIn(): Boolean
 

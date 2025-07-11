@@ -22,20 +22,8 @@ class CategoryRepository @Inject constructor(
         categoryDao.deleteCategory(category)
     }
     
-    fun getAllCategoriesByUser(userId: Long): Flow<List<Category>> {
-        return categoryDao.getAllCategoriesByUser(userId)
-    }
-    
     suspend fun getCategoryById(id: Long): Category? {
         return categoryDao.getCategoryById(id)
-    }
-    
-    fun getExpenseCategoriesByUser(userId: Long): Flow<List<Category>> {
-        return categoryDao.getExpenseCategoriesByUser(userId)
-    }
-    
-    fun getIncomeCategoriesByUser(userId: Long): Flow<List<Category>> {
-        return categoryDao.getIncomeCategoriesByUser(userId)
     }
     
     suspend fun isCategoryUsedInTransactions(categoryId: Long): Boolean {

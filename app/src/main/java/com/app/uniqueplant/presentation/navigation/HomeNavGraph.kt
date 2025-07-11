@@ -8,12 +8,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.app.uniqueplant.presentation.home.analysis.AnalysisScreen
-import com.app.uniqueplant.presentation.home.dashboard.DashboardEvent
-import com.app.uniqueplant.presentation.home.dashboard.DashboardScreen
-import com.app.uniqueplant.presentation.home.dashboard.DashboardViewModel
-import com.app.uniqueplant.presentation.home.supervisor.SupervisorScreen
-import com.app.uniqueplant.presentation.home.transaction.TransactionsScreen
+import com.app.uniqueplant.presentation.admin.analytics.AnalyticsScreen
+import com.app.uniqueplant.presentation.admin.dashboard.DashboardEvent
+import com.app.uniqueplant.presentation.admin.dashboard.DashboardScreen
+import com.app.uniqueplant.presentation.admin.dashboard.DashboardViewModel
+import com.app.uniqueplant.presentation.admin.supervisor.SupervisorScreen
+import com.app.uniqueplant.presentation.admin.transaction.TransactionsScreen
 
 // Placeholder for NavGraph
 
@@ -27,10 +27,10 @@ fun HomeNavGraph(homeNavController: NavHostController, appNavController: NavHost
             DashboardScreen(
                 state = state,
                 onEvent = dashboardViewModel::onEvent,
-                onLogout = {
+                onLogout = { route ->
                     dashboardViewModel.onEvent(DashboardEvent.LogoutClicked)
                     appNavController.navigate(MainScreens.Auth.route) {
-                        popUpTo(MainScreens.Home.route) { inclusive = true }
+                        popUpTo(route) { inclusive = true }
                     }
                 }
             )
@@ -38,8 +38,8 @@ fun HomeNavGraph(homeNavController: NavHostController, appNavController: NavHost
         composable(HomeBottomScreen.Transactions.route) {
             TransactionsScreen()
         }
-        composable(HomeBottomScreen.Analysis.route) {
-            AnalysisScreen()
+        composable(HomeBottomScreen.Analytics.route) {
+            AnalyticsScreen()
         }
 
         composable(HomeBottomScreen.Supervisor.route){

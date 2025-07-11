@@ -20,21 +20,15 @@ interface CategoryDao {
     @Delete
     suspend fun deleteCategory(category: Category)
     
-    @Query("SELECT * FROM categories WHERE userId = :userId ORDER BY name ASC")
-    fun getAllCategoriesByUser(userId: Long): Flow<List<Category>>
-    
     @Query("SELECT * FROM categories WHERE categoryId = :id")
     suspend fun getCategoryById(id: Long): Category?
-    
-    @Query("SELECT * FROM categories WHERE userId = :userId AND isExpenseCategory = 1 ORDER BY name ASC")
-    fun getExpenseCategoriesByUser(userId: Long): Flow<List<Category>>
-    
-    @Query("SELECT * FROM categories WHERE userId = :userId AND isExpenseCategory = 0 ORDER BY name ASC")
-    fun getIncomeCategoriesByUser(userId: Long): Flow<List<Category>>
     
     @Query("SELECT EXISTS(SELECT 1 FROM expenses WHERE categoryId = :categoryId LIMIT 1)")
     suspend fun isCategoryUsedInExpenses(categoryId: Long): Boolean
     
     @Query("SELECT EXISTS(SELECT 1 FROM incomes WHERE categoryId = :categoryId LIMIT 1)")
     suspend fun isCategoryUsedInIncomes(categoryId: Long): Boolean
+
+    @Query("SELECT name FROM categories WHERE name = :name LIMIT 1")
+    suspend fun getCategoryByName(name: String) : String?
 }

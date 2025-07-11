@@ -12,8 +12,8 @@ class SessionUseCase @Inject constructor(
         return authRepository.isUserLoggedIn()
     }
 
-    fun logout() {
-        authRepository.logout()
+    fun logout(): Flow<Resource<String>> {
+        return authRepository.logout()
     }
 
     fun getCurrentUser() = authRepository.getCurrentUser()

@@ -1,4 +1,4 @@
-package com.app.uniqueplant.presentation.home
+package com.app.uniqueplant.presentation.admin.home
 
 import androidx.lifecycle.ViewModel
 import com.app.uniqueplant.domain.usecase.auth.SessionUseCase

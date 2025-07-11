@@ -8,15 +8,7 @@ import java.util.Date
 
 @Entity(
     tableName = "categories",
-    foreignKeys = [
-        ForeignKey(
-            entity = User::class,
-            parentColumns = ["userId"],
-            childColumns = ["userId"],
-            onDelete = ForeignKey.CASCADE
-        )
-    ],
-    indices = [Index("userId")]
+    indices = [Index("categoryId")],
 )
 data class Category(
     @PrimaryKey(autoGenerate = true)
@@ -24,7 +16,6 @@ data class Category(
     val name: String,
     val color: Int,
     val isExpenseCategory: Boolean,
-    val userId: Long,
     val icon: String? = null,
     val description: String? = null,
     val createdAt: Date = Date(),
