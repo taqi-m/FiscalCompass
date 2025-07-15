@@ -1,5 +1,6 @@
-package com.app.uniqueplant.ui.components
+package com.app.uniqueplant.ui.components.cards
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,23 +22,29 @@ import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.R
 import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+// Placeholder for ExpenseCard
+
+
+
 @Composable
-fun IncomeCard(
+fun ExpenseCard(
     modifier: Modifier = Modifier,
-    income: Double,
+    expense: Double,
     date: Date,
-    onClick: () -> Unit
+    onEditClicked: () -> Unit,
+    onDeleteClicked: () -> Unit
 ) {
     Card(
         modifier = modifier.then(
             Modifier
                 .fillMaxWidth()
+                .background(
+                    MaterialTheme.colorScheme.surfaceContainerLow
+                )
         ),
-        onClick = onClick,
     ) {
         Row(
             modifier = Modifier
@@ -48,9 +55,9 @@ fun IncomeCard(
             Icon(
                 painter = painterResource(id = R.drawable.ic_arrow_24), // Replace with your income icon
                 contentDescription = "Income Icon",
-                tint = MaterialTheme.colorScheme.primary,
+                tint = MaterialTheme.colorScheme.error,
                 modifier = Modifier
-                    .rotate(45f)
+                    .rotate(-45f)
                     .padding(all = 16.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
@@ -64,19 +71,18 @@ fun IncomeCard(
                 )
             ) {
                 Text(
-                    text = CurrencyFormaterUseCase.formatCurrency(amount = income),
-                    style = MaterialTheme.typography.bodyLarge
+                    text = CurrencyFormaterUseCase.formatCurrency(amount = expense, isExpense = true),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.error
                 )
                 Text(
                     text = SimpleDateFormat("EEE - dd MMM, yyyy", Locale.getDefault()).format(date),
                     style = MaterialTheme.typography.bodySmall
                 )
             }
-            Icon(
-                painter = painterResource(id = R.drawable.ic_more_vert_24), // Replace with your income icon
-                contentDescription = "Income Icon",
-                modifier = Modifier
-                    .padding(all = 16.dp)
+            TransactionCardOptions(
+                onEditClicked = onEditClicked,
+                onDeleteClicked = onDeleteClicked
             )
         }
     }
@@ -84,18 +90,11 @@ fun IncomeCard(
 
 @Preview
 @Composable
-fun IncomeCardPreview() {
+fun ExpenseCardPreview() {
     ExpenseCard(
-        expense = 1000.0,
-        date = Date(
-            Calendar.getInstance()
-                .apply {
-                    set(2023, Calendar.OCTOBER, 1, 12, 0, 0)
-                }
-                .timeInMillis
-        ),
-        onClick = {}
+        expense = 1200.50,
+        date = Date(),
+        onEditClicked = {},
+        onDeleteClicked = {}
     )
 }
-
-

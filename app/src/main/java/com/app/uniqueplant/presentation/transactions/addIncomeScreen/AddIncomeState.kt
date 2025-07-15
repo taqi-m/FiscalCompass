@@ -1,6 +1,7 @@
 package com.app.uniqueplant.presentation.transactions.addIncomeScreen
 
 import com.app.uniqueplant.data.model.Category
+import com.app.uniqueplant.domain.model.InputField
 import java.util.Date
 
 data class AddIncomeState(
@@ -15,7 +16,3 @@ data class AddIncomeState(
     val categories: List<Category> = emptyList()
 )
 
-data class InputField(
-    val value: String = "",
-    val error: String = ""
-)

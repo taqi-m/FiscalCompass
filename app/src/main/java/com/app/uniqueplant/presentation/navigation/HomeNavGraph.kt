@@ -12,6 +12,7 @@ import com.app.uniqueplant.presentation.admin.analytics.AnalyticsScreen
 import com.app.uniqueplant.presentation.admin.dashboard.DashboardScreen
 import com.app.uniqueplant.presentation.admin.dashboard.DashboardViewModel
 import com.app.uniqueplant.presentation.admin.supervisor.SupervisorScreen
+import com.app.uniqueplant.presentation.admin.transaction.TransactionViewModel
 import com.app.uniqueplant.presentation.admin.transaction.TransactionsScreen
 
 // Placeholder for NavGraph
@@ -34,7 +35,12 @@ fun HomeNavGraph(homeNavController: NavHostController, appNavController: NavHost
             )
         }
         composable(HomeBottomScreen.Transactions.route) {
-            TransactionsScreen()
+            val transactionViewModel: TransactionViewModel = hiltViewModel()
+            val state by transactionViewModel.state.collectAsState()
+            TransactionsScreen(
+                state = state,
+                onEvent = transactionViewModel::onEvent
+            )
         }
         composable(HomeBottomScreen.Analytics.route) {
             AnalyticsScreen()

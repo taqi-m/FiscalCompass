@@ -11,24 +11,32 @@ import javax.inject.Inject
 class LoadTransactionsUseCase @Inject constructor(
     private val incomeRepository: IncomeRepository,
     private val expenseRepository: ExpenseRepository
-){
-suspend fun loadAllTransactions(): Flow<List<Any>> {
-    return combine(
-        expenseRepository.getAllExpenses(),
-        incomeRepository.getAllIncomes()
-    ) { expenses, incomes ->
-        val allTransactions = expenses + incomes
-        allTransactions.sortedByDescending {
-            when (it) {
-                is Expense -> it.date
-                is Income -> it.date
-                else -> null
+) {
+    suspend fun loadAllTransactions(): Flow<List<Any>> {
+        return combine(
+            expenseRepository.getAllExpenses(),
+            incomeRepository.getAllIncomes()
+        ) { expenses, incomes ->
+            val allTransactions = expenses + incomes
+            allTransactions.sortedByDescending {
+                when (it) {
+                    is Expense -> it.date
+                    is Income -> it.date
+                    else -> null
+                }
             }
         }
     }
-}
 
-    companion object{
+    suspend fun deleteTransaction(transaction: Any?) {
+        when (transaction) {
+            is Expense -> expenseRepository.deleteExpense(transaction)
+            is Income -> incomeRepository.deleteIncome(transaction)
+            else -> throw IllegalArgumentException("Unknown transaction type")
+        }
+    }
+
+    companion object {
         const val TAG = "LoadTransactionsUseCase"
     }
 }

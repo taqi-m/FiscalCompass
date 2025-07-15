@@ -1,6 +1,7 @@
 package com.app.uniqueplant.presentation.transactions.addExpenseScreen
 
 import com.app.uniqueplant.data.model.Category
+import com.app.uniqueplant.domain.model.InputField
 import java.util.Date
 
 data class AddExpenseState(
@@ -13,9 +14,4 @@ data class AddExpenseState(
     val isSuccess: Boolean = false,
     val isDialogOpen: Boolean = false,
     val categories: List<Category> = emptyList()
-)
-
-data class InputField(
-    val value: String = "",
-    val error: String = ""
 )

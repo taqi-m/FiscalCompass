@@ -3,6 +3,7 @@ package com.app.uniqueplant.presentation.transactions.addIncomeScreen
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.uniqueplant.domain.model.InputField
 import com.app.uniqueplant.domain.usecase.AddIncomeUseCase
 import com.app.uniqueplant.domain.usecase.GetCategoriesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -44,14 +45,16 @@ class AddIncomeViewModel @Inject constructor(
                 _state.value = _state.value.copy(amount = InputField(
                     value = event.amount,
                     error = if (event.amount.isBlank()) "Amount cannot be empty" else ""
-                ))
+                )
+                )
             }
 
             is AddIncomeEvent.OnDescriptionChange -> {
                 _state.value = _state.value.copy(description = InputField(
                     value = event.description,
                     error = if (event.description.isBlank()) "Description cannot be empty" else ""
-                ))
+                )
+                )
             }
 
             is AddIncomeEvent.OnDateChange -> {

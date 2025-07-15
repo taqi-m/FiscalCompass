@@ -3,6 +3,7 @@ package com.app.uniqueplant.presentation.transactions.addExpenseScreen
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.uniqueplant.domain.model.InputField
 import com.app.uniqueplant.domain.usecase.AddExpenseUseCase
 import com.app.uniqueplant.domain.usecase.GetCategoriesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,7 +21,7 @@ class AddExpenseViewModel @Inject constructor(
     private val categoryUseCase: GetCategoriesUseCase
 ) : ViewModel() {
     private val _state = MutableStateFlow(AddExpenseState(
-        date = Date(System.currentTimeMillis()),
+        date = Date(),
         categories = emptyList()
     ))
     val state: StateFlow<AddExpenseState> = _state.asStateFlow()
@@ -44,7 +45,8 @@ class AddExpenseViewModel @Inject constructor(
                 _state.value = _state.value.copy(amount = InputField(
                     value = event.amount,
                     error = if (event.amount.isBlank()) "Amount cannot be empty" else ""
-                ))
+                )
+                )
             }
 
             is AddExpenseEvent.OnDescriptionChange -> {

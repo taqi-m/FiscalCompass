@@ -33,6 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.R
 import com.app.uniqueplant.data.model.Category
+import com.app.uniqueplant.domain.model.InputField
 import com.app.uniqueplant.ui.components.CustomExposedDropDownMenu
 import com.app.uniqueplant.ui.components.DataEntryTextField
 import com.app.uniqueplant.ui.components.DatePickerDialog

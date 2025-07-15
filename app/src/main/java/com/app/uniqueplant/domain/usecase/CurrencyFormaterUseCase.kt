@@ -4,7 +4,7 @@ import java.util.Locale
 
 class CurrencyFormaterUseCase {
     companion object {
-        fun formatCurrency(amount: Double, currencySymbol: String = "$", isExpense: Boolean = false): String {
+        fun formatCurrency(amount: Double, currencySymbol: String = "$ ", isExpense: Boolean = false): String {
             val formattedAmount = if (amount % 1 == 0.0) {
                 "%,d".format(amount.toInt())
             } else {
