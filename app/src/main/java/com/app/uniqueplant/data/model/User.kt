@@ -6,11 +6,12 @@ import java.util.Date
 
 @Entity(tableName = "users")
 data class User(
-    @PrimaryKey(autoGenerate = true)
-    val userId: Long = 0,
+    @PrimaryKey
+    val userId: String,
     val username: String,
     val email: String,
-    val passwordHash: String,
+    val userType: String,
+    val passwordHash: String? = null,
     val firstName: String? = null,
     val lastName: String? = null,
     val profilePictureUrl: String? = null,

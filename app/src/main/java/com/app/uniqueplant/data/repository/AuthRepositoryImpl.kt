@@ -2,6 +2,8 @@ package com.app.uniqueplant.data.repository
 
 import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesRepository
 import com.app.uniqueplant.domain.model.Resource
+import com.app.uniqueplant.domain.repository.AuthRepository
+import com.app.uniqueplant.domain.repository.UserRepository
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -18,6 +20,7 @@ import javax.inject.Singleton
 class AuthRepositoryImpl @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
     private val firebaseFirestore: FirebaseFirestore,
+    private val userRepository: UserRepository,
     private val prefRepository: SharedPreferencesRepository
 ) : AuthRepository {
 
@@ -35,6 +38,12 @@ class AuthRepositoryImpl @Inject constructor(
         if (userType != null) {
             prefRepository.setUserLoggedIn(true)
             prefRepository.setUserType(userType)
+            userRepository.addUserToDatabase(
+                userId = result.user?.uid ?: "",
+                username = result.user?.displayName ?: "",
+                email = email,
+                userType = userType
+            )
             emit(Resource.Success(result))
         } else {
             emit(Resource.Error("User type not found"))

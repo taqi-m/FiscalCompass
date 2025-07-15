@@ -25,33 +25,33 @@ interface ExpenseDao {
     suspend fun deleteExpense(expense: Expense)
 
     @Query("SELECT * FROM expenses")
-    suspend fun getAllExpenses(): List<Expense>
-    
+    fun getAllExpenses(): Flow<List<Expense>>
+
     @Query("SELECT * FROM expenses WHERE userId = :userId ORDER BY date DESC")
-    fun getAllExpensesByUser(userId: Long): Flow<List<Expense>>
+    fun getAllExpensesByUser(userId: String): Flow<List<Expense>>
     
     @Query("SELECT * FROM expenses WHERE expenseId = :id")
     suspend fun getExpenseById(id: Long): Expense?
     
     @Transaction
     @Query("SELECT * FROM expenses WHERE userId = :userId ORDER BY date DESC")
-    fun getExpensesWithCategory(userId: Long): Flow<List<ExpenseWithCategory>>
+    fun getExpensesWithCategory(userId: String): Flow<List<ExpenseWithCategory>>
     
     @Query("SELECT * FROM expenses WHERE userId = :userId AND date BETWEEN :startDate AND :endDate ORDER BY date DESC")
-    fun getExpensesByDateRange(userId: Long, startDate: Date, endDate: Date): Flow<List<Expense>>
+    fun getExpensesByDateRange(userId: String, startDate: Date, endDate: Date): Flow<List<Expense>>
     
     @Query("SELECT * FROM expenses WHERE userId = :userId AND categoryId = :categoryId ORDER BY date DESC")
-    fun getExpensesByCategory(userId: Long, categoryId: Long): Flow<List<Expense>>
+    fun getExpensesByCategory(userId: String, categoryId: Long): Flow<List<Expense>>
     
     @Query("SELECT SUM(amount) FROM expenses WHERE userId = :userId")
-    fun getTotalExpensesByUser(userId: Long): Flow<Double?>
+    fun getTotalExpensesByUser(userId: String): Flow<Double?>
     
     @Query("SELECT SUM(amount) FROM expenses WHERE userId = :userId AND date BETWEEN :startDate AND :endDate")
-    fun getExpenseSumByDateRange(userId: Long, startDate: Date, endDate: Date): Flow<Double?>
+    fun getExpenseSumByDateRange(userId: String, startDate: Date, endDate: Date): Flow<Double?>
     
     @Query("SELECT categoryId, SUM(amount) as total FROM expenses WHERE userId = :userId GROUP BY categoryId ORDER BY total DESC")
-    fun getExpenseSumByCategory(userId: Long): Flow<Map<@MapColumn("categoryId") Long?, @MapColumn("total") Double>>
+    fun getExpenseSumByCategory(userId: String): Flow<Map<@MapColumn("categoryId") Long?, @MapColumn("total") Double>>
 
     @Query("SELECT COUNT(*) FROM expenses WHERE userId = :userId")
-    suspend fun getExpenseCount(userId: Long): Int
+    suspend fun getExpenseCount(userId: String): Int
 }

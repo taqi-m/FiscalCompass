@@ -9,7 +9,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.app.uniqueplant.presentation.admin.analytics.AnalyticsScreen
-import com.app.uniqueplant.presentation.admin.dashboard.DashboardEvent
 import com.app.uniqueplant.presentation.admin.dashboard.DashboardScreen
 import com.app.uniqueplant.presentation.admin.dashboard.DashboardViewModel
 import com.app.uniqueplant.presentation.admin.supervisor.SupervisorScreen
@@ -28,11 +27,10 @@ fun HomeNavGraph(homeNavController: NavHostController, appNavController: NavHost
                 state = state,
                 onEvent = dashboardViewModel::onEvent,
                 onLogout = { route ->
-                    dashboardViewModel.onEvent(DashboardEvent.LogoutClicked)
                     appNavController.navigate(MainScreens.Auth.route) {
                         popUpTo(route) { inclusive = true }
                     }
-                }
+                },
             )
         }
         composable(HomeBottomScreen.Transactions.route) {

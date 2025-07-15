@@ -1,6 +1,8 @@
 package com.app.uniqueplant.presentation.admin.home
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -11,10 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.presentation.navigation.HomeBottomScreen
 import com.app.uniqueplant.presentation.navigation.HomeNavGraph
-import androidx.navigation.compose.currentBackStackEntryAsState
+import com.app.uniqueplant.presentation.navigation.MainScreens
+import com.app.uniqueplant.ui.components.ExpandableFab
+import com.app.uniqueplant.ui.components.FabOption
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
 @Composable
@@ -23,20 +28,25 @@ fun HomeScreen(
     state: HomeScreenState,
     onEvent: (HomeEvent) -> Unit = {},
 ) {
-    val homeNavController =  rememberNavController()
+    val homeNavController = rememberNavController()
     val items = listOf(
         HomeBottomScreen.Dashboard,
         HomeBottomScreen.Transactions,
         HomeBottomScreen.Analytics
     )
 
+    val currentRoute = homeNavController.currentBackStackEntryAsState().value?.destination?.route
     Scaffold(
         bottomBar = {
             NavigationBar {
-                val currentRoute = homeNavController.currentBackStackEntryAsState().value?.destination?.route
                 items.forEach { screen ->
                     NavigationBarItem(
-                        icon = { Icon(painterResource(screen.iconResource), contentDescription = null) },
+                        icon = {
+                            Icon(
+                                painterResource(screen.iconResource),
+                                contentDescription = null
+                            )
+                        },
                         label = { Text(screen.label) },
                         selected = currentRoute == screen.route,
                         onClick = {
@@ -53,6 +63,39 @@ fun HomeScreen(
                     )
                 }
             }
+        },
+        floatingActionButton = {
+            val isExpanded = state.isFabExpanded
+            ExpandableFab(
+                isExpanded = isExpanded,
+                onExpandToggle = { onEvent(HomeEvent.ToggleFabExpanded) },
+                fabOptions = listOf(
+                    FabOption(
+                        icon = Icons.Filled.Add,
+                        label = "Add Income",
+                        onClick = {
+                            appNavController.navigate(MainScreens.AddIncome.route)
+                        }
+                    ),
+                    FabOption(
+                        icon = Icons.Filled.Add,
+                        label = "Add Expense",
+                        onClick = {
+                            appNavController.navigate(MainScreens.AddExpense.route)
+                        }
+                    )
+                )
+            )
+            /*            AnimatedVisibility(
+                            visible = when (currentRoute) {
+                                HomeBottomScreen.Dashboard.route -> true
+                                else -> false
+                            },
+                            enter = scaleIn(animationSpec = tween(ANIMATION_DURATION / 2)),
+                            exit = scaleOut(animationSpec = tween(ANIMATION_DURATION / 2))
+                        ) {
+
+                        }*/
         }
     ) { paddingValues ->
         HomeNavGraph(homeNavController, appNavController, Modifier.padding(paddingValues))
@@ -60,9 +103,7 @@ fun HomeScreen(
 }
 
 
-@Preview(
-    apiLevel = 33
-)
+@Preview()
 @Composable
 fun HomeScreenPreview() {
     UniquePlantTheme {

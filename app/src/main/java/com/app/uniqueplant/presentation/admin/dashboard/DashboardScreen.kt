@@ -1,5 +1,6 @@
 package com.app.uniqueplant.presentation.admin.dashboard
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,7 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.presentation.navigation.MainScreens
+import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun DashboardScreen(
     state: DashboardScreenState,
@@ -37,8 +40,7 @@ fun DashboardScreen(
 
     Box(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+            .fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -63,14 +65,18 @@ fun DashboardScreen(
             }
         }
     }
+
+
 }
 
 @Preview(showBackground = true)
 @Composable
 fun DashboardScreenPreview() {
-    DashboardScreen(
-        state = DashboardScreenState(userTypeName = "Employee"),
-        onEvent = {},
-        onLogout = {}
-    )
+    UniquePlantTheme {
+        DashboardScreen(
+            state = DashboardScreenState(userTypeName = "Employee"),
+            onEvent = {},
+            onLogout = {}
+        )
+    }
 }

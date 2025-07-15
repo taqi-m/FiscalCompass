@@ -22,7 +22,7 @@ interface UserDao {
     suspend fun deleteUser(user: User)
     
     @Query("SELECT * FROM users WHERE userId = :id")
-    suspend fun getUserById(id: Long): User?
+    suspend fun getUserById(id: String): User?
     
     @Query("SELECT * FROM users WHERE username = :username")
     suspend fun getUserByUsername(username: String): User?
@@ -31,7 +31,7 @@ interface UserDao {
     suspend fun getUserByEmail(email: String): User?
     
     @Query("UPDATE users SET lastLoginAt = :loginTime WHERE userId = :userId")
-    suspend fun updateLastLogin(userId: Long, loginTime: Date)
+    suspend fun updateLastLogin(userId: String, loginTime: Date)
     
     @Query("SELECT * FROM users")
     fun getAllUsers(): Flow<List<User>>

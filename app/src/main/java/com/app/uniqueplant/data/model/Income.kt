@@ -31,7 +31,7 @@ data class Income(
     val description: String,
     val date: Date,
     val categoryId: Long?,
-    val userId: Long,
+    val userId: String,
     val source: String? = null,
     val isRecurring: Boolean = false,
     val recurringFrequency: String? = null, // daily, weekly, monthly, yearly

@@ -1,7 +1,7 @@
 package com.app.uniqueplant.domain.usecase.auth
 
-import com.app.uniqueplant.data.repository.AuthRepository
 import com.app.uniqueplant.domain.model.Resource
+import com.app.uniqueplant.domain.repository.AuthRepository
 import com.google.firebase.auth.AuthResult
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject

@@ -28,6 +28,10 @@ class HomeViewModel @Inject constructor(
             is HomeEvent.LogoutClicked -> {
                 // Handle logout logic here
             }
+
+            HomeEvent.ToggleFabExpanded -> {
+                _state.update { it.copy(isFabExpanded = !it.isFabExpanded) }
+            }
         }
     }
 }

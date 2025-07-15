@@ -31,7 +31,7 @@ data class Expense(
     val description: String,
     val date: Date,
     val categoryId: Long?,
-    val userId: Long,
+    val userId: String,
     val paymentMethod: String? = null,
     val location: String? = null,
     val receipt: String? = null, // URL to receipt image

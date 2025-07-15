@@ -7,6 +7,8 @@ sealed class MainScreens(val route: String) {
     object Home : MainScreens("home_screen")
     object EmployeeHome : MainScreens("employee_screen")
     object AdminHome : MainScreens("admin_home_screen")
+    object AddIncome : MainScreens("add_income_screen")
+    object AddExpense : MainScreens("add_expense_screen")
 }
 
 sealed class HomeBottomScreen(val route: String, val label: String, val iconResource: Int) {

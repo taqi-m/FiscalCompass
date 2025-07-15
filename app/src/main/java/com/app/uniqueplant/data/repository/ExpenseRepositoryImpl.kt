@@ -2,6 +2,7 @@ package com.app.uniqueplant.data.repository
 
 import com.app.uniqueplant.data.datasource.local.dao.ExpenseDao
 import com.app.uniqueplant.data.model.Expense
+import com.app.uniqueplant.domain.repository.ExpenseRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -25,11 +26,11 @@ class ExpenseRepositoryImpl @Inject constructor(
         return expenseDao.getExpenseById(id)
     }
 
-    override suspend fun getAllExpenses(): List<Expense> {
+    override suspend fun getAllExpenses(): Flow<List<Expense>> {
         return expenseDao.getAllExpenses()
     }
 
-    override suspend fun getExpensesByUser(userId: Long): Flow<List<Expense>> {
+    override suspend fun getExpensesByUser(userId: String): Flow<List<Expense>> {
         return expenseDao.getAllExpensesByUser(userId)
     }
 

@@ -1,14 +1,13 @@
 package com.app.uniqueplant.data.repository
 
-import com.app.uniqueplant.data.datasource.local.dao.CategoryDao
 import com.app.uniqueplant.data.datasource.local.dao.IncomeDao
 import com.app.uniqueplant.data.model.Income
+import com.app.uniqueplant.domain.repository.IncomeRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class IncomeRepositoryImpl @Inject constructor(
-    private val incomeDao: IncomeDao,
-    private val categoryDao: CategoryDao
+    private val incomeDao: IncomeDao
 ) : IncomeRepository {
 
     override suspend fun addIncome(income: Income): Long {

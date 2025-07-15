@@ -12,6 +12,10 @@ import com.app.uniqueplant.presentation.auth.AuthScreen
 import com.app.uniqueplant.presentation.auth.AuthViewModel
 import com.app.uniqueplant.presentation.admin.home.HomeScreen
 import com.app.uniqueplant.presentation.admin.home.HomeViewModel
+import com.app.uniqueplant.presentation.transactions.addExpenseScreen.AddExpenseScreen
+import com.app.uniqueplant.presentation.transactions.addExpenseScreen.AddExpenseViewModel
+import com.app.uniqueplant.presentation.transactions.addIncomeScreen.AddIncomeScreen
+import com.app.uniqueplant.presentation.transactions.addIncomeScreen.AddIncomeViewModel
 
 @Composable
 fun AppNavigation(
@@ -69,6 +73,24 @@ fun AppNavigation(
                 appNavController = navController,
                 state = homeState,
                 onEvent = homeViewModel::onEvent
+            )
+        }
+
+        composable(route = MainScreens.AddIncome.route) {
+            val addIncomeViewModel: AddIncomeViewModel = hiltViewModel()
+            val addIncomeState by addIncomeViewModel.state.collectAsState()
+            AddIncomeScreen(
+                state = addIncomeState,
+                onEvent = addIncomeViewModel::onEvent
+            )
+        }
+
+        composable(route = MainScreens.AddExpense.route) {
+            val addExpenseViewModel: AddExpenseViewModel = hiltViewModel()
+            val addExpenseState by addExpenseViewModel.state.collectAsState()
+            AddExpenseScreen(
+                state = addExpenseState,
+                onEvent = addExpenseViewModel::onEvent
             )
         }
     }
