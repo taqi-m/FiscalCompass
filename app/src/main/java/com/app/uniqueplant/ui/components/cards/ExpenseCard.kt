@@ -1,6 +1,5 @@
 package com.app.uniqueplant.ui.components.cards
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -41,10 +41,10 @@ fun ExpenseCard(
         modifier = modifier.then(
             Modifier
                 .fillMaxWidth()
-                .background(
-                    MaterialTheme.colorScheme.surfaceContainerLow
-                )
         ),
+        colors = CardDefaults.cardColors().copy(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(0.8f),
+        )
     ) {
         Row(
             modifier = Modifier
@@ -72,8 +72,7 @@ fun ExpenseCard(
             ) {
                 Text(
                     text = CurrencyFormaterUseCase.formatCurrency(amount = expense, isExpense = true),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.error
+                    style = MaterialTheme.typography.bodyLarge
                 )
                 Text(
                     text = SimpleDateFormat("EEE - dd MMM, yyyy", Locale.getDefault()).format(date),

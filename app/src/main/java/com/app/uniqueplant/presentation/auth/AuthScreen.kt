@@ -59,8 +59,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.R
-import com.app.uniqueplant.presentation.auth.AuthEvent
-import com.app.uniqueplant.presentation.auth.AuthScreenState
 import com.app.uniqueplant.ui.components.FormTextField
 import com.app.uniqueplant.ui.components.MountainSpikes
 import com.app.uniqueplant.ui.components.RelativeCircle
@@ -104,7 +102,7 @@ fun AuthScreen(
                 hostState = snackbarHostState
             )
         },
-        contentWindowInsets = WindowInsets(0, 0, 0, 0) // Allow content to draw behind navigation
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { padding ->
 
         Box(
@@ -114,7 +112,7 @@ fun AuthScreen(
             RelativeCircle(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp) // Adjust height as needed
+                    .height(200.dp)
                     .align(Alignment.TopCenter),
                 promptTextPosition = promptTextPosition,
                 promptTextHeight = promptTextHeight
@@ -124,7 +122,7 @@ fun AuthScreen(
             MountainSpikes(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp + bottomPadding) // Adjust height as needed
+                    .height(150.dp + bottomPadding)
                     .align(Alignment.BottomCenter)
             )
 
@@ -133,7 +131,7 @@ fun AuthScreen(
                     .fillMaxWidth()
                     .fillMaxHeight()
                     .padding(padding)
-                    .consumeWindowInsets(padding) // Consume insets to prevent double padding
+                    .consumeWindowInsets(padding)
                     .padding(16.dp)
                     .align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -143,9 +141,9 @@ fun AuthScreen(
                     painter = painterResource(R.drawable.sample_logo),
                     contentDescription = stringResource(R.string.app_name),
                     modifier = Modifier
-                        .padding(bottom = 16.dp) // Add some space below the logo
+                        .padding(bottom = 16.dp)
                         .clip(CircleShape)
-                        .size(96.dp) // Adjust size as needed
+                        .size(96.dp)
                 )
                 Text(
                     text = stringResource(
@@ -172,68 +170,71 @@ fun AuthScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                AnimatedContent(
-                    targetState = state.isSignUp,
-                    label = "UsernameFieldAnimation"
-                ) { isSignUp ->
-                    if (isSignUp) {
-                        FormTextField(
-                            value = state.username,
-                            label = stringResource(R.string.username_label),
-                            placeholder = stringResource(R.string.username_placeholder),
-                            onValueChange = { onEvent(AuthEvent.UsernameChanged(it)) },
-                            keyboardType = KeyboardType.Text,
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_person_24),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            imeAction = ImeAction.Next
-                        )
-                    } else {
-                        // Empty composable when not showing username field
-                        Spacer(modifier = Modifier.height(0.dp))
+                Column (
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                )
+                {
+                    AnimatedContent(
+                        targetState = state.isSignUp,
+                        label = "UsernameFieldAnimation"
+                    ) { isSignUp ->
+                        if (isSignUp) {
+                            FormTextField(
+                                value = state.username,
+                                label = stringResource(R.string.username_label),
+                                placeholder = stringResource(R.string.username_placeholder),
+                                onValueChange = { onEvent(AuthEvent.UsernameChanged(it)) },
+                                keyboardType = KeyboardType.Text,
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_person_24),
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                },
+                                imeAction = ImeAction.Next
+                            )
+                        } else {
+                            // Empty composable when not showing username field
+                            Spacer(modifier = Modifier.height(0.dp))
+                        }
                     }
+
+
+                    FormTextField(
+                        value = state.email,
+                        label = stringResource(R.string.email_label),
+                        placeholder = stringResource(R.string.email_placeholder),
+                        onValueChange = { onEvent(AuthEvent.EmailChanged(it)) },
+                        keyboardType = KeyboardType.Email,
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_email_24),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        imeAction = ImeAction.Next
+                    )
+
+
+                    FormTextField(
+                        value = state.password,
+                        label = stringResource(R.string.password_label),
+                        placeholder = stringResource(R.string.password_placeholder),
+                        onValueChange = { onEvent(AuthEvent.PasswordChanged(it)) },
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done,
+                        isPassword = true,
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_password_24),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    )
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                FormTextField(
-                    value = state.email,
-                    label = stringResource(R.string.email_label),
-                    placeholder = stringResource(R.string.email_placeholder),
-                    onValueChange = { onEvent(AuthEvent.EmailChanged(it)) },
-                    keyboardType = KeyboardType.Email,
-                    leadingIcon = {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_email_24),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    },
-                    imeAction = ImeAction.Next
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                FormTextField(
-                    value = state.password,
-                    label = stringResource(R.string.password_label),
-                    placeholder = stringResource(R.string.password_placeholder),
-                    onValueChange = { onEvent(AuthEvent.PasswordChanged(it)) },
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done,
-                    isPassword = true,
-                    leadingIcon = {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_password_24),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                )
 
                 Spacer(modifier = Modifier.height(32.dp))
 
@@ -251,38 +252,43 @@ fun AuthScreen(
                     modifier = Modifier.widthIn(min = 250.dp, max = 250.dp),
                     enabled = state.email.isNotEmpty() && state.password.isNotEmpty() && if (state.isSignUp) state.username.isNotEmpty() else true
                 ) {
-                    AnimatedContent(
-                        targetState = state.isLoading,
-                        transitionSpec = {
-                            if (targetState > initialState) {
-                                // If the target number is larger, it slides up and fades in
-                                // while the initial (smaller) number slides up and fades out.
-                                slideInVertically { height -> height } + fadeIn() togetherWith
-                                        slideOutVertically { height -> -height } + fadeOut()
-                            } else {
-                                // If the target number is smaller, it slides down and fades in
-                                // while the initial number slides down and fades out.
-                                slideInVertically { height -> -height } + fadeIn() togetherWith
-                                        slideOutVertically { height -> height } + fadeOut()
-                            }.using(
-                                // Disable clipping since the faded slide-in/out should
-                                // be displayed out of bounds.
-                                SizeTransform(clip = false)
-                            )
-                        }, label = "LoginButtonContent"
-                    ) { isLoading ->
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp), // Ensure same height as text
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text(
-                                stringResource(
-                                    if (state.isSignUp) R.string.sign_up_button else R.string.sign_in_button
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    )
+                    {
+                        AnimatedContent(
+                            targetState = state.isLoading,
+                            transitionSpec = {
+                                if (targetState > initialState) {
+                                    // If the target number is larger, it slides up and fades in
+                                    // while the initial (smaller) number slides up and fades out.
+                                    slideInVertically { height -> height } + fadeIn() togetherWith
+                                            slideOutVertically { height -> -height } + fadeOut()
+                                } else {
+                                    // If the target number is smaller, it slides down and fades in
+                                    // while the initial number slides down and fades out.
+                                    slideInVertically { height -> -height } + fadeIn() togetherWith
+                                            slideOutVertically { height -> height } + fadeOut()
+                                }.using(
+                                    // Disable clipping since the faded slide-in/out should
+                                    // be displayed out of bounds.
+                                    SizeTransform(clip = false)
                                 )
-                            )
+                            }, label = "LoginButtonContent"
+                        ) { isLoading ->
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp), // Ensure same height as text
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text(
+                                    stringResource(
+                                        if (state.isSignUp) R.string.sign_up_button else R.string.sign_in_button
+                                    )
+                                )
+                            }
                         }
                     }
                 }

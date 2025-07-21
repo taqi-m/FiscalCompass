@@ -1,6 +1,5 @@
 package com.app.uniqueplant.ui.components.cards
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -38,10 +38,10 @@ fun IncomeCard(
         modifier = modifier.then(
             Modifier
                 .fillMaxWidth()
-                .background(
-                    MaterialTheme.colorScheme.surfaceContainerLow
-                )
         ),
+        colors = CardDefaults.cardColors().copy(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(0.8f),
+        )
     ) {
         IncomeCardContent(
             income = income,
@@ -69,7 +69,6 @@ fun IncomeCardContent(
         Icon(
             painter = painterResource(id = R.drawable.ic_arrow_24), // Replace with your income icon
             contentDescription = "Income Icon",
-            tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier
                 .rotate(45f)
                 .padding(all = 16.dp)
@@ -108,7 +107,7 @@ fun IncomeCardText(
             style = MaterialTheme.typography.bodyLarge
         )
         Text(
-            text = SimpleDateFormat("EEE - dd MMM, yyyy", Locale.getDefault()).format(date),
+            text = SimpleDateFormat("EEE - dd MMM, yyyy  HH:MM aa", Locale.ENGLISH).format(date),
             style = MaterialTheme.typography.bodySmall
         )
     }

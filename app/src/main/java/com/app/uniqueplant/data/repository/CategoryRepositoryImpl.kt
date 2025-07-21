@@ -37,6 +37,10 @@ class CategoryRepositoryImpl @Inject constructor(
         return categoryDao.getExpenseCategories()
     }
 
+    override suspend fun getCategoryNameById(id: Long): String? {
+        return categoryDao.getCategoryById(id)?.name
+    }
+
     override suspend fun getCategoryById(id: Long): Category? {
         return categoryDao.getCategoryById(id)
     }

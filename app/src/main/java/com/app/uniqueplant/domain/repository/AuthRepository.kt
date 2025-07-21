@@ -1,6 +1,7 @@
 package com.app.uniqueplant.domain.repository
 
 import com.app.uniqueplant.domain.model.Resource
+import com.app.uniqueplant.presentation.settings.UserInfo
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.Flow
@@ -13,6 +14,8 @@ interface AuthRepository {
     fun isUserLoggedIn(): Boolean
 
     fun getUserType(): Flow<Resource<String>>
+
+    fun getUserInfo(): Flow<Resource<UserInfo>>
 }
 
 

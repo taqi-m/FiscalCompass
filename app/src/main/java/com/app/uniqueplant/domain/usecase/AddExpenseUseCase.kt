@@ -12,7 +12,7 @@ class AddExpenseUseCase(
 ) {
     suspend fun addExpense(
         amount: Double,
-        categoryId: Long?,
+        categoryId: Long,
         description: String,
         date: Date
     ): Result<Unit> {

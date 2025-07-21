@@ -20,5 +20,8 @@ interface IncomeRepository {
 
     suspend fun getTotalIncomes(): Double
 
+    suspend fun getIncomeSumByMonth(month: Int, year: Int): Flow<Double>
+
     suspend fun getIncomesByDateRange(startDate: String, endDate: String): List<Income>
+    suspend fun getIncomesByMonth(month: Int, year: Int): Flow<List<Income>>
 }

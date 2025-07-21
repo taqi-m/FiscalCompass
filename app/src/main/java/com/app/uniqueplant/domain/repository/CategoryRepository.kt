@@ -17,6 +17,7 @@ interface CategoryRepository {
     suspend fun getExpenseCategories(): List<Category>
 
     suspend fun getCategoryById(id: Long): Category?
+    suspend fun getCategoryNameById(id: Long): String?
 
     suspend fun isCategoryUsedInExpenses(categoryId: Long): Boolean
 

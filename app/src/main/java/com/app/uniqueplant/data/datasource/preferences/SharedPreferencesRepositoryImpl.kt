@@ -2,9 +2,9 @@ package com.app.uniqueplant.data.datasource.preferences
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import javax.inject.Inject
 import javax.inject.Singleton
-import androidx.core.content.edit
 
 @Singleton
 class SharedPreferencesRepositoryImpl @Inject constructor(
@@ -96,5 +96,9 @@ class SharedPreferencesRepositoryImpl @Inject constructor(
 
     override fun removeUserType() {
         remove("user_type")
+    }
+
+    override fun setDarkMode(darkMode: Boolean) {
+        sharedPreferences.edit { putBoolean("dark_mode", darkMode) }
     }
 }

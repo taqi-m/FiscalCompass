@@ -21,4 +21,6 @@ class SessionUseCase @Inject constructor(
     fun getUserType(): Flow<Resource<String>> {
         return authRepository.getUserType()
     }
+
+    fun getUserInfo() = authRepository.getUserInfo()
 }

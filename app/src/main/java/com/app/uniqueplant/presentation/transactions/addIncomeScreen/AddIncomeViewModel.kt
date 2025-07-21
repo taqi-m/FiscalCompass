@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
 
@@ -22,7 +23,8 @@ class AddIncomeViewModel @Inject constructor(
 ) : ViewModel() {
     private val _state = MutableStateFlow(AddIncomeState(
         date = Date(System.currentTimeMillis()),
-        categories = emptyList()
+        categories = emptyList(),
+        categoryId = 0L,
     ))
     val state: StateFlow<AddIncomeState> = _state.asStateFlow()
 
@@ -31,7 +33,10 @@ class AddIncomeViewModel @Inject constructor(
             try {
                 val categories = categoryUseCase.getIncomeCategories()
                 Log.d(TAG, "Categories fetched successfully: $categories")
-                _state.value = _state.value.copy(categories = categories)
+                _state.value = _state.value.copy(
+                    categories = categories,
+                    categoryId = categories.firstOrNull()?.categoryId ?: 0L
+                )
             } catch (e: Exception) {
                 Log.e(TAG, "Error fetching categories", e)
             }
@@ -77,7 +82,8 @@ class AddIncomeViewModel @Inject constructor(
             is AddIncomeEvent.OnResetClicked -> {
                 _state.value = AddIncomeState(
                     categories = _state.value.categories,
-                    date = Date(System.currentTimeMillis() / 1000L),
+                    date = Calendar.getInstance().time,
+                    categoryId = _state.value.categoryId,
                 )
             }
 

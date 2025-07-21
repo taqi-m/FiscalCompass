@@ -37,4 +37,5 @@ interface SharedPreferencesRepository {
     fun setUserType(userType: String)
     fun getUserType(): String?
     fun removeUserType()
+    fun setDarkMode(darkMode: Boolean)
 }

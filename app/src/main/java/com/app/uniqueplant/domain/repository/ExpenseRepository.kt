@@ -14,6 +14,8 @@ interface ExpenseRepository {
 
     suspend fun getAllExpenses(): Flow<List<Expense>>
 
+    suspend fun getExpensesByMonth(month: Int, year: Int): Flow<List<Expense>>
+
     suspend fun getExpensesByUser(userId: String): Flow<List<Expense>>
 
     suspend fun getExpensesByCategory(categoryId: Long): List<Expense>
@@ -21,4 +23,5 @@ interface ExpenseRepository {
     suspend fun getTotalExpenses(): Double
 
     suspend fun getExpensesByDateRange(startDate: String, endDate: String): List<Expense>
+    fun getExpenseSumByMonth(month: Int, year: Int): Flow<Double>
 }

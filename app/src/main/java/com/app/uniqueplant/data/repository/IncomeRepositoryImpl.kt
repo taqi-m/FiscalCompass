@@ -4,6 +4,7 @@ import com.app.uniqueplant.data.datasource.local.dao.IncomeDao
 import com.app.uniqueplant.data.model.Income
 import com.app.uniqueplant.domain.repository.IncomeRepository
 import kotlinx.coroutines.flow.Flow
+import java.util.Calendar
 import javax.inject.Inject
 
 class IncomeRepositoryImpl @Inject constructor(
@@ -40,6 +41,36 @@ class IncomeRepositoryImpl @Inject constructor(
 
     override suspend fun getTotalIncomes(): Double {
         TODO("Not yet implemented")
+    }
+
+    override suspend fun getIncomesByMonth(month: Int, year: Int): Flow<List<Income>> {
+        return incomeDao.getIncomesByDateRangeForAllUsers(
+            startDate = Calendar.getInstance().apply {
+                set(Calendar.MONTH, month)
+                set(Calendar.YEAR, year)
+                set(Calendar.DAY_OF_MONTH, 1)
+            }.time,
+            endDate = Calendar.getInstance().apply {
+                set(Calendar.MONTH, month)
+                set(Calendar.YEAR, year)
+                set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
+            }.time
+        )
+    }
+
+    override suspend fun getIncomeSumByMonth(month: Int, year: Int): Flow<Double> {
+        return incomeDao.getIncomeSumByMonth(
+            startDate = Calendar.getInstance().apply {
+                set(Calendar.MONTH, month)
+                set(Calendar.YEAR, year)
+                set(Calendar.DAY_OF_MONTH, 1)
+            }.time,
+            endDate = Calendar.getInstance().apply {
+                set(Calendar.MONTH, month)
+                set(Calendar.YEAR, year)
+                set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
+            }.time
+        )
     }
 
     override suspend fun getIncomesByDateRange(

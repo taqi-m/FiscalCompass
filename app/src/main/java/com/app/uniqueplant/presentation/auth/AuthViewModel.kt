@@ -78,11 +78,9 @@ class AuthViewModel @Inject constructor(
                 when (resource) {
                     is Resource.Success -> {
                         _state.update { it.copy(isLoading = false) }
-                        var route: String = MainScreens.Home.route
+                        var route: String = MainScreens.AdminHome.route
                         if (resource.data == "employee") {
                             route = MainScreens.EmployeeHome.route
-                        } else if (resource.data == "admin") {
-                            route = MainScreens.AdminHome.route
                         }
                         appNavController.navigate(route) {
                             popUpTo(MainScreens.Auth.route) { inclusive = true }

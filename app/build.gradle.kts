@@ -31,7 +31,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -56,7 +56,7 @@ dependencies {
     // Hilt dependencies
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
-    implementation(libs.hilt.navigation.compose) // Optional for Compose integration
+    implementation(libs.hilt.navigation.compose)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -66,6 +66,10 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.android.material)
+    implementation(libs.androidx.datastore)
+    implementation(libs.androidx.datastore.preferences)
+
 
     //Room Libraries
     implementation(libs.androidx.room.runtime)
@@ -77,6 +81,10 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+
+    //Coil dependencies
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 
 
     testImplementation(libs.junit)

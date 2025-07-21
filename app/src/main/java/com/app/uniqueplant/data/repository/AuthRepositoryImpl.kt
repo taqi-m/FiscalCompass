@@ -4,6 +4,7 @@ import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesReposito
 import com.app.uniqueplant.domain.model.Resource
 import com.app.uniqueplant.domain.repository.AuthRepository
 import com.app.uniqueplant.domain.repository.UserRepository
+import com.app.uniqueplant.presentation.settings.UserInfo
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -115,6 +116,36 @@ class AuthRepositoryImpl @Inject constructor(
     }.catch { e ->
         emit(Resource.Error(e.message ?: "An error occurred while fetching user type"))
     }
+
+    
+    override fun getUserInfo(): Flow<Resource<UserInfo>> = flow {
+        emit(Resource.Loading())
+        val uid = firebaseAuth.currentUser?.uid ?: ""
+        if (uid.isEmpty()) {
+            emit(Resource.Error("User not logged in"))
+            return@flow
+        }
+
+        try {
+            val document = firebaseFirestore.collection("users").document(uid).get().await()
+            if (!document.exists()) {
+                emit(Resource.Error("User document does not exist"))
+                return@flow
+            }
+            val userInfo = UserInfo(
+                userName = document.getString("name") ?: "Unknown",
+                userEmail = document.getString("email") ?: "Unknown",
+                profilePictureUrl = document.getString("profilePictureUrl")
+            )
+            emit(Resource.Success(userInfo))
+        } catch (e: Exception) {
+            emit(Resource.Error(e.message ?: "An error occurred while fetching user info"))
+        }
+    }
+
+
+
+
 
     companion object{
         private const val TAG = "AuthRepositoryImpl"

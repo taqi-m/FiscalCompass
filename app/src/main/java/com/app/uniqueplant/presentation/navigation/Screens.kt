@@ -15,6 +15,8 @@ sealed class HomeBottomScreen(val route: String, val label: String, val iconReso
     object Dashboard : HomeBottomScreen("dashboard", "Dashboard", R.drawable.ic_home_24)
     object Transactions : HomeBottomScreen("transactions", "Transactions", R.drawable.ic_list_24)
     object Analytics : HomeBottomScreen("analytics", "Analytics", R.drawable.ic_bar_chart_24)
+    object Settings : HomeBottomScreen("settings", "Settings", R.drawable.ic_settings_24)
+    object Categories : HomeBottomScreen("categories", "Categories", R.drawable.ic_category_24)
 
     object Supervisor : HomeBottomScreen("users", "Users", R.drawable.ic_supervisor_24)
 }

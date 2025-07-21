@@ -27,6 +27,9 @@ interface IncomeDao {
     @Query("SELECT * FROM incomes")
     fun getAllIncomes(): Flow<List<Income>>
 
+    @Query("SELECT SUM(amount) FROM incomes WHERE date BETWEEN :startDate AND :endDate")
+    fun getIncomeSumByMonth(startDate: Date, endDate: Date): Flow<Double>
+
     @Query("SELECT * FROM incomes WHERE userId = :userId ORDER BY date DESC")
     fun getAllIncomesByUser(userId: String): Flow<List<Income>>
     
@@ -39,6 +42,9 @@ interface IncomeDao {
     
     @Query("SELECT * FROM incomes WHERE userId = :userId AND date BETWEEN :startDate AND :endDate ORDER BY date DESC")
     fun getIncomesByDateRange(userId: String, startDate: Date, endDate: Date): Flow<List<Income>>
+
+    @Query("SELECT * FROM incomes WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
+    fun getIncomesByDateRangeForAllUsers(startDate: Date, endDate: Date): Flow<List<Income>>
     
     @Query("SELECT * FROM incomes WHERE userId = :userId AND categoryId = :categoryId ORDER BY date DESC")
     fun getIncomesByCategory(userId: String, categoryId: Long): Flow<List<Income>>

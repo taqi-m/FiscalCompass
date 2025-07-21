@@ -9,18 +9,21 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.app.uniqueplant.presentation.admin.analytics.AnalyticsScreen
+import com.app.uniqueplant.presentation.admin.analytics.AnalyticsViewModel
 import com.app.uniqueplant.presentation.admin.dashboard.DashboardScreen
 import com.app.uniqueplant.presentation.admin.dashboard.DashboardViewModel
 import com.app.uniqueplant.presentation.admin.supervisor.SupervisorScreen
 import com.app.uniqueplant.presentation.admin.transaction.TransactionViewModel
 import com.app.uniqueplant.presentation.admin.transaction.TransactionsScreen
+import com.app.uniqueplant.presentation.settings.SettingsScreen
+import com.app.uniqueplant.presentation.settings.SettingsViewModel
 
 // Placeholder for NavGraph
 
 
 @Composable
 fun HomeNavGraph(homeNavController: NavHostController, appNavController: NavHostController, modifier: Modifier = Modifier) {
-    NavHost(homeNavController, startDestination = HomeBottomScreen.Dashboard.route, modifier = modifier) {
+    NavHost(homeNavController, startDestination = HomeBottomScreen.Transactions.route, modifier = modifier) {
         composable(HomeBottomScreen.Dashboard.route) {
             val dashboardViewModel: DashboardViewModel = hiltViewModel()
             val state by dashboardViewModel.state.collectAsState()
@@ -43,7 +46,26 @@ fun HomeNavGraph(homeNavController: NavHostController, appNavController: NavHost
             )
         }
         composable(HomeBottomScreen.Analytics.route) {
-            AnalyticsScreen()
+            val analyticsViewModel: AnalyticsViewModel = hiltViewModel()
+            val state by analyticsViewModel.state.collectAsState()
+            AnalyticsScreen(
+                state = state,
+                onEvent = analyticsViewModel::onEvent
+            )
+        }
+
+        composable(HomeBottomScreen.Settings.route) {
+            val settingsViewModel: SettingsViewModel = hiltViewModel()
+            val state by settingsViewModel.state.collectAsState()
+            SettingsScreen(
+                state = state,
+                onEvent = settingsViewModel::onEvent,
+                onLogout = { route ->
+                    appNavController.navigate(MainScreens.Auth.route) {
+                        popUpTo(route) { inclusive = true }
+                    }
+                },
+            )
         }
 
         composable(HomeBottomScreen.Supervisor.route){
@@ -51,3 +73,5 @@ fun HomeNavGraph(homeNavController: NavHostController, appNavController: NavHost
         }
     }
 }
+
+

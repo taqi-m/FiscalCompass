@@ -60,7 +60,7 @@ fun CustomExposedDropDownMenu(
             onDismissRequest = { expanded = false }
         ) {
 
-            options.forEach { category ->
+            options.forEachIndexed { index, category ->
                 DropdownMenuItem(
                     text = { Text(text = category.name) },
                     onClick = {
@@ -69,6 +69,14 @@ fun CustomExposedDropDownMenu(
                         expanded = false
                     }
                 )
+
+                // Add divider after each item except the last one
+                if (index < options.size - 1) {
+                    androidx.compose.material3.HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        thickness = 0.5.dp
+                    )
+                }
             }
         }
     }
@@ -99,10 +107,12 @@ fun CustomExposedDropDownMenuPreview() {
         )
     )
     CustomExposedDropDownMenu(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp),
         label = "Select an option",
         options = options,
-        onOptionSelected = { 
+        onOptionSelected = {
         }
     )
 }

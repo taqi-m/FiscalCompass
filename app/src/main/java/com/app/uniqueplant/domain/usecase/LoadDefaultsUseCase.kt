@@ -15,64 +15,100 @@ class LoadDefaultsUseCase(
         }
         val defaultCategories = listOf(
             Category(
-                name = "Food",
+                name = "Roda",
                 color = 0xFFE57373.toInt(),
-                isExpenseCategory = true,
+                isExpenseCategory = false,
                 icon = "🍔"
             ),
             Category(
-                name = "Transport",
+                name = "Bajar",
                 color = 0xFF64B5F6.toInt(),
-                isExpenseCategory = true,
+                isExpenseCategory = false,
                 icon = "🚗"
             ),
             Category(
-                name = "Entertainment",
+                name = "Mix",
                 color = 0xFFBA68C8.toInt(),
-                isExpenseCategory = true,
+                isExpenseCategory = false,
                 icon = "🎉"
             ),
             Category(
-                name = "Health",
+                name = "Scrap",
                 color = 0xFF4DB6AC.toInt(),
-                isExpenseCategory = true,
+                isExpenseCategory = false,
                 icon = "💊"
             ),
-            Category(
+/*            Category(
                 name = "Shopping",
                 color = 0xFFFFB74D.toInt(),
                 isExpenseCategory = true,
                 icon = "🛍️"
-            ),
+            ),*/
             Category(
-                name = "Salary",
+                name = "Dumper",
                 color = 0xFF81C784.toInt(),
-                isExpenseCategory = false,
+                isExpenseCategory = true,
                 icon = "💼"
             ),
             Category(
-                name = "Business",
+                name = "Loader",
                 color = 0xFFAED581.toInt(),
-                isExpenseCategory = false,
+                isExpenseCategory = true,
                 icon = "🏢"
             ),
             Category(
-                name = "Gift",
+                name = "Excavator",
                 color = 0xFFFFD54F.toInt(),
-                isExpenseCategory = false,
+                isExpenseCategory = true,
                 icon = "🎁"
             ),
             Category(
-                name = "Investment",
+                name = "Plant Maintenance",
                 color = 0xFF4FC3F7.toInt(),
-                isExpenseCategory = false,
+                isExpenseCategory = true,
                 icon = "📈"
             ),
             Category(
-                name = "Other Income",
+                name = "Diesel",
                 color = 0xFF9575CD.toInt(),
-                isExpenseCategory = false,
+                isExpenseCategory = true,
                 icon = "💰"
+            ),
+            Category(
+                name = "Mobil Oil",
+                color = 0xFFF06292.toInt(),
+                isExpenseCategory = true,
+                icon = "🛢️"
+            ),
+            Category(
+                name = "Hassan Khata",
+                color = 0xFF4DD0E1.toInt(),
+                isExpenseCategory = true,
+                icon = "🧾"
+            ),
+            Category(
+                name = "Crushing",
+                color = 0xFFA1887F.toInt(),
+                isExpenseCategory = true,
+                icon = "⚖️"
+            ),
+            Category(
+                name = "Stone Purchase",
+                color = 0xFF795548.toInt(),
+                isExpenseCategory = true,
+                icon = "🧱"
+            ),
+            Category(
+                name = "Electricity Bill",
+                color = 0xFFFF8A65.toInt(),
+                isExpenseCategory = true,
+                icon = "💡"
+            ),
+            Category(
+                name = "Salary",
+                color = 0xFFDCE775.toInt(),
+                isExpenseCategory = true,
+                icon = "💵"
             )
         )
         for (category in defaultCategories) {

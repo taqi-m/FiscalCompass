@@ -2,14 +2,26 @@ package com.app.uniqueplant.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.app.uniqueplant.R
 
 // Set of Material typography styles to start with
+
+val GilroyFontFamily = FontFamily(
+    Font(R.font.gilroy_black, FontWeight.Black),
+    Font(R.font.gilroy_extrabold, FontWeight.ExtraBold),
+    Font(R.font.gilroy_bold, FontWeight.Bold),
+    Font(R.font.gilroy_semibold, FontWeight.SemiBold),
+    Font(R.font.gilroy_medium, FontWeight.Medium),
+    Font(R.font.gilroy_regular, FontWeight.W400),
+)
+
 val Typography = Typography(
     bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = GilroyFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,

@@ -7,6 +7,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
@@ -18,6 +22,7 @@ import com.app.uniqueplant.R
 fun DataEntryTextField(
     modifier: Modifier = Modifier,
     label: String,
+    placeholder: String? = null,
     value: String,
     onValueChange: (String) -> Unit,
     isError: Boolean = false,
@@ -34,6 +39,12 @@ fun DataEntryTextField(
         isError = isError,
         singleLine = true,
         keyboardOptions = keyboardOptions,
+        placeholder = {
+            Text(
+                text = placeholder ?: "Enter $label",
+                style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            )
+        },
         supportingText = {
             if (isError && errorMessage != null) {
                 Text(text = errorMessage)
@@ -98,11 +109,15 @@ fun ReadOnlyDataEntryTextFieldPreview() {
 @Preview(showBackground = true)
 @Composable
 fun DataEntryTextFieldPreview() {
+    var value by remember { mutableStateOf("") }
     DataEntryTextField(
         modifier = Modifier.padding(8.dp),
         label = "Label",
-        value = "Value",
-        onValueChange = {}
+        placeholder = "Enter value",
+        value = value,
+        onValueChange = {
+            value = it
+        }
     )
 }
 

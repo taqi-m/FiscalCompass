@@ -8,14 +8,14 @@ import com.app.uniqueplant.data.datasource.local.dao.ExpenseDao
 import com.app.uniqueplant.data.datasource.local.dao.IncomeDao
 import com.app.uniqueplant.data.datasource.local.dao.UserDao
 import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesRepository
-import com.app.uniqueplant.domain.repository.CategoryRepository
 import com.app.uniqueplant.data.repository.CategoryRepositoryImpl
-import com.app.uniqueplant.domain.repository.ExpenseRepository
 import com.app.uniqueplant.data.repository.ExpenseRepositoryImpl
-import com.app.uniqueplant.domain.repository.IncomeRepository
 import com.app.uniqueplant.data.repository.IncomeRepositoryImpl
-import com.app.uniqueplant.domain.repository.UserRepository
 import com.app.uniqueplant.data.repository.UserRepositoryImpl
+import com.app.uniqueplant.domain.repository.CategoryRepository
+import com.app.uniqueplant.domain.repository.ExpenseRepository
+import com.app.uniqueplant.domain.repository.IncomeRepository
+import com.app.uniqueplant.domain.repository.UserRepository
 import com.app.uniqueplant.domain.usecase.AddExpenseUseCase
 import com.app.uniqueplant.domain.usecase.AddIncomeUseCase
 import com.app.uniqueplant.domain.usecase.GetCategoriesUseCase
@@ -133,6 +133,17 @@ object RoomModule {
         expenseRepository: ExpenseRepository
     ): AddExpenseUseCase {
         return AddExpenseUseCase(sessionUseCase, expenseRepository)
+    }
+
+    @Provides
+    fun getMonthlyReportUseCase(
+        incomesRepository: IncomeRepository,
+        expensesRepository: ExpenseRepository,
+        categoryRepository: CategoryRepository
+    ): com.app.uniqueplant.domain.usecase.analytics.GetMonthlyReportUseCase {
+        return com.app.uniqueplant.domain.usecase.analytics.GetMonthlyReportUseCase(
+            incomesRepository, expensesRepository, categoryRepository
+        )
     }
 }
 

@@ -19,7 +19,7 @@ import java.util.Date
             entity = User::class,
             parentColumns = ["userId"],
             childColumns = ["userId"],
-            onDelete = ForeignKey.CASCADE
+            onDelete = ForeignKey.NO_ACTION
         )
     ],
     indices = [Index("categoryId"), Index("userId")]
@@ -30,7 +30,7 @@ data class Income(
     val amount: Double,
     val description: String,
     val date: Date,
-    val categoryId: Long?,
+    val categoryId: Long,
     val userId: String,
     val source: String? = null,
     val isRecurring: Boolean = false,

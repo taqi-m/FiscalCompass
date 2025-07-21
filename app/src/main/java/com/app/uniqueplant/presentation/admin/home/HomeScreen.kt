@@ -3,6 +3,7 @@ package com.app.uniqueplant.presentation.admin.home
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -22,6 +23,7 @@ import com.app.uniqueplant.ui.components.ExpandableFab
 import com.app.uniqueplant.ui.components.FabOption
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     appNavController: NavHostController,
@@ -30,12 +32,13 @@ fun HomeScreen(
 ) {
     val homeNavController = rememberNavController()
     val items = listOf(
-        HomeBottomScreen.Dashboard,
         HomeBottomScreen.Transactions,
-        HomeBottomScreen.Analytics
+        HomeBottomScreen.Analytics,
+        HomeBottomScreen.Settings
     )
 
     val currentRoute = homeNavController.currentBackStackEntryAsState().value?.destination?.route
+        ?: HomeBottomScreen.Analytics.route
     Scaffold(
         bottomBar = {
             NavigationBar {
@@ -86,16 +89,6 @@ fun HomeScreen(
                     )
                 )
             )
-            /*            AnimatedVisibility(
-                            visible = when (currentRoute) {
-                                HomeBottomScreen.Dashboard.route -> true
-                                else -> false
-                            },
-                            enter = scaleIn(animationSpec = tween(ANIMATION_DURATION / 2)),
-                            exit = scaleOut(animationSpec = tween(ANIMATION_DURATION / 2))
-                        ) {
-
-                        }*/
         }
     ) { paddingValues ->
         HomeNavGraph(homeNavController, appNavController, Modifier.padding(paddingValues))

@@ -3,11 +3,11 @@ package com.app.uniqueplant.data.datasource.local.dao
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.MapColumn
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import androidx.room.MapColumn
 import com.app.uniqueplant.data.model.Expense
 import com.app.uniqueplant.data.model.ExpenseWithCategory
 import kotlinx.coroutines.flow.Flow
@@ -39,6 +39,9 @@ interface ExpenseDao {
     
     @Query("SELECT * FROM expenses WHERE userId = :userId AND date BETWEEN :startDate AND :endDate ORDER BY date DESC")
     fun getExpensesByDateRange(userId: String, startDate: Date, endDate: Date): Flow<List<Expense>>
+
+    @Query("SELECT * FROM expenses WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
+    fun getExpensesByDateRangeForAllUsers(startDate: Date, endDate: Date): Flow<List<Expense>>
     
     @Query("SELECT * FROM expenses WHERE userId = :userId AND categoryId = :categoryId ORDER BY date DESC")
     fun getExpensesByCategory(userId: String, categoryId: Long): Flow<List<Expense>>
@@ -54,4 +57,6 @@ interface ExpenseDao {
 
     @Query("SELECT COUNT(*) FROM expenses WHERE userId = :userId")
     suspend fun getExpenseCount(userId: String): Int
+    @Query("SELECT SUM(amount) FROM expenses WHERE date BETWEEN :startDate AND :endDate")
+    fun getExpenseSumByMonth(startDate: Date, endDate: Date): Flow<Double>
 }
