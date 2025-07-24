@@ -7,12 +7,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -34,6 +33,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.R
 import com.app.uniqueplant.data.model.Category
 import com.app.uniqueplant.domain.model.InputField
@@ -42,6 +43,7 @@ import com.app.uniqueplant.ui.components.DatePickerDialog
 import com.app.uniqueplant.ui.components.ReadOnlyDataEntryTextField
 import com.app.uniqueplant.ui.components.TimePickerDialog
 import com.app.uniqueplant.ui.components.input.Calculator
+import com.app.uniqueplant.ui.components.input.TransactionTypeSelector
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -53,18 +55,19 @@ import java.util.Locale
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddExpenseScreen(
-    state: AddExpenseState,
-    onEvent: (AddExpenseEvent) -> Unit,
+fun AddTransactionScreen(
+    appNavController: NavHostController,
+    state: AddTransactionState,
+    onEvent: (AddTransactionEvent) -> Unit,
 ) {
 
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(state) {
         if (state.isSuccess) {
-            Log.d("AddExpenseScreen", "Expense added successfully: ${state.message}")
+            Log.d("AddExpenseScreen", state.message)
             snackbarHostState.showSnackbar(state.message)
-            onEvent(AddExpenseEvent.OnSuccessHandled)
+            onEvent(AddTransactionEvent.OnSuccessHandled)
         }
     }
 
@@ -77,44 +80,21 @@ fun AddExpenseScreen(
         },
         topBar = {
             TopAppBar(
-                title = { Text(text = "Add Expense") },
-//                colors = TopAppBarDefaults.topAppBarColors(
-//                    containerColor = MaterialTheme.colorScheme.primary,
-//                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-//                ),
+                title = { Text(text = "Add Transaction") },
                 navigationIcon = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = {
+                        appNavController.navigateUp()
+                    }) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_arrow_back_24),
                             contentDescription = "Back"
                         )
                     }
-                },
-                /*
-                actions = {
-                    OutlinedButton (
-                        onClick = { onEvent(AddExpenseEvent.OnSaveClicked) },
-                        shape = RoundedCornerShape(25),
-                        modifier = Modifier.padding(end = 8.dp),
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_check_24),
-                            contentDescription = "Save Expense",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = "Save",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.padding(start = 4.dp)
-                        )
-                    }
-                },
-                */
+                }
             )
         },
         content = { paddingValues ->
-            AddExpenseContent(
+            AddTransactionContent(
                 modifier = Modifier.padding(paddingValues),
                 state = state,
                 onEvent = onEvent
@@ -125,10 +105,10 @@ fun AddExpenseScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddExpenseContent(
+fun AddTransactionContent(
     modifier: Modifier = Modifier,
-    state: AddExpenseState,
-    onEvent: (AddExpenseEvent) -> Unit,
+    state: AddTransactionState,
+    onEvent: (AddTransactionEvent) -> Unit,
 ) {
     var isCategoriesEmpty by remember { mutableStateOf(state.categories.isEmpty()) }
     LaunchedEffect(state.categories) {
@@ -141,37 +121,48 @@ fun AddExpenseContent(
         modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp),
-        contentAlignment = Alignment.TopCenter
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween, // Changed to SpaceBetween to push calculator to bottom
+            verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.Start
         )
         {
             // Top content section
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+
+                TransactionTypeSelector(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    selectedOption = state.transactionType,
+                    onOptionSelected = { selectedType ->
+                        onEvent(AddTransactionEvent.OnTypeSelected(selectedType))
+                    }
+                )
+
+
                 if (!isCategoriesEmpty) {
                     CustomExposedDropDownMenu(
                         modifier = Modifier.fillMaxWidth(),
                         label = "Select Category",
                         options = state.categories,
+                        selectedOption = state.categories.first { it.categoryId == state.categoryId },
                         onOptionSelected = { selected ->
-                            onEvent(AddExpenseEvent.OnCategorySelected(selected.categoryId))
+                            onEvent(AddTransactionEvent.OnCategorySelected(selected.categoryId))
                         }
                     )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
-
                 DateAndTimeSelection(
                     modifier = Modifier.fillMaxWidth(),
                     date = state.date,
-                    onDateToggle = { onEvent(AddExpenseEvent.OnDateDialogToggle) },
-                    onTimeToggle = { onEvent(AddExpenseEvent.OnTimeDialogToggle) },
+                    onDateToggle = { onEvent(AddTransactionEvent.OnDateDialogToggle) },
+                    onTimeToggle = { onEvent(AddTransactionEvent.OnTimeDialogToggle) },
                 )
             }
 
@@ -179,12 +170,13 @@ fun AddExpenseContent(
             Calculator(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentHeight(),
+                    .fillMaxHeight()
+                    .padding(bottom = 16.dp),
                 onValueChange = { value ->
-                    onEvent(AddExpenseEvent.OnAmountChange(value))
+                    onEvent(AddTransactionEvent.OnAmountChange(value))
                 },
                 onSaveClick = {
-                    onEvent(AddExpenseEvent.OnSaveClicked)
+                    onEvent(AddTransactionEvent.OnSaveClicked)
                 },
             )
         }
@@ -192,11 +184,11 @@ fun AddExpenseContent(
         if (state.isDateDialogOpen) {
             DatePickerDialog(
                 onDismissRequest = {
-                    onEvent(AddExpenseEvent.OnDateDialogToggle)
+                    onEvent(AddTransactionEvent.OnDateDialogToggle)
                 },
                 onDateSelected = { selectedDate ->
-                    onEvent(AddExpenseEvent.OnDateDialogToggle)
-                    onEvent(AddExpenseEvent.DateSelected(selectedDate))
+                    onEvent(AddTransactionEvent.OnDateDialogToggle)
+                    onEvent(AddTransactionEvent.DateSelected(selectedDate))
                 },
             )
         }
@@ -206,8 +198,8 @@ fun AddExpenseContent(
                 set(Calendar.MINUTE, state.date.minutes)
             }
             TimePickerDialog(
-                onDismiss = { onEvent(AddExpenseEvent.OnTimeDialogToggle) },
-                onConfirm = { onEvent(AddExpenseEvent.OnTimeSelected(it)) },
+                onDismiss = { onEvent(AddTransactionEvent.OnTimeDialogToggle) },
+                onConfirm = { onEvent(AddTransactionEvent.OnTimeSelected(it)) },
                 initialTime = initialTime
             )
         }
@@ -235,8 +227,6 @@ fun DateAndTimeSelection(
                 .weight(1f),
             label = "Date",
             value = date.let { SimpleDateFormat("dd-MM-yyyy", Locale.US).format(it) },
-//                isError = state.amount.error.isNotEmpty(),
-//                errorMessage = state.amount.error.ifEmpty { null },
             trailingIcon = {
                 IconButton(
                     onClick = onDateToggle,
@@ -258,8 +248,6 @@ fun DateAndTimeSelection(
                 .weight(1f),
             label = "Time",
             value = date.let { SimpleDateFormat("hh:mm a", Locale.US).format(it) },
-//                isError = state.amount.error.isNotEmpty(),
-//                errorMessage = state.amount.error.ifEmpty { null },
             trailingIcon = {
                 IconButton(
                     onClick = onTimeToggle,
@@ -281,10 +269,11 @@ fun DateAndTimeSelection(
 
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
-fun AddExpenseScreenPreview() {
+fun AddTransactionScreenPreview() {
     UniquePlantTheme {
-        AddExpenseScreen(
-            state = AddExpenseState(
+        AddTransactionScreen(
+            appNavController = rememberNavController(),
+            state = AddTransactionState(
                 amount = InputField(
                     value = "5000",
                     error = ""
@@ -321,7 +310,7 @@ fun AddExpenseScreenPreview() {
                     )
                 )
             ),
-            onEvent = {}
+            onEvent = {},
         )
     }
 }

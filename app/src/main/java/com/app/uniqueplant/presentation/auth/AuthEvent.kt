@@ -1,7 +1,6 @@
 package com.app.uniqueplant.presentation.auth
 
 import androidx.navigation.NavHostController
-import com.app.uniqueplant.domain.usecase.auth.AuthResult
 
 sealed class AuthEvent {
     data class UsernameChanged(val username: String) : AuthEvent()

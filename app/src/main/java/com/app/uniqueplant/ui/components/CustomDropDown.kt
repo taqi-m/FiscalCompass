@@ -28,18 +28,19 @@ fun CustomExposedDropDownMenu(
     modifier: Modifier = Modifier,
     label: String,
     options: List<Category>,
+    selectedOption: Category,
     onOptionSelected: (Category) -> Unit
 ) {
-    val selectedOption = remember { mutableStateOf(options[0]) }
+//    val selectedOption = remember { mutableStateOf(selectedOption) }
     var expanded by remember { mutableStateOf(false) }
-    val enabled = options.isNotEmpty() && selectedOption.value.name.isNotEmpty()
+    val enabled = options.isNotEmpty() && selectedOption.name.isNotEmpty()
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = !expanded },
         modifier = modifier
     ) {
         OutlinedTextField(
-            value = selectedOption.value.name,
+            value = selectedOption.name,
             onValueChange = {},
             readOnly = true,
             label = { Text(text = label) },
@@ -64,7 +65,6 @@ fun CustomExposedDropDownMenu(
                 DropdownMenuItem(
                     text = { Text(text = category.name) },
                     onClick = {
-                        selectedOption.value = category
                         onOptionSelected(category)
                         expanded = false
                     }
@@ -112,6 +112,7 @@ fun CustomExposedDropDownMenuPreview() {
             .padding(horizontal = 8.dp),
         label = "Select an option",
         options = options,
+        selectedOption = options.first(),
         onOptionSelected = {
         }
     )

@@ -38,7 +38,7 @@ fun HomeScreen(
     )
 
     val currentRoute = homeNavController.currentBackStackEntryAsState().value?.destination?.route
-        ?: HomeBottomScreen.Analytics.route
+        ?: HomeBottomScreen.Transactions.route
     Scaffold(
         bottomBar = {
             NavigationBar {
@@ -77,14 +77,14 @@ fun HomeScreen(
                         icon = Icons.Filled.Add,
                         label = "Add Income",
                         onClick = {
-                            appNavController.navigate(MainScreens.AddIncome.route)
+
                         }
                     ),
                     FabOption(
                         icon = Icons.Filled.Add,
                         label = "Add Expense",
                         onClick = {
-                            appNavController.navigate(MainScreens.AddExpense.route)
+                            appNavController.navigate(MainScreens.AddTransaction.route)
                         }
                     )
                 )

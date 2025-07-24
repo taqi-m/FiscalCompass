@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.R
 import com.app.uniqueplant.data.datasource.preferences.ThemePreferenceState
 
+/*
 
 @Composable
 fun rememberThemeState(): MutableState<Boolean> {
@@ -32,6 +34,7 @@ fun rememberThemeState(): MutableState<Boolean> {
     return remember { ThemePreferenceState(dataStore) }
 }
 
+*/
 
 
 @Composable
@@ -39,7 +42,7 @@ fun ThemeSwitch(
     modifier: Modifier = Modifier,
     onSwitchChange: (Boolean) -> Unit
 ){
-    var switchState by rememberThemeState()
+    var switchState by remember { mutableStateOf(false) } // Default to light mode
     Card(
         modifier = modifier
     ) {

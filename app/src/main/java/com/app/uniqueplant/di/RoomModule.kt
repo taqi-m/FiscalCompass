@@ -18,8 +18,10 @@ import com.app.uniqueplant.domain.repository.IncomeRepository
 import com.app.uniqueplant.domain.repository.UserRepository
 import com.app.uniqueplant.domain.usecase.AddExpenseUseCase
 import com.app.uniqueplant.domain.usecase.AddIncomeUseCase
+import com.app.uniqueplant.domain.usecase.AddTransactionUseCase
 import com.app.uniqueplant.domain.usecase.GetCategoriesUseCase
 import com.app.uniqueplant.domain.usecase.LoadDefaultsUseCase
+import com.app.uniqueplant.domain.usecase.analytics.GetMonthlyReportUseCase
 import com.app.uniqueplant.domain.usecase.auth.SessionUseCase
 import com.app.uniqueplant.domain.usecase.transaction.LoadTransactionsUseCase
 import dagger.Module
@@ -140,9 +142,20 @@ object RoomModule {
         incomesRepository: IncomeRepository,
         expensesRepository: ExpenseRepository,
         categoryRepository: CategoryRepository
-    ): com.app.uniqueplant.domain.usecase.analytics.GetMonthlyReportUseCase {
-        return com.app.uniqueplant.domain.usecase.analytics.GetMonthlyReportUseCase(
+    ): GetMonthlyReportUseCase {
+        return GetMonthlyReportUseCase(
             incomesRepository, expensesRepository, categoryRepository
+        )
+    }
+
+    @Provides
+    fun provideAddTransactionUseCase(
+        sessionUseCase: SessionUseCase,
+        incomeRepository: IncomeRepository,
+        expenseRepository: ExpenseRepository,
+    ): AddTransactionUseCase {
+        return AddTransactionUseCase(
+            sessionUseCase, incomeRepository, expenseRepository
         )
     }
 }
