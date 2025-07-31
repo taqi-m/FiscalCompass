@@ -59,7 +59,7 @@ fun TransactionCardContent(
     transaction: Transaction,
     onEditClicked: () -> Unit,
     onDeleteClicked: () -> Unit
-){
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -114,12 +114,11 @@ fun TransactionCardText(
             style = MaterialTheme.typography.bodyLarge
         )
         Text(
-            text = SimpleDateFormat("HH:MM aa", Locale.ENGLISH).format(date),
+            text = SimpleDateFormat("h:mm a", Locale.getDefault()).format(date),
             style = MaterialTheme.typography.bodySmall
         )
     }
 }
-
 
 
 @Preview

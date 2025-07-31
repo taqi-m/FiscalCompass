@@ -7,15 +7,12 @@ import com.app.uniqueplant.data.datasource.local.dao.CategoryDao
 import com.app.uniqueplant.data.datasource.local.dao.ExpenseDao
 import com.app.uniqueplant.data.datasource.local.dao.IncomeDao
 import com.app.uniqueplant.data.datasource.local.dao.UserDao
-import com.app.uniqueplant.data.model.Category
-import com.app.uniqueplant.data.model.Expense
-import com.app.uniqueplant.data.model.Income
-import com.app.uniqueplant.data.model.User
+import com.app.uniqueplant.data.model.*
 
 @Database(
-    entities = [User::class, Expense::class, Income::class, Category::class],
+    entities = [User::class, Expense::class, Income::class, Category::class, Person::class, PersonType::class],
     version = 1,
-    exportSchema = false
+    exportSchema = true
 )
 @TypeConverters(DateConverter::class)
 abstract class AppDatabase : RoomDatabase() {

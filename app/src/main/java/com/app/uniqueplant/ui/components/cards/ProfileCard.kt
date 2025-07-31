@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -34,7 +35,7 @@ fun ProfileCard(
 ) {
     val isLoading = name.isNullOrEmpty() || email.isNullOrEmpty()
     Card(
-        modifier = modifier,
+        modifier = modifier.height(90.dp),
     ) {
         Row(
             modifier = Modifier
@@ -59,7 +60,8 @@ fun ProfileCard(
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
                         .padding(16.dp)
-                        .size(48.dp),
+                        .size(48.dp)
+                        .height(90.dp),
                     color = MaterialTheme.colorScheme.primary
                 )
             }

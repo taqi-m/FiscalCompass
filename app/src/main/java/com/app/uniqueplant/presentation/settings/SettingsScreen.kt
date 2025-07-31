@@ -16,16 +16,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.app.uniqueplant.presentation.navigation.MainScreens
 import com.app.uniqueplant.ui.components.ThemeSwitch
 import com.app.uniqueplant.ui.components.cards.ProfileCard
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
+import com.app.uniqueplant.ui.util.ThemeMode
+import com.app.uniqueplant.ui.util.ThemePreferenceViewModel
 
 @Composable
 fun SettingsScreen(
     state: SettingsScreenState,
     onEvent: (SettingsEvent) -> Unit,
     onLogout: (String) -> Unit,
+    themeViewModel: ThemePreferenceViewModel = viewModel()
 ) {
     LaunchedEffect(
         state.isLogOutSuccess
@@ -68,7 +72,13 @@ fun SettingsScreen(
         ThemeSwitch(
             modifier = Modifier.fillMaxWidth(),
             onSwitchChange = { isChecked ->
-                onEvent(SettingsEvent.OnThemeSwitchChanged(isChecked))
+                themeViewModel.setThemeMode(
+                    if (isChecked) {
+                        ThemeMode.LIGHT
+                    } else {
+                        ThemeMode.DARK
+                    }
+                )
             }
         )
     }
@@ -84,7 +94,8 @@ fun SettingsScreenPreview() {
                     userName = "John Doe",
                     userEmail = "john.doe@example.com",
                     profilePictureUrl = "https://miro.medium.com/v2/resize:fit:640/format:webp/1*e8M-qkVP2y0dK4waDxGmbw.png"
-                )
+                ),
+                isLoading = true,
             ),
             onEvent = {
 

@@ -25,11 +25,6 @@ fun DashboardScreen(
     onEvent: (DashboardEvent) -> Unit,
     onLogout: (route: String) -> Unit
 ) {
-    // This is where the dashboard UI will be implemented
-    // For now, we can just display a simple text or placeholder
-    // You can use MaterialTheme, Scaffold, etc. to build the UI
-    // Example:
-
     LaunchedEffect(state.isLoggedOut) {
         if (state.isLoggedOut) {
             onLogout(MainScreens.AdminHome.route)
@@ -65,18 +60,14 @@ fun DashboardScreen(
             }
         }
     }
-
-
 }
 
 @Preview(showBackground = true)
 @Composable
 fun DashboardScreenPreview() {
-    UniquePlantTheme {
-        DashboardScreen(
-            state = DashboardScreenState(userTypeName = "Employee"),
-            onEvent = {},
-            onLogout = {}
-        )
-    }
+    DashboardScreen(
+        state = DashboardScreenState(userTypeName = "Employee"),
+        onEvent = {},
+        onLogout = {}
+    )
 }

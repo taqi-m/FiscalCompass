@@ -1,4 +1,4 @@
-package com.app.uniqueplant.presentation.transactions.addExpenseScreen
+package com.app.uniqueplant.presentation.transactions
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TimePickerState

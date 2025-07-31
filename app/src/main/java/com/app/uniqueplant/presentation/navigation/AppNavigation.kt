@@ -12,8 +12,8 @@ import com.app.uniqueplant.presentation.admin.home.HomeScreen
 import com.app.uniqueplant.presentation.admin.home.HomeViewModel
 import com.app.uniqueplant.presentation.auth.AuthScreen
 import com.app.uniqueplant.presentation.auth.AuthViewModel
-import com.app.uniqueplant.presentation.transactions.addExpenseScreen.AddTransactionScreen
-import com.app.uniqueplant.presentation.transactions.addExpenseScreen.AddTransactionViewModel
+import com.app.uniqueplant.presentation.transactions.AddTransactionScreen
+import com.app.uniqueplant.presentation.transactions.AddTransactionViewModel
 
 @Composable
 fun AppNavigation(

@@ -20,7 +20,14 @@ import java.util.Date
             parentColumns = ["userId"],
             childColumns = ["userId"],
             onDelete = ForeignKey.NO_ACTION
+        ),
+        ForeignKey(
+            entity = Person::class,
+            parentColumns = ["personId"],
+            childColumns = ["personId"],
+            onDelete = ForeignKey.SET_NULL
         )
+
     ],
     indices = [Index("categoryId"), Index("userId")]
 )
@@ -32,9 +39,10 @@ data class Income(
     val date: Date,
     val categoryId: Long,
     val userId: String,
+    val personId: Long? = null,
     val source: String? = null,
     val isRecurring: Boolean = false,
-    val recurringFrequency: String? = null, // daily, weekly, monthly, yearly
+    val recurringFrequency: String? = null,
     val isTaxable: Boolean = true,
     val createdAt: Date = Date(),
     val updatedAt: Date = Date()

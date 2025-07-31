@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -19,8 +20,6 @@ import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.presentation.navigation.HomeBottomScreen
 import com.app.uniqueplant.presentation.navigation.HomeNavGraph
 import com.app.uniqueplant.presentation.navigation.MainScreens
-import com.app.uniqueplant.ui.components.ExpandableFab
-import com.app.uniqueplant.ui.components.FabOption
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,27 +67,37 @@ fun HomeScreen(
             }
         },
         floatingActionButton = {
-            val isExpanded = state.isFabExpanded
-            ExpandableFab(
-                isExpanded = isExpanded,
-                onExpandToggle = { onEvent(HomeEvent.ToggleFabExpanded) },
-                fabOptions = listOf(
-                    FabOption(
-                        icon = Icons.Filled.Add,
-                        label = "Add Income",
-                        onClick = {
-
-                        }
-                    ),
-                    FabOption(
-                        icon = Icons.Filled.Add,
-                        label = "Add Expense",
-                        onClick = {
-                            appNavController.navigate(MainScreens.AddTransaction.route)
-                        }
+            ExtendedFloatingActionButton(
+                onClick = { appNavController.navigate(MainScreens.AddTransaction.route) },
+                text = { Text("Add Transaction") },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = "Add Transaction",
                     )
-                )
+                }
             )
+            /*            val isExpanded = state.isFabExpanded
+                        ExpandableFab(
+                            isExpanded = isExpanded,
+                            onExpandToggle = { onEvent(HomeEvent.ToggleFabExpanded) },
+                            fabOptions = listOf(
+                                FabOption(
+                                    icon = Icons.Filled.Add,
+                                    label = "Add Income",
+                                    onClick = {
+
+                                    }
+                                ),
+                                FabOption(
+                                    icon = Icons.Filled.Add,
+                                    label = "Add Expense",
+                                    onClick = {
+                                        appNavController.navigate(MainScreens.AddTransaction.route)
+                                    }
+                                )
+                            )
+                        )*/
         }
     ) { paddingValues ->
         HomeNavGraph(homeNavController, appNavController, Modifier.padding(paddingValues))

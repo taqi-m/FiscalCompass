@@ -20,9 +20,16 @@ import java.util.Date
             parentColumns = ["userId"],
             childColumns = ["userId"],
             onDelete = ForeignKey.NO_ACTION
+        ),
+        ForeignKey(
+            entity = Person::class,
+            parentColumns = ["personId"],
+            childColumns = ["personId"],
+            onDelete = ForeignKey.SET_NULL
         )
+
     ],
-    indices = [Index("categoryId"), Index("userId")]
+    indices = [Index("categoryId"), Index("userId"), Index("personId")],
 )
 data class Expense(
     @PrimaryKey(autoGenerate = true)
@@ -32,6 +39,7 @@ data class Expense(
     val date: Date,
     val categoryId: Long,
     val userId: String,
+    val personId: Long? = null, // Nullable if not associated with a person
     val paymentMethod: String? = null,
     val location: String? = null,
     val receipt: String? = null, // URL to receipt image

@@ -19,6 +19,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import java.util.Calendar
 
@@ -63,9 +64,18 @@ fun DatePickerDialog(
     ) {
         DatePicker(
             state = datePickerState,
-            modifier = Modifier.verticalScroll(rememberScrollState()).padding(8.dp),
+            modifier = Modifier.verticalScroll(rememberScrollState()),
         )
     }
+}
+
+@Preview
+@Composable
+fun DatePickerPreview(){
+    DatePickerDialog(
+        onDismissRequest = {},
+        onDateSelected = {}
+    )
 }
 
 

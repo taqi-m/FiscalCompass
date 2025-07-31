@@ -172,21 +172,19 @@ fun ListTable(
 @Preview(showBackground = true)
 @Composable
 fun AnalyticsScreenPreview() {
-    UniquePlantTheme {
-        AnalyticsScreen(
-            state = AnalyticsScreenState(
-                expenses = mapOf(
-                    "Expense 1" to 100.0,
-                    "Expense 2" to 200.0,
-                    "Expense 3" to 150.0
-                ),
-                incomes = mapOf(
-                    "Income 1" to 100.0,
-                    "Income 2" to 200.0,
-                    "Income 3" to 300.0
-                )
+    AnalyticsScreen(
+        state = AnalyticsScreenState(
+            expenses = mapOf(
+                "Expense 1" to 100.0,
+                "Expense 2" to 200.0,
+                "Expense 3" to 150.0
             ),
-            onEvent = {},
-        )
-    }
+            incomes = mapOf(
+                "Income 1" to 100.0,
+                "Income 2" to 200.0,
+                "Income 3" to 300.0
+            )
+        ),
+        onEvent = {},
+    )
 }

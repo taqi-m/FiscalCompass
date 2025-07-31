@@ -1,4 +1,4 @@
-package com.app.uniqueplant.presentation.transactions.addExpenseScreen
+package com.app.uniqueplant.presentation.transactions
 
 import android.util.Log
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.Calendar
-import java.util.Date
 import java.util.GregorianCalendar
 import javax.inject.Inject
 
@@ -100,8 +99,16 @@ class AddTransactionViewModel @Inject constructor(
             }
 
             is AddTransactionEvent.DateSelected -> {
-                event.selectedDate?.let {
-                    _state.value = _state.value.copy(date = Date(it))
+                event.selectedDate?.let { pickedDate ->
+                    val calendar = Calendar.getInstance().apply {
+                        time = _state.value.date
+                        val selectedCal =
+                            Calendar.getInstance().apply { timeInMillis = pickedDate }
+                        set(Calendar.YEAR, selectedCal.get(Calendar.YEAR))
+                        set(Calendar.MONTH, selectedCal.get(Calendar.MONTH))
+                        set(Calendar.DAY_OF_MONTH, selectedCal.get(Calendar.DAY_OF_MONTH))
+                    }
+                    _state.value = _state.value.copy(date = calendar.time)
                     Log.d(TAG, "Date selected: ${_state.value.date}")
                 } ?: run {
                     Log.w(TAG, "Selected date is null")
@@ -121,11 +128,11 @@ class AddTransactionViewModel @Inject constructor(
             }
 
             is AddTransactionEvent.OnTimeSelected -> {
-                event.selectedTime?.let { timePickerState ->
+                event.selectedTime?.let { pickedTime ->
                     val calendar = GregorianCalendar.getInstance().apply {
                         time = _state.value.date
-                        set(Calendar.HOUR_OF_DAY, timePickerState.hour)
-                        set(Calendar.MINUTE, timePickerState.minute)
+                        set(Calendar.HOUR_OF_DAY, pickedTime.hour)
+                        set(Calendar.MINUTE, pickedTime.minute)
                     }
                     _state.value = _state.value.copy(date = calendar.time)
                     Log.d(TAG, "Time selected: ${_state.value.date}")
@@ -156,9 +163,9 @@ class AddTransactionViewModel @Inject constructor(
         }
     }
 
-    fun assignCategories(){
+    fun assignCategories() {
         viewModelScope.launch(Dispatchers.IO) {
-            when(_state.value.transactionType) {
+            when (_state.value.transactionType) {
                 TransactionType.EXPENSE -> {
                     _state.value = _state.value.copy(
                         categories = expenseCategories,
@@ -166,6 +173,7 @@ class AddTransactionViewModel @Inject constructor(
 
                     )
                 }
+
                 TransactionType.INCOME -> {
                     _state.value = _state.value.copy(
                         categories = incomeCategories,

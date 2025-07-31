@@ -2,8 +2,10 @@ package com.app.uniqueplant.presentation.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.app.uniqueplant.domain.model.Resource
 import com.app.uniqueplant.domain.usecase.auth.SessionUseCase
+import com.app.uniqueplant.ui.util.ThemePreferenceViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +18,7 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val sessionUseCase: SessionUseCase
 ) : ViewModel() {
+
 
     private val _state = MutableStateFlow(SettingsScreenState())
     val state: StateFlow<SettingsScreenState> = _state.asStateFlow()

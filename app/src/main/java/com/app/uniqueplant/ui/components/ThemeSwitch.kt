@@ -1,5 +1,6 @@
 package com.app.uniqueplant.ui.components
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,7 +14,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,7 +24,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.R
-import com.app.uniqueplant.data.datasource.preferences.ThemePreferenceState
+import com.app.uniqueplant.ui.util.LocalThemeMode
+import com.app.uniqueplant.ui.util.ThemeMode
 
 /*
 
@@ -42,7 +43,13 @@ fun ThemeSwitch(
     modifier: Modifier = Modifier,
     onSwitchChange: (Boolean) -> Unit
 ){
-    var switchState by remember { mutableStateOf(false) } // Default to light mode
+    val currentThemeMode = LocalThemeMode.current
+    val switchValue = when (currentThemeMode) {
+        ThemeMode.FOLLOW_SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.DARK -> true
+        ThemeMode.LIGHT -> false
+    }
+    var isInDarkMode by remember { mutableStateOf(switchValue) } // Default to light mode
     Card(
         modifier = modifier
     ) {
@@ -55,18 +62,18 @@ fun ThemeSwitch(
                     .weight(1f)
                     .padding(start = 16.dp),
                 text = "App Theme",
-                checked = switchState
+                isInDarkMode = isInDarkMode
             )
             Switch(
                 modifier = Modifier.padding(16.dp),
-                checked = switchState,
+                checked = !isInDarkMode,
                 onCheckedChange = { isChecked ->
-                    switchState = isChecked
+                    isInDarkMode = !isChecked
                     onSwitchChange(isChecked)
                 },
                 thumbContent = {
                     ThumbContent(
-                        checked = switchState
+                        checked = !isInDarkMode
                     )
                 }
             )
@@ -80,9 +87,9 @@ fun ThumbContent(
     checked: Boolean = false
 ) {
     val iconResource = if (checked) {
-        R.drawable.ic_nightlight_24
+        R.drawable.ic_light_mode_24
     } else {
-        R.drawable.ic_light_mode_24 // Placeholder for unchecked state
+        R.drawable.ic_nightlight_24
     }
 
     Icon(
@@ -96,9 +103,9 @@ fun ThumbContent(
 fun SwitchText(
     modifier: Modifier = Modifier,
     text: String,
-    checked: Boolean
+    isInDarkMode: Boolean
 ) {
-    val subtitle = if (checked) {
+    val subtitle = if (isInDarkMode) {
         "Dark Mode"
     } else {
         "Light Mode"

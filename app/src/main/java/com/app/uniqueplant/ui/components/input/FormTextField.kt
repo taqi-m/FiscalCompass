@@ -1,4 +1,4 @@
-package com.app.uniqueplant.ui.components
+package com.app.uniqueplant.ui.components.input
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

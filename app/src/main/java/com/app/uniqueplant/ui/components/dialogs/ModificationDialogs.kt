@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.app.uniqueplant.data.model.Expense
 import com.app.uniqueplant.data.model.Income
-import com.app.uniqueplant.ui.components.DataEntryTextField
+import com.app.uniqueplant.ui.components.input.DataEntryTextField
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import java.util.Date
 

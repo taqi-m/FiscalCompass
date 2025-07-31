@@ -12,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesRepository
 import com.app.uniqueplant.presentation.navigation.AppNavigation
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
+import com.app.uniqueplant.ui.util.ThemePreferenceProvider
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -23,13 +24,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            UniquePlantTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    val navController = rememberNavController()
-                    AppNavigation(navController = navController, sharedPreferencesRepository)
+            ThemePreferenceProvider {
+                UniquePlantTheme {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        val navController = rememberNavController()
+                        AppNavigation(navController = navController, sharedPreferencesRepository)
+                    }
                 }
             }
         }

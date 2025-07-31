@@ -7,6 +7,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
@@ -19,35 +22,45 @@ class AnalyticsViewModel @Inject constructor(
     private val _state = MutableStateFlow(AnalyticsScreenState())
     val state: StateFlow<AnalyticsScreenState> = _state.asStateFlow()
     
+    private val currentMonth = Calendar.getInstance().get(Calendar.MONTH)
+    private val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+
     init {
-        viewModelScope.launch(Dispatchers.IO) {
-            _state.value = _state.value.copy(isLoading = true)
-
-            val monthlyReport = getMonthlyReportUseCase.invoke(
-                month = Calendar.getInstance().get(Calendar.MONTH),
-                year = Calendar.getInstance().get(Calendar.YEAR)
-            )
-
-            _state.value = _state.value.copy(
-                isLoading = false,
-                expenses = monthlyReport.expenses,
-                incomes = monthlyReport.incomes,
-                totalIncomes = monthlyReport.totalIncomes,
-                totalExpenses = monthlyReport.totalExpenses,
-                totalProfit = monthlyReport.totalProfit
-            )
-        }
+        loadAnalyticsData(currentMonth, currentYear)
     }
 
     fun onEvent(event: AnalyticsEvent) {
         when (event) {
-            // Handle events here
-            AnalyticsEvent.LoadAnalytics -> {
-                TODO()
+            is AnalyticsEvent.LoadAnalytics -> {
+                loadAnalyticsData(event.month, event.year)
             }
         }
     }
-    
+
+    private fun loadAnalyticsData(month: Int, year: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _state.value = _state.value.copy(isLoading = true, error = null)
+            getMonthlyReportUseCase(month, year)
+                .onEach { report ->
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        expenses = report.expenses,
+                        incomes = report.incomes,
+                        totalIncomes = report.totalIncomes,
+                        totalExpenses = report.totalExpenses,
+                        totalProfit = report.totalProfit
+                    )
+                }
+                .catch { exception ->
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        error = exception.message ?: "An unknown error occurred"
+                    )
+                }
+                .launchIn(viewModelScope)
+        }
+    }
+
     private fun updateState(update: AnalyticsScreenState.() -> AnalyticsScreenState) {
         _state.value = _state.value.update()
     }

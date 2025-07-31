@@ -1,4 +1,4 @@
-package com.app.uniqueplant.presentation.transactions.addExpenseScreen
+package com.app.uniqueplant.presentation.transactions
 
 import android.annotation.SuppressLint
 import android.util.Log
@@ -7,16 +7,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -40,11 +41,10 @@ import com.app.uniqueplant.data.model.Category
 import com.app.uniqueplant.domain.model.InputField
 import com.app.uniqueplant.ui.components.CustomExposedDropDownMenu
 import com.app.uniqueplant.ui.components.DatePickerDialog
-import com.app.uniqueplant.ui.components.ReadOnlyDataEntryTextField
+import com.app.uniqueplant.ui.components.input.ReadOnlyDataEntryTextField
 import com.app.uniqueplant.ui.components.TimePickerDialog
 import com.app.uniqueplant.ui.components.input.Calculator
 import com.app.uniqueplant.ui.components.input.TransactionTypeSelector
-import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -120,7 +120,7 @@ fun AddTransactionContent(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 9.dp),
     ) {
         Column(
             modifier = Modifier
@@ -131,7 +131,7 @@ fun AddTransactionContent(
         {
             // Top content section
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxSize().weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
@@ -149,7 +149,7 @@ fun AddTransactionContent(
                 if (!isCategoriesEmpty) {
                     CustomExposedDropDownMenu(
                         modifier = Modifier.fillMaxWidth(),
-                        label = "Select Category",
+                        label = "Category",
                         options = state.categories,
                         selectedOption = state.categories.first { it.categoryId == state.categoryId },
                         onOptionSelected = { selected ->
@@ -158,20 +158,28 @@ fun AddTransactionContent(
                     )
                 }
 
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(text = "Note") },
+                    placeholder = { Text(text = "Add a short description") },
+                    value = state.description.value,
+                    onValueChange = {}
+                )
+
                 DateAndTimeSelection(
                     modifier = Modifier.fillMaxWidth(),
                     date = state.date,
                     onDateToggle = { onEvent(AddTransactionEvent.OnDateDialogToggle) },
                     onTimeToggle = { onEvent(AddTransactionEvent.OnTimeDialogToggle) },
                 )
+
+
             }
 
             // Calculator at the bottom
             Calculator(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-                    .padding(bottom = 16.dp),
+                    .wrapContentSize(),
                 onValueChange = { value ->
                     onEvent(AddTransactionEvent.OnAmountChange(value))
                 },
@@ -225,92 +233,69 @@ fun DateAndTimeSelection(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
+            onClick = onDateToggle,
             label = "Date",
-            value = date.let { SimpleDateFormat("dd-MM-yyyy", Locale.US).format(it) },
-            trailingIcon = {
-                IconButton(
-                    onClick = onDateToggle,
-                    modifier = Modifier
-                        .padding(end = 8.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_calendar_24),
-                        contentDescription = "Select Date",
-                        modifier = Modifier.padding(8.dp),
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
+            value = date.let { SimpleDateFormat("dd-MM-yyyy", Locale.US).format(it) }
         )
         ReadOnlyDataEntryTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
+            onClick = onTimeToggle,
             label = "Time",
-            value = date.let { SimpleDateFormat("hh:mm a", Locale.US).format(it) },
-            trailingIcon = {
-                IconButton(
-                    onClick = onTimeToggle,
-                    modifier = Modifier
-                        .padding(end = 8.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_time_24),
-                        contentDescription = "Select Date",
-                        modifier = Modifier.padding(8.dp),
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
+            value = date.let { SimpleDateFormat("hh:mm a", Locale.US).format(it) }
         )
     }
 }
 
-
-@Preview(showSystemUi = true, showBackground = true)
+@Preview(showSystemUi = true, showBackground = true,name = "Pixel 4",
+    device = "spec:width=1080px,height=2280px,dpi=420,navigation=buttons"
+)
+@Preview(showSystemUi = true, showBackground = true,name = "Nexus 7", device = Devices.NEXUS_7)
+@Preview(showSystemUi = true, showBackground = true,
+    device = "spec:parent=pixel_5,navigation=buttons"
+)
 @Composable
 fun AddTransactionScreenPreview() {
-    UniquePlantTheme {
-        AddTransactionScreen(
-            appNavController = rememberNavController(),
-            state = AddTransactionState(
-                amount = InputField(
-                    value = "5000",
-                    error = ""
-                ),
-                description = InputField(
-                    value = "Monthly Salary",
-                    error = "Put a short description here"
-                ),
-                date = Date(
-                    GregorianCalendar(
-                        Calendar.YEAR,
-                        Calendar.MONTH,
-                        Calendar.DAY_OF_MONTH,
-                        Calendar.HOUR_OF_DAY,
-                        Calendar.MINUTE
-                    ).timeInMillis
-                ),
-                categoryId = 1L,
-                accountId = 1L,
-                isLoading = false,
-                isSuccess = false,
-                categories = listOf(
-                    Category(
-                        categoryId = 1L,
-                        name = "Salary",
-                        color = 0xFF6200EE.toInt(),
-                        isExpenseCategory = false
-                    ),
-                    Category(
-                        categoryId = 2L,
-                        name = "Investment",
-                        color = 0xFF03DAC5.toInt(),
-                        isExpenseCategory = false
-                    )
-                )
+    AddTransactionScreen(
+        appNavController = rememberNavController(),
+        state = AddTransactionState(
+            amount = InputField(
+                value = "5000",
+                error = ""
             ),
-            onEvent = {},
-        )
-    }
+            description = InputField(
+                value = "Monthly Salary",
+                error = "Put a short description here"
+            ),
+            date = Date(
+                GregorianCalendar(
+                    2025,
+                    Calendar.MONTH,
+                    Calendar.DAY_OF_MONTH,
+                    Calendar.HOUR_OF_DAY,
+                    Calendar.MINUTE
+                ).timeInMillis
+            ),
+            categoryId = 1L,
+            accountId = 1L,
+            isLoading = false,
+            isSuccess = false,
+            categories = listOf(
+                Category(
+                    categoryId = 1L,
+                    name = "Salary",
+                    color = 0xFF6200EE.toInt(),
+                    isExpenseCategory = false
+                ),
+                Category(
+                    categoryId = 2L,
+                    name = "Investment",
+                    color = 0xFF03DAC5.toInt(),
+                    isExpenseCategory = false
+                )
+            )
+        ),
+        onEvent = {},
+    )
 }

@@ -25,10 +25,8 @@ object TransactionMapper {
             paymentMethod = expense.paymentMethod,
             location = expense.location,
             receipt = expense.receipt,
-            source = null,
             isRecurring = expense.isRecurring,
             recurringFrequency = expense.recurringFrequency,
-            isTaxable = null,
             createdAt = expense.createdAt,
             updatedAt = expense.updatedAt
         )
@@ -46,9 +44,6 @@ object TransactionMapper {
             categoryId = income.categoryId,
             userId = income.userId,
             type = TransactionType.INCOME,
-            paymentMethod = null,
-            location = null,
-            receipt = null,
             source = income.source,
             isRecurring = income.isRecurring,
             recurringFrequency = income.recurringFrequency,

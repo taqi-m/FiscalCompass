@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
@@ -34,7 +34,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -93,30 +92,22 @@ fun Calculator(
         }
     }
 
-    // Get screen height to adapt calculator size
-    val configuration = LocalWindowInfo.current
-    val screenHeight = configuration.containerSize.height
-
-    // Calculate a reasonable height for the calculator based on screen size
-    // Uses approximately 60% of screen height for the calculator
-    val calculatorHeight = (screenHeight * 0.6).toInt().dp
-
     Box(
         modifier = modifier,
         contentAlignment = Alignment.BottomCenter
-    ){
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // Display with trailing icon
             OutlinedTextField(
-                value = CurrencyFormaterUseCase.formatCurrency(displayText.toDoubleOrNull() ?: 0.0),
+                value = CurrencyFormaterUseCase.formatCalculatorCurrency(
+                    displayText
+                ),
                 onValueChange = { onValueChange(it) },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 4.dp),
+                    .fillMaxWidth(),
                 readOnly = true,
                 textStyle = LocalTextStyle.current.copy(
                     fontSize = 28.sp,
@@ -180,6 +171,13 @@ fun Calculator(
                         displayText = number.toString()
                         clearOnNextInput = false
                     } else {
+                        // Check if we already have 2 decimal places
+                        val decimalIndex = displayText.indexOf('.')
+                        if (decimalIndex != -1 && displayText.length - decimalIndex > 2) {
+                            // Already have 2 decimal places, don't add more digits
+                            return@NumberBoard
+                        }
+
                         displayText =
                             if (displayText == "0") number.toString() else displayText + number
                     }
@@ -227,11 +225,13 @@ fun Calculator(
                                 return@NumberBoard
                             }
 
-                            // Format the result
+                            // Format the result with max 3 decimal places
                             displayText = if (result == result.toInt().toDouble()) {
+                                // If it's a whole number, show as integer
                                 result.toInt().toString()
                             } else {
-                                result.toString()
+                                // Round to 3 decimal places
+                                "%.2f".format(result).trimEnd('0').trimEnd('.')
                             }
 
                             operation = null
@@ -267,15 +267,18 @@ fun Calculator(
 
 
 @Preview(
-    showBackground = true, backgroundColor = 0xFFFFFFFF, name = "Calculator Preview", showSystemUi = true
+    showBackground = true,
+    backgroundColor = 0xFFFFFFFF,
+    name = "Calculator Preview",
+    showSystemUi = true
 )
 @Composable
 fun CalculatorPreview() {
-    UniquePlantTheme {
-        Calculator(
-            modifier = Modifier.fillMaxSize().padding(16.dp)
-        )
-    }
+    Calculator(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp)
+    )
 }
 
 
@@ -291,7 +294,7 @@ fun NumberBoard(
 ) {
     Column(
         modifier = modifier.padding(4.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.SpaceEvenly
     ) {
         // Row 1: 7, 8, 9, ÷
         Row(
@@ -385,10 +388,9 @@ private fun CalcButton(
 ) {
     Button(
         onClick = onClick,
-        shape = CircleShape,
+//        shape = CircleShape,
         modifier = modifier
-            .aspectRatio(1f)
-            .clip(CircleShape),
+            .heightIn(min = 36.dp, max = 56.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
         )
@@ -411,7 +413,8 @@ private fun OperatorButton(
     Button(
         onClick = onClick,
         shape = CircleShape,
-        modifier = modifier.aspectRatio(1f),
+        modifier = modifier,
+//            .aspectRatio(1f),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         )
@@ -431,7 +434,8 @@ private fun EqualsButton(
     Button(
         onClick = onClick,
         shape = CircleShape,
-        modifier = modifier.aspectRatio(1f),
+        modifier = modifier,
+//            .aspectRatio(1f),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary
         )
@@ -445,7 +449,7 @@ private fun ClearButton(
     onClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Button(
-        onClick = onClick, modifier = modifier.height(56.dp), colors = ButtonDefaults.buttonColors(
+        onClick = onClick, modifier = modifier, colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.errorContainer
         )
     ) {
@@ -462,7 +466,7 @@ private fun SaveButton(
     onClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Button(
-        onClick = onClick, modifier = modifier.height(56.dp), colors = ButtonDefaults.buttonColors(
+        onClick = onClick, modifier = modifier, colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         )
     ) {
