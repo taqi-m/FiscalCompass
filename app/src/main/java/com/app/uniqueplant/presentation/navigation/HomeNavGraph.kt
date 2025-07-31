@@ -18,23 +18,17 @@ import com.app.uniqueplant.presentation.admin.transaction.TransactionsScreen
 import com.app.uniqueplant.presentation.settings.SettingsScreen
 import com.app.uniqueplant.presentation.settings.SettingsViewModel
 
-// Placeholder for NavGraph
 
 
 @Composable
 fun HomeNavGraph(homeNavController: NavHostController, appNavController: NavHostController, modifier: Modifier = Modifier) {
-    NavHost(homeNavController, startDestination = HomeBottomScreen.Transactions.route, modifier = modifier) {
+    NavHost(homeNavController, startDestination = HomeBottomScreen.Dashboard.route, modifier = modifier) {
         composable(HomeBottomScreen.Dashboard.route) {
             val dashboardViewModel: DashboardViewModel = hiltViewModel()
             val state by dashboardViewModel.state.collectAsState()
             DashboardScreen(
                 state = state,
                 onEvent = dashboardViewModel::onEvent,
-                onLogout = { route ->
-                    appNavController.navigate(MainScreens.Auth.route) {
-                        popUpTo(route) { inclusive = true }
-                    }
-                },
             )
         }
         composable(HomeBottomScreen.Transactions.route) {

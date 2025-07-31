@@ -47,13 +47,6 @@ fun SettingsScreen(
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Top
     ) {
-        Text(
-            text = "Settings Screen",
-            style = MaterialTheme.typography.headlineMedium
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         ProfileCard(
             modifier = Modifier.fillMaxWidth(),
             name = state.userInfo?.userName,

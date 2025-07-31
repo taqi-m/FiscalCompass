@@ -1,6 +1,5 @@
-package com.app.uniqueplant.ui.components
+package com.app.uniqueplant.ui.components.dialogs
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -20,7 +19,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -1,26 +1,28 @@
 package com.app.uniqueplant.presentation.admin.home
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.app.uniqueplant.R
 import com.app.uniqueplant.presentation.navigation.HomeBottomScreen
 import com.app.uniqueplant.presentation.navigation.HomeNavGraph
-import com.app.uniqueplant.presentation.navigation.MainScreens
-import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,13 +33,16 @@ fun HomeScreen(
 ) {
     val homeNavController = rememberNavController()
     val items = listOf(
+        HomeBottomScreen.Dashboard,
         HomeBottomScreen.Transactions,
         HomeBottomScreen.Analytics,
         HomeBottomScreen.Settings
     )
 
     val currentRoute = homeNavController.currentBackStackEntryAsState().value?.destination?.route
-        ?: HomeBottomScreen.Transactions.route
+        ?: HomeBottomScreen.Dashboard.route
+
+
     Scaffold(
         bottomBar = {
             NavigationBar {
@@ -66,7 +71,49 @@ fun HomeScreen(
                 }
             }
         },
-        floatingActionButton = {
+        topBar = {
+            TopAppBar(
+                navigationIcon = {
+                    FilledTonalIconButton (
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        onClick = {
+                            homeNavController.navigate(HomeBottomScreen.Dashboard.route) {
+                                popUpTo(homeNavController.graph.startDestinationId) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_person_24),
+                            contentDescription = "Navigate to Profile",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+
+                    }
+                },
+                title = {  },
+                actions = {
+                    IconButton(
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        onClick = {
+//                            onEvent(HomeEvent.OnSettingsClick)
+                        },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_settings_24),
+                            contentDescription = "Settings"
+                        )
+                    }
+                }
+            )
+        },
+        /*floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { appNavController.navigate(MainScreens.AddTransaction.route) },
                 text = { Text("Add Transaction") },
@@ -77,29 +124,9 @@ fun HomeScreen(
                     )
                 }
             )
-            /*            val isExpanded = state.isFabExpanded
-                        ExpandableFab(
-                            isExpanded = isExpanded,
-                            onExpandToggle = { onEvent(HomeEvent.ToggleFabExpanded) },
-                            fabOptions = listOf(
-                                FabOption(
-                                    icon = Icons.Filled.Add,
-                                    label = "Add Income",
-                                    onClick = {
-
-                                    }
-                                ),
-                                FabOption(
-                                    icon = Icons.Filled.Add,
-                                    label = "Add Expense",
-                                    onClick = {
-                                        appNavController.navigate(MainScreens.AddTransaction.route)
-                                    }
-                                )
-                            )
-                        )*/
-        }
-    ) { paddingValues ->
+        }*/
+    )
+    { paddingValues ->
         HomeNavGraph(homeNavController, appNavController, Modifier.padding(paddingValues))
     }
 }
@@ -108,11 +135,9 @@ fun HomeScreen(
 @Preview()
 @Composable
 fun HomeScreenPreview() {
-    UniquePlantTheme {
-        HomeScreen(
-            appNavController = rememberNavController(),
-            HomeScreenState(),
-            onEvent = {}
-        )
-    }
+    HomeScreen(
+        appNavController = rememberNavController(),
+        HomeScreenState(),
+        onEvent = {}
+    )
 }

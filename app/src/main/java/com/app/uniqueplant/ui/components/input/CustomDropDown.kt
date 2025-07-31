@@ -1,4 +1,4 @@
-package com.app.uniqueplant.ui.components
+package com.app.uniqueplant.ui.components.input
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -8,6 +8,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
@@ -72,7 +73,7 @@ fun CustomExposedDropDownMenu(
 
                 // Add divider after each item except the last one
                 if (index < options.size - 1) {
-                    androidx.compose.material3.HorizontalDivider(
+                    HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         thickness = 0.5.dp
                     )

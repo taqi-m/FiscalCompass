@@ -1,4 +1,4 @@
-package com.app.uniqueplant.ui.components
+package com.app.uniqueplant.ui.components.drawings
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxWidth

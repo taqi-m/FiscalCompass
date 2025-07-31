@@ -37,13 +37,6 @@ fun AnalyticsScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        Text(
-            text = "Analytics Screen",
-            style = MaterialTheme.typography.headlineMedium
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         ListTable(
             rows = state.expenses,
             type = "Expenses",

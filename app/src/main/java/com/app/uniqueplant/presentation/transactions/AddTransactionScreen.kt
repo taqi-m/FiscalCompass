@@ -39,10 +39,10 @@ import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.R
 import com.app.uniqueplant.data.model.Category
 import com.app.uniqueplant.domain.model.InputField
-import com.app.uniqueplant.ui.components.CustomExposedDropDownMenu
-import com.app.uniqueplant.ui.components.DatePickerDialog
+import com.app.uniqueplant.ui.components.input.CustomExposedDropDownMenu
+import com.app.uniqueplant.ui.components.dialogs.DatePickerDialog
 import com.app.uniqueplant.ui.components.input.ReadOnlyDataEntryTextField
-import com.app.uniqueplant.ui.components.TimePickerDialog
+import com.app.uniqueplant.ui.components.dialogs.TimePickerDialog
 import com.app.uniqueplant.ui.components.input.Calculator
 import com.app.uniqueplant.ui.components.input.TransactionTypeSelector
 import java.text.SimpleDateFormat
