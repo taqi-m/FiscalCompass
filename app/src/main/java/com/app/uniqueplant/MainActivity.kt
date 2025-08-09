@@ -21,8 +21,8 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var sharedPreferencesRepository: SharedPreferencesRepository
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
         setContent {
             ThemePreferenceProvider {
                 UniquePlantTheme {

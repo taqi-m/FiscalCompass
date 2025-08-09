@@ -31,12 +31,12 @@ fun HomeScreen(
     state: HomeScreenState,
     onEvent: (HomeEvent) -> Unit = {},
 ) {
+    onEvent(HomeEvent.OnScreenLoad(appNavController))
     val homeNavController = rememberNavController()
     val items = listOf(
         HomeBottomScreen.Dashboard,
         HomeBottomScreen.Transactions,
-        HomeBottomScreen.Analytics,
-        HomeBottomScreen.Settings
+        HomeBottomScreen.Analytics
     )
 
     val currentRoute = homeNavController.currentBackStackEntryAsState().value?.destination?.route
@@ -99,7 +99,7 @@ fun HomeScreen(
                     IconButton(
                         modifier = Modifier.padding(horizontal = 8.dp),
                         onClick = {
-//                            onEvent(HomeEvent.OnSettingsClick)
+                            onEvent(HomeEvent.OnSettingsClicked)
                         },
                         colors = IconButtonDefaults.iconButtonColors(
                             contentColor = MaterialTheme.colorScheme.primary

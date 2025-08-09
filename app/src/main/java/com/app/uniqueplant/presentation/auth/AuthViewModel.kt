@@ -83,7 +83,11 @@ class AuthViewModel @Inject constructor(
                             route = MainScreens.EmployeeHome.route
                         }
                         appNavController.navigate(route) {
-                            popUpTo(MainScreens.Auth.route) { inclusive = true }
+                            popUpTo(MainScreens.Auth.route) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
                         }
                     }
 

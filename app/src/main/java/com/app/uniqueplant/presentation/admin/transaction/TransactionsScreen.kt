@@ -72,23 +72,12 @@ fun TransactionsScreen(
                     TransactionHeading(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .padding(top = 8.dp),
+                            .padding(vertical = 8.dp),
                         currentBalance = CurrencyFormaterUseCase.formatCurrency(state.incoming - state.outgoing),
                         incoming = CurrencyFormaterUseCase.formatCurrency(state.incoming),
                         outgoing = CurrencyFormaterUseCase.formatCurrency(state.outgoing)
                     )
                 }
-                /*
-                // Group transactions by date
-                val groupedTransactions = transactions.groupBy { transaction ->
-                    when (transaction) {
-                        is Expense -> transaction.date
-                        is Income -> transaction.date
-                        else -> ""
-                    }
-                }
-                */
 
                 // Group transactions by date
                 val groupedTransactions = transactions.groupBy { transaction ->
@@ -113,26 +102,6 @@ fun TransactionsScreen(
                             onEditClicked = {},
                             onDeleteClicked = {},
                         )
-
-                        /*
-                        val transaction = transactionsForDate[index]
-                        when (transaction.type) {
-                            TransactionType.EXPENSE -> {
-                                ExpenseTransaction(
-                                    expense = transaction as Expense,
-                                    onEvent = onEvent
-                                )
-                            }
-
-                            TransactionType.INCOME -> {
-                                IncomeTransaction(
-                                    income = transaction as Income,
-                                    onEvent = onEvent
-                                )
-                            }
-                        }
-                        */
-
                     }
                 }
             }

@@ -1,5 +1,6 @@
 package com.app.uniqueplant.ui.components.input
 
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -29,9 +30,12 @@ fun CustomExposedDropDownMenu(
     modifier: Modifier = Modifier,
     label: String,
     options: List<Category>,
-    selectedOption: Category,
+    selectedOption: Category?,
     onOptionSelected: (Category) -> Unit
 ) {
+    if (selectedOption == null) {
+        return // If no option is selected, do not render the dropdown
+    }
 //    val selectedOption = remember { mutableStateOf(selectedOption) }
     var expanded by remember { mutableStateOf(false) }
     val enabled = options.isNotEmpty() && selectedOption.name.isNotEmpty()
@@ -84,6 +88,59 @@ fun CustomExposedDropDownMenu(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GenericExposedDropDownMenu(
+    modifier: Modifier = Modifier,
+    label: String,
+    options: List<String>,
+    selectedOption: String?,
+    onOptionSelected: (String) -> Unit
+) {
+    if (selectedOption == null) {
+        return // If no option is selected, do not render the dropdown
+    }
+    var expanded by remember { mutableStateOf(false) }
+    val enabled = options.isNotEmpty() && selectedOption.isNotEmpty()
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = modifier
+    ) {
+        OutlinedTextField(
+            value = selectedOption,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(text = label) },
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Filled.ArrowDropDown,
+                    contentDescription = "Dropdown Arrow",
+                    Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled)
+                )
+            },
+            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+            modifier = Modifier
+                .menuAnchor(MenuAnchorType.SecondaryEditable, enabled)
+                .fillMaxWidth()
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(text = option) },
+                    onClick = {
+                        onOptionSelected(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
 fun CustomExposedDropDownMenuPreview() {
@@ -116,6 +173,24 @@ fun CustomExposedDropDownMenuPreview() {
         selectedOption = options.first(),
         onOptionSelected = {
         }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showSystemUi = true, showBackground = true)
+@Composable
+fun GenericExposedDropDownMenuPreview() {
+    val options = listOf("Option 1", "Option 2", "Option 3")
+    var selectedOption by remember { mutableStateOf(options.firstOrNull()) }
+
+    GenericExposedDropDownMenu(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp),
+        label = "Select an option",
+        options = options,
+        selectedOption = selectedOption,
+        onOptionSelected = { selectedOption = it }
     )
 }
 

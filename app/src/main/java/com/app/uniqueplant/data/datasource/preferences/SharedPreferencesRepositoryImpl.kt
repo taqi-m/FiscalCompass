@@ -101,4 +101,14 @@ class SharedPreferencesRepositoryImpl @Inject constructor(
     override fun setDarkMode(darkMode: Boolean) {
         sharedPreferences.edit { putBoolean("dark_mode", darkMode) }
     }
+
+    override fun isDefaultPersonTypesAdded(): Boolean {
+        return sharedPreferences.getBoolean("default_person_types_added", false)
+    }
+
+    override fun setDefaultPersonTypesAdded(bool: Boolean) {
+        sharedPreferences.edit {
+            putBoolean("default_person_types_added", bool)
+        }
+    }
 }

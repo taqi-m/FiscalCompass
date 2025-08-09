@@ -15,32 +15,38 @@ import com.app.uniqueplant.presentation.admin.dashboard.DashboardViewModel
 import com.app.uniqueplant.presentation.admin.supervisor.SupervisorScreen
 import com.app.uniqueplant.presentation.admin.transaction.TransactionViewModel
 import com.app.uniqueplant.presentation.admin.transaction.TransactionsScreen
-import com.app.uniqueplant.presentation.settings.SettingsScreen
-import com.app.uniqueplant.presentation.settings.SettingsViewModel
-
 
 
 @Composable
-fun HomeNavGraph(homeNavController: NavHostController, appNavController: NavHostController, modifier: Modifier = Modifier) {
-    NavHost(homeNavController, startDestination = HomeBottomScreen.Dashboard.route, modifier = modifier) {
-        composable(HomeBottomScreen.Dashboard.route) {
-            val dashboardViewModel: DashboardViewModel = hiltViewModel()
+fun HomeNavGraph(
+    homeNavController: NavHostController,
+    appNavController: NavHostController,
+    modifier: Modifier = Modifier
+) {
+    NavHost(
+        homeNavController,
+        startDestination = HomeBottomScreen.Dashboard.route,
+        modifier = modifier
+    ) {
+        composable(HomeBottomScreen.Dashboard.route) { backStackEntry ->
+            val dashboardViewModel: DashboardViewModel = hiltViewModel(backStackEntry)
             val state by dashboardViewModel.state.collectAsState()
             DashboardScreen(
+                appNavController = appNavController,
                 state = state,
                 onEvent = dashboardViewModel::onEvent,
             )
         }
-        composable(HomeBottomScreen.Transactions.route) {
-            val transactionViewModel: TransactionViewModel = hiltViewModel()
+        composable(HomeBottomScreen.Transactions.route) { backStackEntry ->
+            val transactionViewModel: TransactionViewModel = hiltViewModel(backStackEntry)
             val state by transactionViewModel.state.collectAsState()
             TransactionsScreen(
                 state = state,
                 onEvent = transactionViewModel::onEvent
             )
         }
-        composable(HomeBottomScreen.Analytics.route) {
-            val analyticsViewModel: AnalyticsViewModel = hiltViewModel()
+        composable(HomeBottomScreen.Analytics.route) { backStackEntry ->
+            val analyticsViewModel: AnalyticsViewModel = hiltViewModel(backStackEntry)
             val state by analyticsViewModel.state.collectAsState()
             AnalyticsScreen(
                 state = state,
@@ -48,21 +54,7 @@ fun HomeNavGraph(homeNavController: NavHostController, appNavController: NavHost
             )
         }
 
-        composable(HomeBottomScreen.Settings.route) {
-            val settingsViewModel: SettingsViewModel = hiltViewModel()
-            val state by settingsViewModel.state.collectAsState()
-            SettingsScreen(
-                state = state,
-                onEvent = settingsViewModel::onEvent,
-                onLogout = { route ->
-                    appNavController.navigate(MainScreens.Auth.route) {
-                        popUpTo(route) { inclusive = true }
-                    }
-                },
-            )
-        }
-
-        composable(HomeBottomScreen.Supervisor.route){
+        composable(HomeBottomScreen.Supervisor.route){ backStackEntry ->
             SupervisorScreen()
         }
     }

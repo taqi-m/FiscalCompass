@@ -6,6 +6,7 @@ import com.app.uniqueplant.data.datasource.local.AppDatabase
 import com.app.uniqueplant.data.datasource.local.dao.CategoryDao
 import com.app.uniqueplant.data.datasource.local.dao.ExpenseDao
 import com.app.uniqueplant.data.datasource.local.dao.IncomeDao
+import com.app.uniqueplant.data.datasource.local.dao.PersonDao
 import com.app.uniqueplant.data.datasource.local.dao.UserDao
 import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesRepository
 import com.app.uniqueplant.data.repository.CategoryRepositoryImpl
@@ -16,13 +17,19 @@ import com.app.uniqueplant.domain.repository.CategoryRepository
 import com.app.uniqueplant.domain.repository.ExpenseRepository
 import com.app.uniqueplant.domain.repository.IncomeRepository
 import com.app.uniqueplant.domain.repository.UserRepository
-import com.app.uniqueplant.domain.usecase.AddExpenseUseCase
-import com.app.uniqueplant.domain.usecase.AddIncomeUseCase
-import com.app.uniqueplant.domain.usecase.AddTransactionUseCase
-import com.app.uniqueplant.domain.usecase.GetCategoriesUseCase
+import com.app.uniqueplant.domain.usecase.expense.AddExpenseUseCase
+import com.app.uniqueplant.domain.usecase.income.AddIncomeUseCase
+import com.app.uniqueplant.domain.usecase.transaction.AddTransactionUseCase
+import com.app.uniqueplant.domain.usecase.categories.GetCategoriesUseCase
 import com.app.uniqueplant.domain.usecase.LoadDefaultsUseCase
 import com.app.uniqueplant.domain.usecase.analytics.GetMonthlyReportUseCase
 import com.app.uniqueplant.domain.usecase.auth.SessionUseCase
+import com.app.uniqueplant.domain.usecase.categories.AddCategoryUseCase
+import com.app.uniqueplant.domain.usecase.categories.DeleteCategoryUseCase
+import com.app.uniqueplant.domain.usecase.categories.UpdateCategoryUseCase
+import com.app.uniqueplant.domain.usecase.person.AddPersonUseCase
+import com.app.uniqueplant.domain.usecase.person.DeletePersonUseCase
+import com.app.uniqueplant.domain.usecase.person.GetAllPersonsUseCase
 import com.app.uniqueplant.domain.usecase.transaction.LoadTransactionsUseCase
 import dagger.Module
 import dagger.Provides
@@ -37,7 +44,9 @@ object RoomModule {
 
     @Provides
     @Singleton
-    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
+    fun provideAppDatabase(
+        @ApplicationContext context: Context
+    ): AppDatabase {
         return Room
             .databaseBuilder(
                 context,
@@ -66,6 +75,11 @@ object RoomModule {
     @Provides
     fun provideUserDao(database: AppDatabase): UserDao {
         return database.userDao()
+    }
+
+    @Provides
+    fun providePersonDao(database: AppDatabase): PersonDao {
+        return database.personDao()
     }
 
     @Provides
@@ -153,29 +167,52 @@ object RoomModule {
         sessionUseCase: SessionUseCase,
         incomeRepository: IncomeRepository,
         expenseRepository: ExpenseRepository,
+        categoriesUseCase: GetCategoriesUseCase
     ): AddTransactionUseCase {
         return AddTransactionUseCase(
-            sessionUseCase, incomeRepository, expenseRepository
+            sessionUseCase, incomeRepository, expenseRepository, categoriesUseCase
         )
     }
+
+    @Provides
+    fun provideUpdateCategoryUseCase(
+        categoryRepository: CategoryRepository
+    ): UpdateCategoryUseCase {
+        return UpdateCategoryUseCase(categoryRepository)
+    }
+
+    @Provides
+    fun provideDeleteCategoryUseCase(
+        categoryRepository: CategoryRepository
+    ): DeleteCategoryUseCase {
+        return DeleteCategoryUseCase(categoryRepository)
+    }
+
+    @Provides
+    fun provideAddCategoryUseCase(
+        categoryRepository: CategoryRepository
+    ): AddCategoryUseCase {
+        return AddCategoryUseCase(categoryRepository)
+    }
+
+    @Provides
+    fun provideGetAllPersonsUseCase(
+        personDao: PersonDao
+    ): GetAllPersonsUseCase {
+        return GetAllPersonsUseCase(personDao)
+    }
+
+    @Provides
+    fun provideAddPersonUseCase(
+        personDao: PersonDao
+    ): AddPersonUseCase {
+        return AddPersonUseCase(personDao)
+    }
+
+    @Provides
+    fun provideDeletePersonUseCase(
+        personDao: PersonDao
+    ): DeletePersonUseCase {
+        return DeletePersonUseCase(personDao)
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

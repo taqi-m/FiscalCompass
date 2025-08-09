@@ -39,11 +39,11 @@ import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.R
 import com.app.uniqueplant.data.model.Category
 import com.app.uniqueplant.domain.model.InputField
-import com.app.uniqueplant.ui.components.input.CustomExposedDropDownMenu
 import com.app.uniqueplant.ui.components.dialogs.DatePickerDialog
-import com.app.uniqueplant.ui.components.input.ReadOnlyDataEntryTextField
 import com.app.uniqueplant.ui.components.dialogs.TimePickerDialog
 import com.app.uniqueplant.ui.components.input.Calculator
+import com.app.uniqueplant.ui.components.input.CustomExposedDropDownMenu
+import com.app.uniqueplant.ui.components.input.ReadOnlyDataEntryTextField
 import com.app.uniqueplant.ui.components.input.TransactionTypeSelector
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -131,7 +131,9 @@ fun AddTransactionContent(
         {
             // Top content section
             Column(
-                modifier = Modifier.fillMaxSize().weight(1f),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
@@ -151,7 +153,8 @@ fun AddTransactionContent(
                         modifier = Modifier.fillMaxWidth(),
                         label = "Category",
                         options = state.categories,
-                        selectedOption = state.categories.first { it.categoryId == state.categoryId },
+                        selectedOption = state.categories.firstOrNull { it.categoryId == state.categoryId }
+                            ?: state.categories.firstOrNull(),
                         onOptionSelected = { selected ->
                             onEvent(AddTransactionEvent.OnCategorySelected(selected.categoryId))
                         }
@@ -163,14 +166,28 @@ fun AddTransactionContent(
                     label = { Text(text = "Note") },
                     placeholder = { Text(text = "Add a short description") },
                     value = state.description.value,
-                    onValueChange = {}
+                    onValueChange = {
+                        onEvent(AddTransactionEvent.OnDescriptionChange(it))
+                    }
                 )
 
                 DateAndTimeSelection(
                     modifier = Modifier.fillMaxWidth(),
                     date = state.date,
-                    onDateToggle = { onEvent(AddTransactionEvent.OnDateDialogToggle) },
-                    onTimeToggle = { onEvent(AddTransactionEvent.OnTimeDialogToggle) },
+                    onDateToggle = {
+                        onEvent(
+                            AddTransactionEvent.OnAddTransactionDialogToggle(
+                                AddTransactionDialog.DatePicker
+                            )
+                        )
+                    },
+                    onTimeToggle = {
+                        onEvent(
+                            AddTransactionEvent.OnAddTransactionDialogToggle(
+                                AddTransactionDialog.TimePicker
+                            )
+                        )
+                    },
                 )
 
 
@@ -189,27 +206,51 @@ fun AddTransactionContent(
             )
         }
 
-        if (state.isDateDialogOpen) {
-            DatePickerDialog(
-                onDismissRequest = {
-                    onEvent(AddTransactionEvent.OnDateDialogToggle)
-                },
-                onDateSelected = { selectedDate ->
-                    onEvent(AddTransactionEvent.OnDateDialogToggle)
-                    onEvent(AddTransactionEvent.DateSelected(selectedDate))
-                },
-            )
-        }
-        if (state.isTimeDialogOpen) {
-            val initialTime = Calendar.getInstance().apply {
-                set(Calendar.HOUR_OF_DAY, state.date.hours)
-                set(Calendar.MINUTE, state.date.minutes)
+        when (state.currentDialog) {
+            is AddTransactionDialog.DatePicker -> {
+                DatePickerDialog(
+                    onDismissRequest = {
+                        onEvent(
+                            AddTransactionEvent.OnAddTransactionDialogToggle(
+                                AddTransactionDialog.DatePicker
+                            )
+                        )
+                    },
+                    onDateSelected = { selectedDate ->
+                        onEvent(
+                            AddTransactionEvent.OnAddTransactionDialogSubmit(
+                                AddTransactionDialogSubmit.DateSelected(selectedDate)
+                            )
+                        )
+                    },
+                )
             }
-            TimePickerDialog(
-                onDismiss = { onEvent(AddTransactionEvent.OnTimeDialogToggle) },
-                onConfirm = { onEvent(AddTransactionEvent.OnTimeSelected(it)) },
-                initialTime = initialTime
-            )
+
+            is AddTransactionDialog.TimePicker -> {
+                val initialTime = Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, state.date.hours)
+                    set(Calendar.MINUTE, state.date.minutes)
+                }
+                TimePickerDialog(
+                    onDismiss = {
+                        onEvent(
+                            AddTransactionEvent.OnAddTransactionDialogToggle(
+                                AddTransactionDialog.TimePicker
+                            )
+                        )
+                    },
+                    onConfirm = {
+                        onEvent(
+                            AddTransactionEvent.OnAddTransactionDialogSubmit(
+                                AddTransactionDialogSubmit.TimeSelected(it)
+                            )
+                        )
+                    },
+                    initialTime = initialTime
+                )
+            }
+
+            else -> {}
         }
     }
 }
@@ -248,11 +289,13 @@ fun DateAndTimeSelection(
     }
 }
 
-@Preview(showSystemUi = true, showBackground = true,name = "Pixel 4",
+@Preview(
+    showSystemUi = true, showBackground = true, name = "Pixel 4",
     device = "spec:width=1080px,height=2280px,dpi=420,navigation=buttons"
 )
-@Preview(showSystemUi = true, showBackground = true,name = "Nexus 7", device = Devices.NEXUS_7)
-@Preview(showSystemUi = true, showBackground = true,
+@Preview(showSystemUi = true, showBackground = true, name = "Nexus 7", device = Devices.NEXUS_7)
+@Preview(
+    showSystemUi = true, showBackground = true,
     device = "spec:parent=pixel_5,navigation=buttons"
 )
 @Composable

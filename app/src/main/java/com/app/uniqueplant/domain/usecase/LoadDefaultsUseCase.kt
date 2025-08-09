@@ -38,12 +38,6 @@ class LoadDefaultsUseCase(
                 isExpenseCategory = false,
                 icon = "💊"
             ),
-/*            Category(
-                name = "Shopping",
-                color = 0xFFFFB74D.toInt(),
-                isExpenseCategory = true,
-                icon = "🛍️"
-            ),*/
             Category(
                 name = "Dumper",
                 color = 0xFF81C784.toInt(),
@@ -117,7 +111,9 @@ class LoadDefaultsUseCase(
         Log.d(TAG, "Default categories added successfully")
         prefRepository.setDefaultCategoriesAdded(true)
     }
-    companion object{
+
+
+    companion object {
         private const val TAG = "LoadDefaultsUseCase"
     }
 }

@@ -3,6 +3,7 @@ package com.app.uniqueplant.presentation.admin.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.uniqueplant.domain.usecase.LoadDefaultsUseCase
+import com.app.uniqueplant.presentation.navigation.MainScreens
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +22,9 @@ class DashboardViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            loadDefaultsUseCase.addDefaultCategories()
+            launch {
+                loadDefaultsUseCase.addDefaultCategories()
+            }.join()
         }
     }
 
@@ -30,6 +33,25 @@ class DashboardViewModel @Inject constructor(
         when (event) {
             is DashboardEvent.AddExpenseClicked -> {
 
+            }
+
+            is DashboardEvent.OnScreenLoad -> {
+                _state.value = _state.value.copy(appNavController = event.appNavController)
+            }
+
+            is DashboardEvent.OnAddTransactionClicked -> {
+                val appNavController = _state.value.appNavController
+                appNavController?.navigate(MainScreens.AddTransaction.route)
+            }
+
+            is DashboardEvent.OnCategoriesClicked -> {
+                val appNavController = _state.value.appNavController
+                appNavController?.navigate(MainScreens.Categories.route)
+            }
+
+            DashboardEvent.OnPersonsClicked -> {
+                val appNavController = _state.value.appNavController
+                appNavController?.navigate(MainScreens.Person.route)
             }
         }
     }

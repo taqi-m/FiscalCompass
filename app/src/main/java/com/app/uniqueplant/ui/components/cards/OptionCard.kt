@@ -20,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.R
+import com.app.uniqueplant.presentation.admin.dashboard.HomeOption
 
 
 @Composable
@@ -45,8 +46,7 @@ fun OptionCard(
 @Composable
 fun OptionsRow(
     modifier: Modifier = Modifier,
-    options: List<Pair<String, Painter>>,
-    onOptionClick: (String) -> Unit
+    options: List<HomeOption>
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -59,26 +59,12 @@ fun OptionsRow(
                     .padding(8.dp)
                     .weight(1f)
                     .aspectRatio(3f / 4f),
-                title = option.first,
-                painter = option.second,
-                onClick = { onOptionClick(option.first) }
+                title = option.title,
+                painter = option.icon,
+                onClick = option.onClick
             )
         }
     }
-}
-
-
-@Preview
-@Composable
-fun OptionsRowPreview() {
-    val options = listOf(
-        Pair("Categories", painterResource(id = R.drawable.ic_category_24)),
-        Pair("Person", painterResource(id = R.drawable.ic_person_24)),
-    )
-    OptionsRow(
-        options = options,
-        onOptionClick = {}
-    )
 }
 
 
@@ -91,20 +77,20 @@ fun OptionCardContent(
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceAround
+        verticalArrangement = Arrangement.SpaceEvenly
     ) {
         Image(
             painter = painter,
             contentDescription = null,
             modifier = Modifier
                 .fillMaxWidth(0.6f)
-                .weight(1f),
+                .aspectRatio(1f),
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
         )
         Text(
             text = title,
             maxLines = 1,
-            style = MaterialTheme.typography.titleLarge
+            style = MaterialTheme.typography.labelMedium
         )
     }
 }

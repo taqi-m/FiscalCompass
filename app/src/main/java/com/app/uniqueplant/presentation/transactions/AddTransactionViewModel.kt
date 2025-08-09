@@ -7,8 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.app.uniqueplant.data.model.Category
 import com.app.uniqueplant.domain.model.InputField
 import com.app.uniqueplant.domain.model.TransactionType
-import com.app.uniqueplant.domain.usecase.AddTransactionUseCase
-import com.app.uniqueplant.domain.usecase.GetCategoriesUseCase
+import com.app.uniqueplant.domain.usecase.transaction.AddTransactionUseCase
+import com.app.uniqueplant.domain.usecase.categories.GetCategoriesUseCase
+import com.app.uniqueplant.presentation.admin.categories.CategoriesScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -82,10 +83,6 @@ class AddTransactionViewModel @Inject constructor(
                 Log.d(TAG, "Category selected: ${event.categoryId}")
             }
 
-            is AddTransactionEvent.OnAccountSelected -> {
-                _state.value = _state.value.copy(accountId = event.accountId)
-            }
-
             is AddTransactionEvent.OnSaveClicked -> {
                 addTransaction()
             }
@@ -98,55 +95,18 @@ class AddTransactionViewModel @Inject constructor(
                 )
             }
 
-            is AddTransactionEvent.DateSelected -> {
-                event.selectedDate?.let { pickedDate ->
-                    val calendar = Calendar.getInstance().apply {
-                        time = _state.value.date
-                        val selectedCal =
-                            Calendar.getInstance().apply { timeInMillis = pickedDate }
-                        set(Calendar.YEAR, selectedCal.get(Calendar.YEAR))
-                        set(Calendar.MONTH, selectedCal.get(Calendar.MONTH))
-                        set(Calendar.DAY_OF_MONTH, selectedCal.get(Calendar.DAY_OF_MONTH))
-                    }
-                    _state.value = _state.value.copy(date = calendar.time)
-                    Log.d(TAG, "Date selected: ${_state.value.date}")
-                } ?: run {
-                    Log.w(TAG, "Selected date is null")
-                }
+            is AddTransactionEvent.OnAddTransactionDialogToggle -> {
+                onDialogToggle(event.event)
+            }
+            is AddTransactionEvent.OnAddTransactionDialogSubmit -> {
+                onDialogSubmit(event.event)
             }
 
-            is AddTransactionEvent.OnDateDialogToggle -> {
-                _state.value = _state.value.copy(
-                    isDateDialogOpen = !(_state.value.isDateDialogOpen)
-                )
-            }
-
-            AddTransactionEvent.OnTimeDialogToggle -> {
-                _state.value = _state.value.copy(
-                    isTimeDialogOpen = !(_state.value.isTimeDialogOpen)
-                )
-            }
-
-            is AddTransactionEvent.OnTimeSelected -> {
-                event.selectedTime?.let { pickedTime ->
-                    val calendar = GregorianCalendar.getInstance().apply {
-                        time = _state.value.date
-                        set(Calendar.HOUR_OF_DAY, pickedTime.hour)
-                        set(Calendar.MINUTE, pickedTime.minute)
-                    }
-                    _state.value = _state.value.copy(date = calendar.time)
-                    Log.d(TAG, "Time selected: ${_state.value.date}")
-                } ?: run {
-                    Log.w(TAG, "Selected time is null")
-                }
-            }
-
-            AddTransactionEvent.OnSuccessHandled -> {
+            is AddTransactionEvent.OnSuccessHandled -> {
                 _state.value = _state.value.copy(
                     isSuccess = false,
                     message = ""
                 )
-                onEvent(AddTransactionEvent.OnResetClicked)
             }
 
             is AddTransactionEvent.OnTypeSelected -> {
@@ -160,10 +120,96 @@ class AddTransactionViewModel @Inject constructor(
                     Log.d(TAG, "Transaction type changed to: ${event.selectedType}")
                 }
             }
+
         }
     }
 
-    fun assignCategories() {
+    private fun onDialogToggle(event: AddTransactionDialog) {
+        when (event) {
+            AddTransactionDialog.DatePicker -> {
+                updateState {
+                    copy(currentDialog = AddTransactionDialog.DatePicker)
+                }
+            }
+
+            AddTransactionDialog.TimePicker -> {
+                updateState {
+                    copy(currentDialog = AddTransactionDialog.TimePicker)
+                }
+            }
+
+            AddTransactionDialog.Hidden -> {
+                updateState {
+                    copy(currentDialog = AddTransactionDialog.Hidden)
+                }
+            }
+        }
+    }
+
+    @ExperimentalMaterial3Api
+    private fun onDialogSubmit(event: AddTransactionDialogSubmit) {
+        when (event) {
+            is AddTransactionDialogSubmit.DateSelected -> {
+
+                /*event.selectedDate?.let { pickedDate ->
+                    val calendar = Calendar.getInstance().apply {
+                        time = _state.value.date
+                        val selectedCal =
+                            Calendar.getInstance().apply { timeInMillis = pickedDate }
+                        set(Calendar.YEAR, selectedCal.get(Calendar.YEAR))
+                        set(Calendar.MONTH, selectedCal.get(Calendar.MONTH))
+                        set(Calendar.DAY_OF_MONTH, selectedCal.get(Calendar.DAY_OF_MONTH))
+                    }
+                    _state.value = _state.value.copy(date = calendar.time)
+                    Log.d(TAG, "Date selected: ${_state.value.date}")
+                } ?: run {
+                    Log.w(TAG, "Selected date is null")
+                }*/
+
+
+                event.selectedDate?.let { selectedDate ->
+                    val calendar = Calendar.getInstance().apply {
+                        time = _state.value.date
+                        timeInMillis = selectedDate
+                    }
+                    _state.value = _state.value.copy(date = calendar.time)
+                }
+                _state.value = _state.value.copy(currentDialog = AddTransactionDialog.Hidden)
+            }
+
+            is AddTransactionDialogSubmit.TimeSelected -> {
+
+                event.selectedTime?.let { pickedTime ->
+                    val calendar = GregorianCalendar.getInstance().apply {
+                        time = _state.value.date
+                        set(Calendar.HOUR_OF_DAY, pickedTime.hour)
+                        set(Calendar.MINUTE, pickedTime.minute)
+                    }
+                    _state.value = _state.value.copy(date = calendar.time)
+                    Log.d(TAG, "Time selected: ${_state.value.date}")
+                } ?: run {
+                    Log.w(TAG, "Selected time is null")
+                }
+
+
+                /*event.selectedTime?.let { selectedTime ->
+                    val calendar = Calendar.getInstance().apply {
+                        time = _state.value.date
+                        set(Calendar.HOUR_OF_DAY, selectedTime.hour)
+                        set(Calendar.MINUTE, selectedTime.minute)
+                    }
+                    _state.value = _state.value.copy(date = calendar.time)
+                }
+                _state.value = _state.value.copy(currentDialog = AddTransactionDialog.Hidden)*/
+            }
+
+            AddTransactionDialogSubmit.Hidden -> {
+                _state.value = _state.value.copy(currentDialog = AddTransactionDialog.Hidden)
+            }
+        }
+    }
+
+    private fun assignCategories() {
         viewModelScope.launch(Dispatchers.IO) {
             when (_state.value.transactionType) {
                 TransactionType.EXPENSE -> {
@@ -203,6 +249,10 @@ class AddTransactionViewModel @Inject constructor(
                 Log.d(TAG, "State after adding transaction: ${_state.value}")
             }.onFailure { e ->
                 Log.e(TAG, "Error adding transaction", e)
+                _state.value = _state.value.copy(
+                    isSuccess = false,
+                    message = "${e.message}"
+                )
                 // Handle error, e.g., show a message to the user
             }
         }
@@ -210,6 +260,10 @@ class AddTransactionViewModel @Inject constructor(
 
     companion object {
         private const val TAG = "AddIncomeViewModel"
+    }
+
+    private fun updateState(update: AddTransactionState.() -> AddTransactionState) {
+        _state.value = _state.value.update()
     }
 }
 

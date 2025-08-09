@@ -38,4 +38,6 @@ interface SharedPreferencesRepository {
     fun getUserType(): String?
     fun removeUserType()
     fun setDarkMode(darkMode: Boolean)
+    fun isDefaultPersonTypesAdded(): Boolean
+    fun setDefaultPersonTypesAdded(bool: Boolean)
 }

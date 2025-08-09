@@ -21,10 +21,6 @@ fun DashboardActionButtons(
 
         }
 
-        HomeBottomScreen.Settings -> {
-
-        }
-
         HomeBottomScreen.Categories -> {
 
         }

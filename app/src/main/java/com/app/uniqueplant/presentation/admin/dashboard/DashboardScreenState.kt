@@ -1,5 +1,7 @@
 package com.app.uniqueplant.presentation.admin.dashboard
 
+import androidx.navigation.NavHostController
+
 
 data class UserInfo(
     val name: String = "John Doe",
@@ -8,6 +10,7 @@ data class UserInfo(
 )
 
 data class DashboardScreenState(
+    val appNavController: NavHostController? = null,
     val userInfo: UserInfo = UserInfo(),
     val isLoading: Boolean = false,
     val error: String? = null,

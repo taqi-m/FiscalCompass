@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.app.uniqueplant.data.model.Category
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CategoryDao {
@@ -14,10 +15,10 @@ interface CategoryDao {
     suspend fun insertCategory(category: Category): Long
     
     @Update
-    suspend fun updateCategory(category: Category)
+    suspend fun updateCategory(category: Category): Int
     
     @Delete
-    suspend fun deleteCategory(category: Category)
+    suspend fun deleteCategory(category: Category): Int
 
     @Query("SELECT * FROM categories ORDER BY name ASC")
     suspend fun getAllCategories(): List<Category>
@@ -31,9 +32,14 @@ interface CategoryDao {
     @Query("SELECT EXISTS(SELECT 1 FROM incomes WHERE categoryId = :categoryId LIMIT 1)")
     suspend fun isCategoryUsedInIncomes(categoryId: Long): Boolean
 
-    @Query("SELECT name FROM categories WHERE name = :name LIMIT 1")
-    suspend fun getCategoryByName(name: String) : String?
+    @Query("SELECT * FROM categories WHERE name = :name LIMIT 1")
+    suspend fun getCategoryByName(name: String) : Category?
 
+    @Query("SELECT * FROM categories WHERE isExpenseCategory = 0 ORDER BY name ASC")
+    fun getIncomeCategoriesWithFlow(): Flow<List<Category>>
+
+    @Query("SELECT * FROM categories WHERE isExpenseCategory = 1 ORDER BY name ASC")
+    fun getExpenseCategoriesWithFlow(): Flow<List<Category>>
     @Query("SELECT * FROM categories WHERE isExpenseCategory = 0 ORDER BY name ASC")
     fun getIncomeCategories(): List<Category>
 

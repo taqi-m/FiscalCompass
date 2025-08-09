@@ -13,7 +13,7 @@ import java.util.Date
             entity = Category::class,
             parentColumns = ["categoryId"],
             childColumns = ["categoryId"],
-            onDelete = ForeignKey.SET_NULL
+            onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
             entity = User::class,
@@ -29,7 +29,7 @@ import java.util.Date
         )
 
     ],
-    indices = [Index("categoryId"), Index("userId")]
+    indices = [Index("categoryId"), Index("userId"), Index("personId")]
 )
 data class Income(
     @PrimaryKey(autoGenerate = true)

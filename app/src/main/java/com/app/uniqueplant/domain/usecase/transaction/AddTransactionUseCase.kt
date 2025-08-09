@@ -1,4 +1,4 @@
-package com.app.uniqueplant.domain.usecase
+package com.app.uniqueplant.domain.usecase.transaction
 
 import com.app.uniqueplant.data.model.Expense
 import com.app.uniqueplant.data.model.Income
@@ -6,12 +6,14 @@ import com.app.uniqueplant.domain.model.TransactionType
 import com.app.uniqueplant.domain.repository.ExpenseRepository
 import com.app.uniqueplant.domain.repository.IncomeRepository
 import com.app.uniqueplant.domain.usecase.auth.SessionUseCase
+import com.app.uniqueplant.domain.usecase.categories.GetCategoriesUseCase
 import java.util.Date
 
 class AddTransactionUseCase(
     private val sessionUseCase: SessionUseCase,
     private val incomeRepository: IncomeRepository,
-    private val expenseRepository: ExpenseRepository
+    private val expenseRepository: ExpenseRepository,
+    private val getCategoriesUseCase: GetCategoriesUseCase
 ) {
     suspend fun addTransaction(
         amount: Double,
@@ -21,8 +23,22 @@ class AddTransactionUseCase(
         transactionType: TransactionType
     ): Result<Long> {
         return try {
+            if (amount <= 0) {
+                return Result.failure(IllegalArgumentException("Amount must be greater than zero"))
+            }
+
             val uid = sessionUseCase.getCurrentUser()?.uid
                 ?: return Result.failure(IllegalStateException("User is not logged in"))
+
+            val isExpense = transactionType == TransactionType.EXPENSE
+
+            val category = getCategoriesUseCase.getCategoryById(categoryId)
+                ?: return Result.failure(IllegalArgumentException("Invalid category ID"))
+
+            if(category.isExpenseCategory != isExpense) {
+                return Result.failure(IllegalArgumentException("Category type does not match transaction type"))
+            }
+
 
             if (transactionType == TransactionType.INCOME) {
                 val newIncome = Income(

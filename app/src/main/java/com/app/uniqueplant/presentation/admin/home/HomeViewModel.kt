@@ -2,6 +2,7 @@ package com.app.uniqueplant.presentation.admin.home
 
 import androidx.lifecycle.ViewModel
 import com.app.uniqueplant.domain.usecase.auth.SessionUseCase
+import com.app.uniqueplant.presentation.navigation.MainScreens
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,6 +32,15 @@ class HomeViewModel @Inject constructor(
 
             HomeEvent.ToggleFabExpanded -> {
                 _state.update { it.copy(isFabExpanded = !it.isFabExpanded) }
+            }
+
+            is HomeEvent.OnScreenLoad -> {
+                _state.update { it.copy(appNavController = event.appNavController) }
+            }
+
+            HomeEvent.OnSettingsClicked -> {
+                val navController = _state.value.appNavController
+                navController?.navigate(MainScreens.Settings.route)
             }
         }
     }

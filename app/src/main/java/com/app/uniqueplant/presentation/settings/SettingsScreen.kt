@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,62 +42,63 @@ fun SettingsScreen(
     }
 
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.Top
-    ) {
-        ProfileCard(
-            modifier = Modifier.fillMaxWidth(),
-            name = state.userInfo?.userName,
-            email = state.userInfo?.userEmail,
-            onClick = {
-                onEvent(SettingsEvent.OnLogoutClicked)
-            },
-        )
+    Scaffold {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Top
+        ) {
+            ProfileCard(
+                modifier = Modifier.fillMaxWidth(),
+                name = state.userInfo?.userName,
+                email = state.userInfo?.userEmail,
+                onClick = {
+                    onEvent(SettingsEvent.OnLogoutClicked)
+                },
+            )
 
-        HorizontalDivider(
-            modifier = Modifier.padding(vertical = 16.dp),
-            thickness = 1.dp,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-        )
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 16.dp),
+                thickness = 1.dp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+            )
 
-        ThemeSwitch(
-            modifier = Modifier.fillMaxWidth(),
-            onSwitchChange = { isChecked ->
-                themeViewModel.setThemeMode(
-                    if (isChecked) {
-                        ThemeMode.LIGHT
-                    } else {
-                        ThemeMode.DARK
-                    }
-                )
-            }
-        )
+            ThemeSwitch(
+                modifier = Modifier.fillMaxWidth(),
+                onSwitchChange = { isChecked ->
+                    themeViewModel.setThemeMode(
+                        if (isChecked) {
+                            ThemeMode.LIGHT
+                        } else {
+                            ThemeMode.DARK
+                        }
+                    )
+                }
+            )
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun SettingsScreenPreview() {
-    UniquePlantTheme {
-        SettingsScreen(
-            state = SettingsScreenState(
-                userInfo = UserInfo(
-                    userName = "John Doe",
-                    userEmail = "john.doe@example.com",
-                    profilePictureUrl = "https://miro.medium.com/v2/resize:fit:640/format:webp/1*e8M-qkVP2y0dK4waDxGmbw.png"
-                ),
-                isLoading = true,
+    SettingsScreen(
+        state = SettingsScreenState(
+            userInfo = UserInfo(
+                userName = "John Doe",
+                userEmail = "john.doe@example.com",
+                profilePictureUrl = "https://miro.medium.com/v2/resize:fit:640/format:webp/1*e8M-qkVP2y0dK4waDxGmbw.png"
             ),
-            onEvent = {
+            isLoading = true,
+        ),
+        onEvent = {
 
-            },
-            onLogout = { route ->
-                // Handle logout action
-            },
-        )
-    }
+        },
+        onLogout = { route ->
+            // Handle logout action
+        },
+    )
 }
