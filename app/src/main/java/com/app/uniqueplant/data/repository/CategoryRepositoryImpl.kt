@@ -23,17 +23,8 @@ class CategoryRepositoryImpl @Inject constructor(
         return categoryDao.updateCategory(category)
     }
 
-    override suspend fun deleteCategory(category: Category): Result<String> {
-        if (categoryDao.getCategoryById(category.categoryId) == null) {
-            return Result.failure(Exception("Category  ${category.name} does not exist."))
-        }
-        try {
-            categoryDao.deleteCategory(category)
-            return Result.success("Category ${category.name} deleted successfully.")
-        } catch (e: Exception) {
-            Log.d(TAG, "Error deleting category: ${e.message} \n $category")
-            return Result.failure(Exception("Failed to delete category ${category.name}"))
-        }
+    override suspend fun deleteCategory(category: Category): Int {
+        return categoryDao.deleteCategory(category)
     }
 
     override suspend fun getAllCategories(): List<Category> {

@@ -2,6 +2,7 @@ package com.app.uniqueplant.presentation.admin.categories
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.uniqueplant.data.model.Category
 import com.app.uniqueplant.domain.model.TransactionType
 import com.app.uniqueplant.domain.usecase.categories.AddCategoryUseCase
 import com.app.uniqueplant.domain.usecase.categories.DeleteCategoryUseCase
@@ -9,6 +10,8 @@ import com.app.uniqueplant.domain.usecase.categories.GetCategoriesUseCase
 import com.app.uniqueplant.domain.usecase.categories.UpdateCategoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,6 +25,8 @@ class CategoriesViewModel @Inject constructor(
     private val deleteCategoryUseCase: DeleteCategoryUseCase,
     private val addCategoryUseCase: AddCategoryUseCase
 ) : ViewModel() {
+
+    private var categoriesCollectionJob: Job? = null
 
     private val _state = MutableStateFlow(CategoriesScreenState())
     val state: StateFlow<CategoriesScreenState> = _state.asStateFlow()
@@ -43,7 +48,11 @@ class CategoriesViewModel @Inject constructor(
             }
 
             is CategoriesEvent.OnTransactionTypeChange -> {
-                updateState { copy(transactionType = event.transactionType) }
+                viewModelScope.launch(Dispatchers.Default) {
+                    updateState {
+                        copy(transactionType = event.transactionType)
+                    }
+                }
                 updateCategories()
             }
 
@@ -53,6 +62,7 @@ class CategoriesViewModel @Inject constructor(
 
             is CategoriesEvent.OnCategoryDialogSubmit -> {
                 onDialogSubmit(event.event)
+                updateState { copy(currentDialog = CategoriesDialog.Hidden) }
             }
 
             is CategoriesEvent.OnCategoryDialogStateChange -> {
@@ -113,14 +123,23 @@ class CategoriesViewModel @Inject constructor(
                         )
                     }
                 }
-                updateState { copy(currentDialog = CategoriesDialog.Hidden) }
             }
 
             is CategoryDialogSubmit.Edit -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    val updatedState = updateCategoryUseCase.invoke(
-                        event.category
-                    )
+                    val result = updateCategoryUseCase.invoke(event.category)
+                    if (result.isFailure) {
+                        updateState { copy(uiState = UiState.Error(result.exceptionOrNull()?.message ?: "An unexpected error occurred")) }
+                        return@launch
+                    }
+                    updateState { copy(uiState = UiState.Success(result.getOrNull() ?: "Category updated successfully")) }
+                }
+            }
+
+            is CategoryDialogSubmit.Delete -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    val category = _state.value.dialogState.category ?: return@launch
+                    val updatedState = deleteCategoryUseCase.invoke(category)
                     updateState {
                         copy(
                             uiState = updatedState
@@ -128,55 +147,25 @@ class CategoriesViewModel @Inject constructor(
                     }
                 }
             }
-
-            is CategoryDialogSubmit.Delete -> {
-                viewModelScope.launch(Dispatchers.IO) {
-                    val result = deleteCategoryUseCase.invoke(
-                        _state.value.dialogState.category ?: return@launch
-                    )
-                    if (result.isSuccess) {
-                        updateState {
-                            copy(
-                                uiState = UiState.Success(
-                                    result.getOrNull() ?: "Category deleted successfully"
-                                )
-                            )
-                        }
-                    } else {
-                        updateState {
-                            copy(
-                                uiState = UiState.Error(
-                                    result.exceptionOrNull()?.message
-                                        ?: "An unexpected error occurred"
-                                )
-                            )
-                        }
-                    }
-
-                }
-                updateState { copy(currentDialog = CategoriesDialog.Hidden) }
-            }
         }
     }
 
 
     private fun updateCategories() {
-        viewModelScope.launch(Dispatchers.IO) {
+        categoriesCollectionJob?.cancel()
+        categoriesCollectionJob = viewModelScope.launch(Dispatchers.IO) {
             _state.value = _state.value.copy(uiState = UiState.Loading)
             try {
                 val type = _state.value.transactionType
-                if (type == TransactionType.EXPENSE) {
-                    getCategoriesUseCase.getExpenseCategoriesWithFlow().collect { categories ->
-                        _state.value = _state.value.copy(
-                            categories = categories,
+                val currentFlow: Flow<List<Category>> = when (type) {
+                    TransactionType.EXPENSE -> getCategoriesUseCase.getExpenseCategoriesWithFlow()
+                    TransactionType.INCOME -> getCategoriesUseCase.getIncomeCategoriesWithFlow()
+                }
+                currentFlow.collect { updatedCategories ->
+                    updateState {
+                        copy(
                             uiState = UiState.Idle,
-                        )
-                    }
-                } else {
-                    getCategoriesUseCase.getIncomeCategoriesWithFlow().collect { categories ->
-                        _state.value = _state.value.copy(
-                            categories = categories,
-                            uiState = UiState.Idle,
+                            categories = updatedCategories
                         )
                     }
                 }

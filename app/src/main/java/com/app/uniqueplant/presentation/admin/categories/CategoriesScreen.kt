@@ -2,10 +2,7 @@ package com.app.uniqueplant.presentation.admin.categories
 
 import android.util.Log
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -32,7 +29,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.data.model.Category
 import com.app.uniqueplant.domain.model.TransactionType
-import com.app.uniqueplant.ui.components.LoadingProgress
 import com.app.uniqueplant.ui.components.buttons.AddNewButton
 import com.app.uniqueplant.ui.components.cards.CategoryItem
 import com.app.uniqueplant.ui.components.dialogs.AddCategoryDialog
@@ -54,20 +50,15 @@ fun CategoriesScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(text = "Categories") },
-                actions = {
-                    Button(
-                        onClick = {
-                            onEvent(CategoriesEvent.OnCategoryDialogToggle(CategoryDialogToggle.Add))
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.padding(end = 8.dp)
-                    ) {
-                        Text(text = "Add Category")
-                    }
+            TopAppBar(title = { Text(text = "Categories") }, actions = {
+                Button(
+                    onClick = {
+                        onEvent(CategoriesEvent.OnCategoryDialogToggle(CategoryDialogToggle.Add))
+                    }, shape = RoundedCornerShape(8.dp), modifier = Modifier.padding(end = 8.dp)
+                ) {
+                    Text(text = "Add Category")
                 }
-            )
+            })
         },
         snackbarHost = {
             SnackbarHost(
@@ -79,8 +70,7 @@ fun CategoriesScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(it)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            contentAlignment = Alignment.Center
+                .padding(horizontal = 16.dp, vertical = 8.dp), contentAlignment = Alignment.Center
         ) {
             LaunchedEffect(uiState) {
                 val message: String? = when (uiState) {
@@ -101,34 +91,26 @@ fun CategoriesScreen(
             }
 
             CategoriesScreenContent(
-                state = state,
-                onEvent = onEvent,
-                modifier = Modifier
-                    .fillMaxSize()
+                state = state, onEvent = onEvent, modifier = Modifier.fillMaxSize()
             )
 
             when (state.currentDialog) {
                 is CategoriesDialog.AddCategory -> {
-                    AddCategoryDialog(
-                        onAddNewCategory = { name, description,expectedPersonType ->
-                            onEvent(
-                                CategoriesEvent.OnCategoryDialogSubmit(
-                                    CategoryDialogSubmit.Add(
-                                        name,
-                                        description,
-                                        expectedPersonType
-                                    )
+                    AddCategoryDialog(onAddNewCategory = { name, description, expectedPersonType ->
+                        onEvent(
+                            CategoriesEvent.OnCategoryDialogSubmit(
+                                CategoryDialogSubmit.Add(
+                                    name, description, expectedPersonType
                                 )
                             )
-                        },
-                        onDismiss = {
-                            onEvent(
-                                CategoriesEvent.OnCategoryDialogToggle(
-                                    CategoryDialogToggle.Hidden
-                                )
+                        )
+                    }, onDismiss = {
+                        onEvent(
+                            CategoriesEvent.OnCategoryDialogToggle(
+                                CategoryDialogToggle.Hidden
                             )
-                        }
-                    )
+                        )
+                    })
                 }
 
                 is CategoriesDialog.EditCategory -> {
@@ -147,8 +129,7 @@ fun CategoriesScreen(
                                     CategoryDialogToggle.Hidden
                                 )
                             )
-                        }
-                    )
+                        })
                 }
 
                 is CategoriesDialog.DeleteCategory -> {
@@ -171,8 +152,7 @@ fun CategoriesScreen(
                                     CategoryDialogToggle.Hidden
                                 )
                             )
-                        }
-                    )
+                        })
                 }
 
                 else -> {}
@@ -184,72 +164,54 @@ fun CategoriesScreen(
 
 @Composable
 fun CategoriesScreenContent(
-    state: CategoriesScreenState,
-    onEvent: (CategoriesEvent) -> Unit,
-    modifier: Modifier = Modifier
+    state: CategoriesScreenState, onEvent: (CategoriesEvent) -> Unit, modifier: Modifier = Modifier
 ) {
-    val uiState = state.uiState
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        when (uiState) {
-            is UiState.Loading -> {
-                LoadingProgress(
-                    true,
+    CategoriesList(
+        modifier = modifier.fillMaxSize(),
+        uiState = state.uiState,
+        transactionType = state.transactionType,
+        categories = state.categories,
+        onEditCategoryClicked = { category ->
+            onEvent(
+                CategoriesEvent.OnCategoryDialogToggle(
+                    CategoryDialogToggle.Edit(category)
                 )
-            }
-
-            else -> {
-
-                CategoriesList(
-                    modifier = Modifier.fillMaxSize(),
-                    transactionType = state.transactionType,
-                    categories = state.categories,
-                    onEditCategoryClicked = { category ->
-                        onEvent(
-                            CategoriesEvent.OnCategoryDialogToggle(
-                                CategoryDialogToggle.Edit(category)
-                            )
-                        )
-                    },
-                    onDeleteCategoryClicked = { category ->
-                        onEvent(
-                            CategoriesEvent.OnCategoryDialogToggle(
-                                CategoryDialogToggle.Delete(category)
-                            )
-                        )
-                    },
-                    onAddNewCategoryClicked = {
-                        onEvent(
-                            CategoriesEvent.OnCategoryDialogToggle(
-                                CategoryDialogToggle.Add
-                            )
-                        )
-                    },
-                    onTransactionTypeChange = { type ->
-                        onEvent(
-                            CategoriesEvent.OnTransactionTypeChange(type)
-                        )
-                    }
+            )
+        },
+        onDeleteCategoryClicked = { category ->
+            onEvent(
+                CategoriesEvent.OnCategoryDialogToggle(
+                    CategoryDialogToggle.Delete(category)
                 )
-            }
-        }
-    }
+            )
+        },
+        onAddNewCategoryClicked = {
+            onEvent(
+                CategoriesEvent.OnCategoryDialogToggle(
+                    CategoryDialogToggle.Add
+                )
+            )
+        },
+        onTransactionTypeChange = { type ->
+            onEvent(
+                CategoriesEvent.OnTransactionTypeChange(type)
+            )
+        })
 }
 
 
 @Composable
 fun CategoriesList(
     modifier: Modifier = Modifier,
+    uiState: UiState,
     transactionType: TransactionType,
     categories: List<Category>,
     onEditCategoryClicked: (Category) -> Unit,
     onDeleteCategoryClicked: (Category) -> Unit,
     onAddNewCategoryClicked: () -> Unit,
-    onTransactionTypeChange: (TransactionType) -> Unit = {},
+    onTransactionTypeChange: (TransactionType) -> Unit,
 ) {
+
     if (categories.isEmpty()) {
         Text(
             text = "No categories available",
@@ -261,10 +223,8 @@ fun CategoriesList(
         )
     } else {
         LazyColumn(
-            modifier = modifier
-                .fillMaxSize()
+            modifier = modifier.fillMaxWidth()
         ) {
-
             item {
                 TransactionTypeSelector(
                     modifier = Modifier
@@ -274,52 +234,64 @@ fun CategoriesList(
                     selectedOption = transactionType,
                     onOptionSelected = { type ->
                         onTransactionTypeChange(type)
-                    }
-                )
+                    })
             }
-
-            items(items = categories, key = {
-                it.categoryId
-            }) { category ->
-                CategoryItem(
-                    modifier = Modifier
-                        .padding(vertical = 4.dp)
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.outlineVariant,
-//                        color = MaterialTheme.colorScheme.outline,
-                            shape = RoundedCornerShape(4.dp)
-                        ),
-                    categoryName = category.name,
-                    onEditClick = {
-                        onEditCategoryClicked(category)
-                    },
-                    onDeleteClicked = {
-                        onDeleteCategoryClicked(category)
+            when (uiState) {
+                is UiState.Loading -> {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Loading categories...",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
                     }
-                )
-            }
+                }
 
-            item {
-                AddNewButton(
-                    modifier = Modifier
-                        .padding(vertical = 4.dp)
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .border(
-                            width = 2.dp,
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = RoundedCornerShape(4.dp)
-                        ),
-                    text = "Add New Category",
-                    onClick = {
-                        onAddNewCategoryClicked()
+                else -> {
+                    items(items = categories, key = {
+                        it.categoryId
+                    }) { category ->
+                        CategoryItem(
+                            modifier = Modifier
+                                .padding(vertical = 4.dp)
+                                .border(
+                                    width = 1.dp,
+//                                    color = MaterialTheme.colorScheme.outlineVariant,
+                                    color = MaterialTheme.colorScheme.outline,
+                                    shape = RoundedCornerShape(4.dp)
+                                ), categoryName = category.name, onEditClick = {
+                                onEditCategoryClicked(category)
+                            }, onDeleteClicked = {
+                                onDeleteCategoryClicked(category)
+                            })
                     }
-                )
+
+                    item {
+                        AddNewButton(
+                            modifier = Modifier
+                                .padding(vertical = 4.dp)
+                                .fillMaxWidth()
+                                .height(50.dp)
+                                .border(
+                                    width = 2.dp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = RoundedCornerShape(4.dp)
+                                ), text = "Add New Category", onClick = {
+                                onAddNewCategoryClicked()
+                            })
+                    }
+                }
             }
         }
     }
-    Spacer(modifier = Modifier.height(16.dp))
+
+
 }
 
 
@@ -329,9 +301,24 @@ fun CategoriesScreenPreview() {
     CategoriesScreen(
         state = CategoriesScreenState(
             categories = listOf(
-                Category(categoryId = 1L, name = "Fruits", description = "All types of fruits", isExpenseCategory = true),
-                Category(categoryId = 2L, name = "Vegetables", description = "All types of vegetables", isExpenseCategory = true),
-                Category(categoryId = 3L, name = "Dairy", description = "All types of dairy products", isExpenseCategory = true),
+                Category(
+                    categoryId = 1L,
+                    name = "Fruits",
+                    description = "All types of fruits",
+                    isExpenseCategory = true
+                ),
+                Category(
+                    categoryId = 2L,
+                    name = "Vegetables",
+                    description = "All types of vegetables",
+                    isExpenseCategory = true
+                ),
+                Category(
+                    categoryId = 3L,
+                    name = "Dairy",
+                    description = "All types of dairy products",
+                    isExpenseCategory = true
+                ),
             ),
         ),
         onEvent = {},

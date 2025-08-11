@@ -7,18 +7,22 @@ import com.app.uniqueplant.presentation.admin.categories.UiState
 class UpdateCategoryUseCase (
     private val categoryRepository: CategoryRepository
 ){
-    suspend fun invoke(category: Category): UiState {
+    suspend fun invoke(category: Category): Result<String> {
 
         val categoryExists = categoryRepository.getCategoryByName(category.name)
         if (categoryExists != null && categoryExists.categoryId != category.categoryId) {
-            return UiState.Error("Category with name ${category.name} already exists.")
+            return Result.failure(
+                IllegalArgumentException("Category with name '${category.name}' already exists")
+            )
         }
 
         val result =  categoryRepository.updateCategory(category)
         return if (result >= 0) {
-            UiState.Success("Category updated successfully")
+            Result.success("Category updated successfully")
         } else {
-            UiState.Error("Unknown error")
+            Result.failure(
+                IllegalStateException("Unknown error occurred while updating the category")
+            )
         }
     }
 }

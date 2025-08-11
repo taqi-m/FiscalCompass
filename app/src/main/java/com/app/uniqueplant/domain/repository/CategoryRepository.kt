@@ -9,7 +9,7 @@ interface CategoryRepository {
 
     suspend fun updateCategory(category: Category): Int
 
-    suspend fun deleteCategory(category: Category): Result<String>
+    suspend fun deleteCategory(category: Category): Int
 
     suspend fun getAllCategories(): List<Category>
 
