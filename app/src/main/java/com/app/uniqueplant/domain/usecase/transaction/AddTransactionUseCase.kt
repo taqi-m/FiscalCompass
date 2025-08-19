@@ -1,8 +1,8 @@
 package com.app.uniqueplant.domain.usecase.transaction
 
-import com.app.uniqueplant.data.model.Expense
-import com.app.uniqueplant.data.model.Income
-import com.app.uniqueplant.domain.model.TransactionType
+import com.app.uniqueplant.domain.model.Expense
+import com.app.uniqueplant.domain.model.Income
+import com.app.uniqueplant.presentation.model.TransactionType
 import com.app.uniqueplant.domain.repository.ExpenseRepository
 import com.app.uniqueplant.domain.repository.IncomeRepository
 import com.app.uniqueplant.domain.usecase.auth.SessionUseCase

@@ -4,12 +4,11 @@ import android.util.Log
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.app.uniqueplant.data.model.Category
+import com.app.uniqueplant.domain.model.Category
 import com.app.uniqueplant.domain.model.InputField
-import com.app.uniqueplant.domain.model.TransactionType
-import com.app.uniqueplant.domain.usecase.transaction.AddTransactionUseCase
 import com.app.uniqueplant.domain.usecase.categories.GetCategoriesUseCase
-import com.app.uniqueplant.presentation.admin.categories.CategoriesScreenState
+import com.app.uniqueplant.domain.usecase.transaction.AddTransactionUseCase
+import com.app.uniqueplant.presentation.model.TransactionType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -98,6 +97,7 @@ class AddTransactionViewModel @Inject constructor(
             is AddTransactionEvent.OnAddTransactionDialogToggle -> {
                 onDialogToggle(event.event)
             }
+
             is AddTransactionEvent.OnAddTransactionDialogSubmit -> {
                 onDialogSubmit(event.event)
             }
@@ -150,31 +150,24 @@ class AddTransactionViewModel @Inject constructor(
     private fun onDialogSubmit(event: AddTransactionDialogSubmit) {
         when (event) {
             is AddTransactionDialogSubmit.DateSelected -> {
-
-                /*event.selectedDate?.let { pickedDate ->
-                    val calendar = Calendar.getInstance().apply {
-                        time = _state.value.date
-                        val selectedCal =
-                            Calendar.getInstance().apply { timeInMillis = pickedDate }
-                        set(Calendar.YEAR, selectedCal.get(Calendar.YEAR))
-                        set(Calendar.MONTH, selectedCal.get(Calendar.MONTH))
-                        set(Calendar.DAY_OF_MONTH, selectedCal.get(Calendar.DAY_OF_MONTH))
-                    }
-                    _state.value = _state.value.copy(date = calendar.time)
-                    Log.d(TAG, "Date selected: ${_state.value.date}")
-                } ?: run {
-                    Log.w(TAG, "Selected date is null")
-                }*/
-
-
                 event.selectedDate?.let { selectedDate ->
-                    val calendar = Calendar.getInstance().apply {
-                        time = _state.value.date
+                    val calendar = Calendar.getInstance()
+                    calendar.time = _state.value.date
+                    val selectedCalendar = Calendar.getInstance().apply {
                         timeInMillis = selectedDate
                     }
-                    _state.value = _state.value.copy(date = calendar.time)
+
+                    calendar.set(Calendar.YEAR, selectedCalendar.get(Calendar.YEAR))
+                    calendar.set(Calendar.MONTH, selectedCalendar.get(Calendar.MONTH))
+                    calendar.set(Calendar.DAY_OF_MONTH, selectedCalendar.get(Calendar.DAY_OF_MONTH))
+
+                    updateState {
+                        copy(date = calendar.time)
+                    }
                 }
-                _state.value = _state.value.copy(currentDialog = AddTransactionDialog.Hidden)
+                updateState {
+                    copy(currentDialog = AddTransactionDialog.Hidden)
+                }
             }
 
             is AddTransactionDialogSubmit.TimeSelected -> {

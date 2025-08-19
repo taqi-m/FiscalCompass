@@ -9,52 +9,48 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.app.uniqueplant.data.model.Expense
-import com.app.uniqueplant.data.model.Income
+import com.app.uniqueplant.data.model.ExpenseEntity
+import com.app.uniqueplant.data.model.IncomeEntity
 import com.app.uniqueplant.ui.components.input.DataEntryTextField
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import java.util.Date
 
 @Composable
-fun DeleteDialog(
-    isVisible: Boolean,
+fun DeleteTransactionDialog(
     onDismissRequest: () -> Unit,
     onDeleteConfirmed: () -> Unit,
 ) {
-    if (isVisible) {
-        AlertDialog(
-            onDismissRequest = onDismissRequest,
-            title = { Text("Delete Transaction") },
-            text = { Text("Are you sure you want to delete this item?") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        onDeleteConfirmed()
-                        onDismissRequest()
-                    },
-                    colors = ButtonDefaults.buttonColors().copy(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
-                    )
-                ) {
-                    Text("Delete")
-                }
-            },
-            dismissButton = {
-                OutlinedButton(onClick = onDismissRequest) {
-                    Text("Cancel")
-                }
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text("Delete Transaction") },
+        text = { Text("Are you sure you want to delete this entry?") },
+        confirmButton = {
+            Button(
+                onClick = {
+                    onDeleteConfirmed()
+                    onDismissRequest()
+                },
+                colors = ButtonDefaults.buttonColors().copy(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
+                )
+            ) {
+                Text("Delete")
             }
-        )
-    }
+        },
+        dismissButton = {
+            OutlinedButton(onClick = onDismissRequest) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 @Preview
 @Composable
 fun DeleteDialogPreview() {
     UniquePlantTheme {
-        DeleteDialog(
-            isVisible = true,
+        DeleteTransactionDialog(
             onDismissRequest = {},
             onDeleteConfirmed = {}
         )
@@ -62,8 +58,7 @@ fun DeleteDialogPreview() {
 }
 
 @Composable
-fun EditDialog(
-    isVisible: Boolean,
+fun EditTransactionDialog(
     transaction: Any,
     onDismissRequest: () -> Unit,
     onEditConfirmed: () -> Unit
@@ -73,13 +68,13 @@ fun EditDialog(
         title = { Text("Edit Transaction") },
         text = {
             when (transaction) {
-                is Expense -> {
+                is ExpenseEntity -> {
                     EditExpenseContent(
                         expense = transaction
                     )
                 }
 
-                is Income -> {
+                is IncomeEntity -> {
 
                 }
 
@@ -109,25 +104,23 @@ fun EditDialog(
 @Composable
 fun EditDialogPreview() {
     UniquePlantTheme {
-        EditDialog(
-            isVisible = true,
-            transaction = Expense(
+        EditTransactionDialog(
+            transaction = ExpenseEntity(
                 amount = 50.0,
                 description = "Groceries",
                 date = Date(),
                 categoryId = 1,
                 userId = "1"
             ),
-            onDismissRequest = {},
-            onEditConfirmed = {}
-        )
+            onDismissRequest = {}
+        ) {}
     }
 }
 
 
 @Composable
 fun EditExpenseContent(
-    expense: Expense,
+    expense: ExpenseEntity,
 ){
     Column {
         DataEntryTextField(
@@ -152,7 +145,7 @@ fun EditExpenseContent(
 fun EditExpenseContentPreview() {
     UniquePlantTheme {
         EditExpenseContent(
-            expense = Expense(
+            expense = ExpenseEntity(
                 description = "Groceries",
                 amount = 50.0,
                 date = Date(),

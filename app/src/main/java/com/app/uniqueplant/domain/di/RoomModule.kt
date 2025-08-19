@@ -1,4 +1,4 @@
-package com.app.uniqueplant.di
+package com.app.uniqueplant.domain.di
 
 import android.content.Context
 import androidx.room.Room

@@ -6,34 +6,34 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.app.uniqueplant.data.model.User
+import com.app.uniqueplant.data.model.UserEntity
 import kotlinx.coroutines.flow.Flow
 import java.util.Date
 
 @Dao
 interface UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertUser(user: User): Long
+    suspend fun insertUser(userEntity: UserEntity): Long
     
     @Update
-    suspend fun updateUser(user: User)
+    suspend fun updateUser(userEntity: UserEntity)
     
     @Delete
-    suspend fun deleteUser(user: User)
+    suspend fun deleteUser(userEntity: UserEntity)
     
     @Query("SELECT * FROM users WHERE userId = :id")
-    suspend fun getUserById(id: String): User?
+    suspend fun getUserById(id: String): UserEntity?
 
     
     @Query("SELECT * FROM users WHERE username = :username")
-    suspend fun getUserByUsername(username: String): User?
+    suspend fun getUserByUsername(username: String): UserEntity?
     
     @Query("SELECT * FROM users WHERE email = :email")
-    suspend fun getUserByEmail(email: String): User?
+    suspend fun getUserByEmail(email: String): UserEntity?
     
     @Query("UPDATE users SET lastLoginAt = :loginTime WHERE userId = :userId")
     suspend fun updateLastLogin(userId: String, loginTime: Date)
     
     @Query("SELECT * FROM users")
-    fun getAllUsers(): Flow<List<User>>
+    fun getAllUsers(): Flow<List<UserEntity>>
 }

@@ -8,7 +8,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.app.uniqueplant.data.model.Expense
+import com.app.uniqueplant.data.model.ExpenseEntity
 import com.app.uniqueplant.data.model.ExpenseWithCategory
 import kotlinx.coroutines.flow.Flow
 import java.util.Date
@@ -16,35 +16,35 @@ import java.util.Date
 @Dao
 interface ExpenseDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertExpense(expense: Expense): Long
+    suspend fun insertExpense(expenseEntity: ExpenseEntity): Long
     
     @Update
-    suspend fun updateExpense(expense: Expense)
+    suspend fun updateExpense(expenseEntity: ExpenseEntity)
     
     @Delete
-    suspend fun deleteExpense(expense: Expense)
+    suspend fun deleteExpense(expenseEntity: ExpenseEntity)
 
     @Query("SELECT * FROM expenses")
-    fun getAllExpenses(): Flow<List<Expense>>
+    fun getAllExpenses(): Flow<List<ExpenseEntity>>
 
     @Query("SELECT * FROM expenses WHERE userId = :userId ORDER BY date DESC")
-    fun getAllExpensesByUser(userId: String): Flow<List<Expense>>
+    fun getAllExpensesByUser(userId: String): Flow<List<ExpenseEntity>>
     
     @Query("SELECT * FROM expenses WHERE expenseId = :id")
-    suspend fun getExpenseById(id: Long): Expense?
+    suspend fun getExpenseById(id: Long): ExpenseEntity?
     
     @Transaction
     @Query("SELECT * FROM expenses WHERE userId = :userId ORDER BY date DESC")
     fun getExpensesWithCategory(userId: String): Flow<List<ExpenseWithCategory>>
     
     @Query("SELECT * FROM expenses WHERE userId = :userId AND date BETWEEN :startDate AND :endDate ORDER BY date DESC")
-    fun getExpensesByDateRange(userId: String, startDate: Date, endDate: Date): Flow<List<Expense>>
+    fun getExpensesByDateRange(userId: String, startDate: Date, endDate: Date): Flow<List<ExpenseEntity>>
 
     @Query("SELECT * FROM expenses WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
-    fun getExpensesByDateRangeForAllUsers(startDate: Date, endDate: Date): Flow<List<Expense>>
+    fun getExpensesByDateRangeForAllUsers(startDate: Date, endDate: Date): Flow<List<ExpenseEntity>>
     
     @Query("SELECT * FROM expenses WHERE userId = :userId AND categoryId = :categoryId ORDER BY date DESC")
-    fun getExpensesByCategory(userId: String, categoryId: Long): Flow<List<Expense>>
+    fun getExpensesByCategory(userId: String, categoryId: Long): Flow<List<ExpenseEntity>>
     
     @Query("SELECT SUM(amount) FROM expenses WHERE userId = :userId")
     fun getTotalExpensesByUser(userId: String): Flow<Double?>

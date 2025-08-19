@@ -1,14 +1,19 @@
 package com.app.uniqueplant.presentation.admin.dashboard
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -17,6 +22,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.buildAnnotatedString
@@ -29,6 +37,7 @@ import androidx.navigation.NavHostController
 import com.app.uniqueplant.R
 import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
 import com.app.uniqueplant.ui.components.cards.OptionsRow
+import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
 
 data class HomeHeroActionButton(
@@ -39,6 +48,7 @@ data class HomeHeroActionButton(
 
 data class HomeOption(
     val title: String,
+    val description: String,
     val icon: Painter,
     val onClick: () -> Unit
 )
@@ -54,8 +64,7 @@ fun DashboardScreen(
     onEvent(DashboardEvent.OnScreenLoad(appNavController))
     DashboardScreenContent(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
+            .fillMaxSize(),
         state = state,
         onEvent = onEvent,
     )
@@ -78,15 +87,18 @@ fun DashboardScreenContent(
     ) {
         HeroSection(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp),
             userInfo = state.userInfo,
             onEvent = onEvent,
         )
 
+        Spacer(modifier = Modifier.height(16.dp))
 
         val options = listOf(
             HomeOption(
                 title = "Categories",
+                description = "Manage your categories",
                 icon = painterResource(id = R.drawable.ic_category_02),
                 onClick = {
                     onEvent(DashboardEvent.OnCategoriesClicked)
@@ -94,24 +106,36 @@ fun DashboardScreenContent(
             ),
             HomeOption(
                 title = "People",
+                description = "Manage your people",
                 icon = painterResource(id = R.drawable.ic_person_02),
                 onClick = {
                     onEvent(DashboardEvent.OnPersonsClicked)
                 }
-            ),
-            HomeOption(
-                title = "Jobs",
-                icon = painterResource(id = R.drawable.ic_jobs_48),
-                onClick = {
-                }
             )
         )
-        OptionsRow(
+
+        val cornerSize = 8
+
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            options = options,
-        )
+                .fillMaxSize()
+                .clip(
+                    RoundedCornerShape(topStartPercent = cornerSize, topEndPercent = cornerSize)
+                )
+//                .background(MaterialTheme.colorScheme.surfaceVariant.copy(0.35f))
+                .background(
+                    color = Color(0xFF808080)
+                        .compositeOver(MaterialTheme.colorScheme.surface).copy(alpha = 0.125f)
+                )
+                .padding(8.dp)
+        ) {
+            OptionsRow(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .padding(top = 8.dp),
+                options = options
+            )
+        }
     }
 }
 
@@ -125,14 +149,16 @@ fun DashboardScreenPreview() {
     val state = DashboardScreenState(
         userInfo = UserInfo()
     )
-    Scaffold{
-        DashboardScreenContent(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(it),
-            state = state,
-            onEvent = {}
-        )
+    UniquePlantTheme {
+        Scaffold {
+            DashboardScreenContent(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(it),
+                state = state,
+                onEvent = {}
+            )
+        }
     }
 }
 
@@ -153,8 +179,8 @@ fun HeroSection(
             }
         ),
         HomeHeroActionButton(
-            icon = painterResource(id = R.drawable.ic_list_24),
-            label = "Transactions",
+            icon = painterResource(id = R.drawable.ic_cloud_sync_24),
+            label = "Sync",
             onClick = {
                 //onEvent(DashboardEvent.OnAddTransactionClick)
             }

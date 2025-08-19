@@ -1,4 +1,4 @@
-package com.app.uniqueplant.di
+package com.app.uniqueplant.domain.di
 
 import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesRepository
 import com.app.uniqueplant.data.repository.AuthRepositoryImpl

@@ -4,10 +4,10 @@ import androidx.room.Embedded
 import androidx.room.Relation
 
 data class IncomeWithCategory(
-    @Embedded val income: Income,
+    @Embedded val income: IncomeEntity,
     @Relation(
         parentColumn = "categoryId",
         entityColumn = "categoryId"
     )
-    val category: Category?
+    val category: CategoryEntity?
 )

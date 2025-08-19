@@ -1,6 +1,6 @@
 package com.app.uniqueplant.domain.repository
 
-import com.app.uniqueplant.data.model.Expense
+import com.app.uniqueplant.domain.model.Expense
 import kotlinx.coroutines.flow.Flow
 
 interface ExpenseRepository {
@@ -9,6 +9,8 @@ interface ExpenseRepository {
     suspend fun updateExpense(expense: Expense)
 
     suspend fun deleteExpense(expense: Expense)
+
+    suspend fun deleteExpenseById(id: Long)
 
     suspend fun getExpenseById(id: Long): Expense?
 

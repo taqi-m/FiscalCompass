@@ -2,7 +2,7 @@ package com.app.uniqueplant.presentation.transactions
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TimePickerState
-import com.app.uniqueplant.domain.model.TransactionType
+import com.app.uniqueplant.presentation.model.TransactionType
 import java.util.Date
 
 sealed class AddTransactionDialogToggle {

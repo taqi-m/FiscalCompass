@@ -11,7 +11,7 @@ import com.app.uniqueplant.data.datasource.local.dao.UserDao
 import com.app.uniqueplant.data.model.*
 
 @Database(
-    entities = [User::class, Expense::class, Income::class, Category::class, Person::class],
+    entities = [UserEntity::class, ExpenseEntity::class, IncomeEntity::class, CategoryEntity::class, PersonEntity::class],
     version = 1,
     exportSchema = true
 )

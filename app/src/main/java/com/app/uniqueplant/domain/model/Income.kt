@@ -1,0 +1,19 @@
+package com.app.uniqueplant.domain.model
+
+import java.util.Date
+
+data class Income(
+    val incomeId: Long = 0,
+    val amount: Double,
+    val description: String,
+    val date: Date,
+    val categoryId: Long,
+    val userId: String,
+    val personId: Long? = null,
+    val source: String? = null,
+    val isRecurring: Boolean = false,
+    val recurringFrequency: String? = null,
+    val isTaxable: Boolean = true,
+    val createdAt: Date = Date(),
+    val updatedAt: Date = Date()
+)

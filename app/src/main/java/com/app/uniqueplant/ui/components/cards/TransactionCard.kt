@@ -21,18 +21,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.R
-import com.app.uniqueplant.domain.model.Transaction
-import com.app.uniqueplant.domain.model.TransactionType
+import com.app.uniqueplant.presentation.model.TransactionType
 import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
+import com.app.uniqueplant.presentation.model.TransactionUi
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
 @Composable
 fun TransactionCard(
     modifier: Modifier = Modifier,
-    transaction: Transaction,
+    transaction: TransactionUi,
     onEditClicked: () -> Unit,
     onDeleteClicked: () -> Unit
 ) {
@@ -46,6 +45,10 @@ fun TransactionCard(
         )
     ) {
         TransactionCardContent(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+                .padding(16.dp),
             transaction = transaction,
             onEditClicked = onEditClicked,
             onDeleteClicked = onDeleteClicked
@@ -56,24 +59,22 @@ fun TransactionCard(
 
 @Composable
 fun TransactionCardContent(
-    transaction: Transaction,
+    modifier: Modifier,
+    transaction: TransactionUi,
     onEditClicked: () -> Unit,
     onDeleteClicked: () -> Unit
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             modifier = Modifier
                 .rotate(
-                    if (transaction.type == TransactionType.INCOME) 45f else -45f
-                )
-                .padding(all = 16.dp),
+                    if (transaction.isExpense) -45f else 45f
+                ),
             painter = painterResource(id = R.drawable.ic_arrow_24),
-            tint = if (transaction.type == TransactionType.EXPENSE) {
+            tint = if (transaction.isExpense) {
                 MaterialTheme.colorScheme.error
             } else {
                 LocalContentColor.current
@@ -85,13 +86,13 @@ fun TransactionCardContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            income = transaction.amount,
-            date = transaction.date
+            income = transaction.formatedAmount,
+            time = transaction.formatedTime
         )
-        TransactionCardOptions(
+        /*TransactionCardOptions(
             onEditClicked = onEditClicked,
             onDeleteClicked = onDeleteClicked
-        )
+        )*/
     }
 }
 
@@ -99,22 +100,20 @@ fun TransactionCardContent(
 @Composable
 fun TransactionCardText(
     modifier: Modifier = Modifier,
-    income: Double,
-    date: Date
+    income: String,
+    time: String
 ) {
-    Column(
+    Row(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(
-            space = 4.dp,
-            alignment = Alignment.CenterVertically
-        )
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = CurrencyFormaterUseCase.formatCurrency(amount = income),
+            text = income,
             style = MaterialTheme.typography.bodyLarge
         )
         Text(
-            text = SimpleDateFormat("h:mm a", Locale.getDefault()).format(date),
+            text = time,
             style = MaterialTheme.typography.bodySmall
         )
     }
@@ -125,18 +124,14 @@ fun TransactionCardText(
 @Composable
 fun TransactionCardPreview() {
     TransactionCard(
-        transaction = Transaction(
-            id = 1L,
-            amount = 100.0,
+        transaction = TransactionUi(
+            transactionId = 1L,
+            formatedAmount = CurrencyFormaterUseCase.formatCurrency(100.0),
+            formatedDate = SimpleDateFormat("dd MM, yyyy", Locale.getDefault()).format(Date()),
+            formatedTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
             description = "Sample Transaction",
-            date = Calendar.getInstance().apply {
-                set(2023, Calendar.OCTOBER, 1, 12, 0)
-            }.time,
-            categoryId = 0L,
-            userId = "user123",
-            type = TransactionType.EXPENSE,
-            createdAt = Date(),
-            updatedAt = Date()
+            isExpense = true,
+            transactionType = TransactionType.INCOME.name
         ),
         onEditClicked = {},
         onDeleteClicked = {},

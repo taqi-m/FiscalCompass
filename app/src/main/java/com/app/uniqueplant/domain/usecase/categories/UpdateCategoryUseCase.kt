@@ -1,8 +1,7 @@
 package com.app.uniqueplant.domain.usecase.categories
 
-import com.app.uniqueplant.data.model.Category
+import com.app.uniqueplant.domain.model.Category
 import com.app.uniqueplant.domain.repository.CategoryRepository
-import com.app.uniqueplant.presentation.admin.categories.UiState
 
 class UpdateCategoryUseCase (
     private val categoryRepository: CategoryRepository

@@ -9,6 +9,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -48,13 +49,24 @@ fun HomeScreen(
             NavigationBar {
                 items.forEach { screen ->
                     NavigationBarItem(
+                        colors = NavigationBarItemDefaults.colors().copy(
+                            selectedIndicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                            selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        ),
                         icon = {
                             Icon(
                                 painterResource(screen.iconResource),
                                 contentDescription = null
                             )
                         },
-                        label = { Text(screen.label) },
+                        label = {
+                            Text(
+                                text = screen.label,
+                                style = MaterialTheme.typography.labelLarge,
+                            )
+                        },
                         selected = currentRoute == screen.route,
                         onClick = {
                             if (currentRoute != screen.route) {
@@ -73,8 +85,8 @@ fun HomeScreen(
         },
         topBar = {
             TopAppBar(
-                navigationIcon = {
-                    FilledTonalIconButton (
+                /*navigationIcon = {
+                    FilledTonalIconButton(
                         modifier = Modifier.padding(horizontal = 8.dp),
                         onClick = {
                             homeNavController.navigate(HomeBottomScreen.Dashboard.route) {
@@ -93,8 +105,12 @@ fun HomeScreen(
                         )
 
                     }
+                },*/
+                title = {
+                    Text(
+                        text = "Unique Stone Plant",
+                    )
                 },
-                title = {  },
                 actions = {
                     IconButton(
                         modifier = Modifier.padding(horizontal = 8.dp),

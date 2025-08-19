@@ -1,7 +1,7 @@
 package com.app.uniqueplant.presentation.admin.categories
 
-import com.app.uniqueplant.data.model.Category
-import com.app.uniqueplant.domain.model.TransactionType
+import com.app.uniqueplant.domain.model.Category
+import com.app.uniqueplant.presentation.model.TransactionType
 
 
 sealed class UiState {

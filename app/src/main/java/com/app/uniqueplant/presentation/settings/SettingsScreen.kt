@@ -2,16 +2,13 @@ package com.app.uniqueplant.presentation.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -23,7 +20,6 @@ import com.app.uniqueplant.presentation.navigation.MainScreens
 import com.app.uniqueplant.ui.components.ThemeSwitch
 import com.app.uniqueplant.ui.components.cards.ProfileCard
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
-import com.app.uniqueplant.ui.util.ThemeMode
 import com.app.uniqueplant.ui.util.ThemePreferenceViewModel
 
 @Composable
@@ -47,7 +43,7 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(it)
-                .padding(16.dp),
+                .padding(vertical =  16.dp, horizontal = 8.dp),
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Top
         ) {
@@ -68,14 +64,8 @@ fun SettingsScreen(
 
             ThemeSwitch(
                 modifier = Modifier.fillMaxWidth(),
-                onSwitchChange = { isChecked ->
-                    themeViewModel.setThemeMode(
-                        if (isChecked) {
-                            ThemeMode.LIGHT
-                        } else {
-                            ThemeMode.DARK
-                        }
-                    )
+                onSwitchChange = { themeMode ->
+                    themeViewModel.setThemeMode(themeMode)
                 }
             )
         }
@@ -85,20 +75,22 @@ fun SettingsScreen(
 @Preview(showBackground = true)
 @Composable
 fun SettingsScreenPreview() {
-    SettingsScreen(
-        state = SettingsScreenState(
-            userInfo = UserInfo(
-                userName = "John Doe",
-                userEmail = "john.doe@example.com",
-                profilePictureUrl = "https://miro.medium.com/v2/resize:fit:640/format:webp/1*e8M-qkVP2y0dK4waDxGmbw.png"
+    UniquePlantTheme {
+        SettingsScreen(
+            state = SettingsScreenState(
+                userInfo = UserInfo(
+                    userName = "John Doe",
+                    userEmail = "john.doe@example.com",
+                    profilePictureUrl = "https://miro.medium.com/v2/resize:fit:640/format:webp/1*e8M-qkVP2y0dK4waDxGmbw.png"
+                ),
+                isLoading = true,
             ),
-            isLoading = true,
-        ),
-        onEvent = {
+            onEvent = {
 
-        },
-        onLogout = { route ->
-            // Handle logout action
-        },
-    )
+            },
+            onLogout = { route ->
+                // Handle logout action
+            },
+        )
+    }
 }

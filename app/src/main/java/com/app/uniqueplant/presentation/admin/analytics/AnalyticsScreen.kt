@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -76,11 +77,19 @@ fun ListTable(
     modifier: Modifier = Modifier
 ) {
     Card (
-        modifier = modifier
+        modifier = modifier,
+        colors = CardDefaults.cardColors().copy(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+        )
     ) {
         Column(
             modifier = Modifier.padding(8.dp).padding(horizontal = 8.dp)
         ) {
+            //Header Row
+            val headingStyle = MaterialTheme.typography.bodyLarge.copy(
+                fontWeight = FontWeight.Bold
+            )
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -89,17 +98,12 @@ fun ListTable(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    modifier = Modifier.weight(1f),
                     text = "Category",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.Bold
-                    )
+                    style = headingStyle
                 )
                 Text(
                     text = type,
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.Bold
-                    )
+                    style = headingStyle
                 )
             }
 
@@ -109,6 +113,10 @@ fun ListTable(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
             )
 
+            //Data Rows
+            val dataRowStyle = MaterialTheme.typography.bodyMedium.copy(
+                fontWeight = FontWeight.W500
+            )
             rows.forEach { row ->
                 Row(
                     modifier = Modifier
@@ -120,11 +128,11 @@ fun ListTable(
                     Text(
                         modifier = Modifier.weight(1f),
                         text = row.key,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = dataRowStyle
                     )
                     Text(
                         text = CurrencyFormaterUseCase.formatCurrency(row.value),
-                        style = MaterialTheme.typography.bodyMedium
+                        style = dataRowStyle
                     )
                 }
                 HorizontalDivider(
@@ -134,6 +142,7 @@ fun ListTable(
                 )
             }
 
+            //Footer Row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -143,18 +152,14 @@ fun ListTable(
             ) {
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = "Total $type",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    )
+                    text = "Total",
+                    style = headingStyle
                 )
                 Text(
                     text = CurrencyFormaterUseCase.formatCurrency(
                         rows.values.sum()
                     ),
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    )
+                    style = headingStyle
                 )
             }
         }

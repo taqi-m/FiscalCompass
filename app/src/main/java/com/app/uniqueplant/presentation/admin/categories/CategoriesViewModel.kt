@@ -2,12 +2,12 @@ package com.app.uniqueplant.presentation.admin.categories
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.app.uniqueplant.data.model.Category
-import com.app.uniqueplant.domain.model.TransactionType
+import com.app.uniqueplant.domain.model.Category
 import com.app.uniqueplant.domain.usecase.categories.AddCategoryUseCase
 import com.app.uniqueplant.domain.usecase.categories.DeleteCategoryUseCase
 import com.app.uniqueplant.domain.usecase.categories.GetCategoriesUseCase
 import com.app.uniqueplant.domain.usecase.categories.UpdateCategoryUseCase
+import com.app.uniqueplant.presentation.model.TransactionType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

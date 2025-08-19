@@ -1,17 +1,8 @@
-package com.app.uniqueplant.data.model
+package com.app.uniqueplant.domain.model
 
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Index
-import androidx.room.PrimaryKey
 import java.util.Date
 
-@Entity(
-    tableName = "categories",
-    indices = [Index("categoryId")],
-)
 data class Category(
-    @PrimaryKey(autoGenerate = true)
     val categoryId: Long = 0,
     val name: String,
     val color: Int = 0xFF000000.toInt(),

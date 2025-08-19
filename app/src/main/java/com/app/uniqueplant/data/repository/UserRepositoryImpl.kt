@@ -2,7 +2,7 @@ package com.app.uniqueplant.data.repository
 
 import com.app.uniqueplant.data.datasource.local.dao.UserDao
 import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesRepository
-import com.app.uniqueplant.data.model.User
+import com.app.uniqueplant.data.model.UserEntity
 import com.app.uniqueplant.domain.repository.UserRepository
 import javax.inject.Inject
 
@@ -52,7 +52,7 @@ class UserRepositoryImpl @Inject constructor(
         userType: String
     ) {
         userDao.insertUser(
-            User(
+            UserEntity(
                 userId = userId,
                 username = username,
                 email = email,

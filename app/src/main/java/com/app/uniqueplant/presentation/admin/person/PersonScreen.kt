@@ -31,7 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.R
-import com.app.uniqueplant.data.model.PersonTypes
+import com.app.uniqueplant.domain.model.PersonTypes
 import com.app.uniqueplant.presentation.admin.categories.UiState
 import com.app.uniqueplant.ui.components.LoadingProgress
 import com.app.uniqueplant.ui.components.cards.PersonItem

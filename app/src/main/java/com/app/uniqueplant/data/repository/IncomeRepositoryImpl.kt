@@ -1,9 +1,12 @@
 package com.app.uniqueplant.data.repository
 
 import com.app.uniqueplant.data.datasource.local.dao.IncomeDao
-import com.app.uniqueplant.data.model.Income
+import com.app.uniqueplant.data.mapper.toIncome
+import com.app.uniqueplant.data.mapper.toIncomeEntity
+import com.app.uniqueplant.domain.model.Income
 import com.app.uniqueplant.domain.repository.IncomeRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -12,23 +15,33 @@ class IncomeRepositoryImpl @Inject constructor(
 ) : IncomeRepository {
 
     override suspend fun addIncome(income: Income): Long {
-        return incomeDao.insertIncome(income)
+        return incomeDao.insertIncome(income.toIncomeEntity())
     }
 
     override suspend fun updateIncome(income: Income) {
-        incomeDao.updateIncome(income)
+        incomeDao.updateIncome(income.toIncomeEntity())
     }
 
     override suspend fun deleteIncome(income: Income) {
+        incomeDao.deleteIncome(income.toIncomeEntity())
+    }
+
+    override suspend fun deleteIncomeById(id: Long) {
+        val income = incomeDao.getIncomeById(id)
+            ?: throw IllegalArgumentException("Income with id $id not found")
         incomeDao.deleteIncome(income)
     }
 
     override suspend fun getIncomeById(id: Long): Income? {
-        return incomeDao.getIncomeById(id)
+        return incomeDao.getIncomeById(id)?.toIncome()
     }
 
     override suspend fun getAllIncomes(): Flow<List<Income>> {
-        return incomeDao.getAllIncomes()
+        return incomeDao.getAllIncomes().map {
+            it.map { incomeEntity ->
+                incomeEntity.toIncome()
+            }
+        }
     }
 
     override suspend fun getIncomesByUser(userId: Long): Flow<List<Income>> {
@@ -55,7 +68,11 @@ class IncomeRepositoryImpl @Inject constructor(
                 set(Calendar.YEAR, year)
                 set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
             }.time
-        )
+        ).map {
+            it.map { incomeEntity ->
+                incomeEntity.toIncome()
+            }
+        }
     }
 
     override suspend fun getIncomeSumByMonth(month: Int, year: Int): Flow<Double> {

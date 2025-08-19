@@ -1,7 +1,7 @@
 package com.app.uniqueplant.domain.usecase.income
 
 import android.util.Log
-import com.app.uniqueplant.data.model.Income
+import com.app.uniqueplant.domain.model.Income
 import com.app.uniqueplant.domain.repository.IncomeRepository
 import com.app.uniqueplant.domain.usecase.auth.SessionUseCase
 import java.util.Date

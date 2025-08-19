@@ -2,7 +2,7 @@ package com.app.uniqueplant.domain.usecase
 
 import android.util.Log
 import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesRepository
-import com.app.uniqueplant.data.model.Category
+import com.app.uniqueplant.domain.model.Category
 import com.app.uniqueplant.domain.repository.CategoryRepository
 
 class LoadDefaultsUseCase(

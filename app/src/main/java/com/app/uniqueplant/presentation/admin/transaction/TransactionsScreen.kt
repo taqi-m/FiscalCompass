@@ -25,18 +25,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
+import com.app.uniqueplant.presentation.admin.categories.UiState
 import com.app.uniqueplant.ui.components.cards.TransactionCard
-import com.app.uniqueplant.ui.components.dialogs.DeleteDialog
+import com.app.uniqueplant.ui.components.dialogs.DeleteTransactionDialog
+import com.app.uniqueplant.ui.components.dialogs.EditTransactionDialog
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 @Composable
 fun TransactionsScreen(
-    state: TransactionState,
+    state: TransactionScreenState,
     onEvent: (TransactionEvent) -> Unit,
 ) {
-    val transactions by state.transactions.collectAsState(initial = emptyList())
+    val transactions = state.transactions
+    val uiState = state.uiState
 
     Box(
         modifier = Modifier
@@ -45,7 +48,7 @@ fun TransactionsScreen(
         contentAlignment = Alignment.Center
     ) {
 
-        if (state.isLoading) {
+        if (uiState is UiState.Loading) {
             Column(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -79,16 +82,8 @@ fun TransactionsScreen(
                     )
                 }
 
-                // Group transactions by date
-                val groupedTransactions = transactions.groupBy { transaction ->
-                    // Create a formatter that formats to a consistent date string without time
-                    val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                    // Format the date to string then parse back to date to remove time component
-                    dateFormatter.parse(dateFormatter.format(transaction.date))
-                }
-
                 // Display transactions grouped by date
-                groupedTransactions.forEach { (date, transactionsForDate) ->
+                transactions.forEach { (date, transactionsForDate) ->
                     stickyHeader {
                         // Convert date to string if it's a Date object
                         val formattedDate =
@@ -99,18 +94,74 @@ fun TransactionsScreen(
                     items(transactionsForDate.size) { index ->
                         TransactionCard(
                             transaction = transactionsForDate[index],
-                            onEditClicked = {},
-                            onDeleteClicked = {},
+                            onEditClicked = {
+                                onEvent(
+                                    TransactionEvent.OnTransactionDialogToggle(
+                                        TransactionDialogToggle.Edit(transactionsForDate[index])
+                                    )
+                                )
+                            },
+                            onDeleteClicked = {
+                                onEvent(
+                                    TransactionEvent.OnTransactionDialogToggle(
+                                        TransactionDialogToggle.Delete(transactionsForDate[index])
+                                    )
+                                )
+                            },
                         )
                     }
                 }
             }
         }
     }
-    DeleteDialog(
-        isVisible = state.isDeleteMode,
-        onDismissRequest = { onEvent(TransactionEvent.OnDeleteModeToggle) },
-        onDeleteConfirmed = { onEvent(TransactionEvent.OnTransactionDeleted) })
+
+    when (state.currentDialog) {
+        TransactionScreenDialog.EditTransaction -> {
+            /*state.dialogState.transaction?.let { transaction ->
+                 // Show edit dialog for the selected transaction
+                 EditTransactionDialog(
+                     transaction = transaction,
+                     onDismissRequest = {
+                         onEvent(
+                             TransactionEvent.OnTransactionDialogToggle(
+                                 TransactionDialogToggle.Hidden
+                             )
+                         )
+                     },
+                     onEditConfirmed = { updatedTransaction ->
+                         onEvent(
+                             TransactionEvent.OnTransactionDialogSubmit(
+                                 TransactionDialogSubmit.Edit(updatedTransaction)
+                             )
+                         )
+                     }
+                 )
+             }*/
+        }
+
+        TransactionScreenDialog.DeleteTransaction -> {
+            state.dialogState.transaction?.let { transaction ->
+                // Show delete confirmation dialog for the selected transaction
+                DeleteTransactionDialog(
+                    onDismissRequest = {
+                        onEvent(
+                            TransactionEvent.OnTransactionDialogToggle(
+                                TransactionDialogToggle.Hidden
+                            )
+                        )
+                    },
+                    onDeleteConfirmed = {
+                        onEvent(
+                            TransactionEvent.OnTransactionDialogSubmit(
+                                TransactionDialogSubmit.Delete
+                            )
+                        )
+                    })
+            }
+        }
+
+        else -> {}
+    }
 }
 
 
@@ -203,7 +254,7 @@ fun TransactionHeading(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal =  8.dp),
+                    .padding(horizontal = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
@@ -291,8 +342,8 @@ fun TransactionHeadingPreview() {
 fun TransactionsScreenPreview() {
     UniquePlantTheme {
         TransactionsScreen(
-            state = TransactionState(
-                isLoading = true,
+            state = TransactionScreenState(
+                uiState = UiState.Loading
             ), onEvent = {})
     }
 }

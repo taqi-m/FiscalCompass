@@ -7,44 +7,43 @@ import androidx.room.PrimaryKey
 import java.util.Date
 
 @Entity(
-    tableName = "expenses",
+    tableName = "incomes",
     foreignKeys = [
         ForeignKey(
-            entity = Category::class,
+            entity = CategoryEntity::class,
             parentColumns = ["categoryId"],
             childColumns = ["categoryId"],
             onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
-            entity = User::class,
+            entity = UserEntity::class,
             parentColumns = ["userId"],
             childColumns = ["userId"],
             onDelete = ForeignKey.NO_ACTION
         ),
         ForeignKey(
-            entity = Person::class,
+            entity = PersonEntity::class,
             parentColumns = ["personId"],
             childColumns = ["personId"],
             onDelete = ForeignKey.SET_NULL
         )
 
     ],
-    indices = [Index("categoryId"), Index("userId"), Index("personId")],
+    indices = [Index("categoryId"), Index("userId"), Index("personId")]
 )
-data class Expense(
+data class IncomeEntity(
     @PrimaryKey(autoGenerate = true)
-    val expenseId: Long = 0,
+    val incomeId: Long = 0,
     val amount: Double,
     val description: String,
     val date: Date,
     val categoryId: Long,
     val userId: String,
-    val personId: Long? = null, // Nullable if not associated with a person
-    val paymentMethod: String? = null,
-    val location: String? = null,
-    val receipt: String? = null, // URL to receipt image
+    val personId: Long? = null,
+    val source: String? = null,
     val isRecurring: Boolean = false,
-    val recurringFrequency: String? = null, // daily, weekly, monthly, yearly
+    val recurringFrequency: String? = null,
+    val isTaxable: Boolean = true,
     val createdAt: Date = Date(),
     val updatedAt: Date = Date()
 )

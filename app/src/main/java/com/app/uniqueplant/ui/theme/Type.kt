@@ -19,76 +19,120 @@ val GilroyFontFamily = FontFamily(
     Font(R.font.gilroy_regular, FontWeight.W400),
 )
 
+// Using golden ratio (φ ≈ 1.618) to scale between related text styles
 val Typography = Typography(
-    bodyLarge = TextStyle(
+    // Display styles - using 36sp as base
+    displayLarge = TextStyle(
         fontFamily = GilroyFontFamily,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
+        fontWeight = FontWeight.ExtraBold,
+        fontSize = 57.sp, // 36 * 1.618 ≈ 57
+        lineHeight = 64.sp,
+        letterSpacing = (-0.25).sp
     ),
-    /* Other default text styles to override
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
-    ),
-    labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
-    )
-    */
-    // Title of AppBar placed in center
-    titleLarge = TextStyle(
+    displayMedium = TextStyle(
         fontFamily = GilroyFontFamily,
         fontWeight = FontWeight.Bold,
-        fontSize = 22.sp,
-        lineHeight = 30.sp,
+        fontSize = 45.sp,
+        lineHeight = 52.sp,
         letterSpacing = 0.sp
     ),
-    // Category heading
-    headlineMedium = TextStyle(
+    displaySmall = TextStyle(
         fontFamily = GilroyFontFamily,
         fontWeight = FontWeight.SemiBold,
-        fontSize = 20.sp,
-        lineHeight = 26.sp,
+        fontSize = 36.sp, // Base size for display
+        lineHeight = 44.sp,
         letterSpacing = 0.sp
     ),
-    // Category heading large
+
+    // Headline styles - using 24sp as base
     headlineLarge = TextStyle(
         fontFamily = GilroyFontFamily,
         fontWeight = FontWeight.Bold,
-        fontSize = 24.sp,
+        fontSize = 32.sp, // 24 * 1.33 ≈ 32
+        lineHeight = 40.sp,
+        letterSpacing = 0.sp
+    ),
+    headlineMedium = TextStyle(
+        fontFamily = GilroyFontFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 28.sp,
+        lineHeight = 36.sp,
+        letterSpacing = 0.sp
+    ),
+    headlineSmall = TextStyle(
+        fontFamily = GilroyFontFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 24.sp, // Base size for headlines
         lineHeight = 32.sp,
         letterSpacing = 0.sp
     ),
-    /*// Card item main text
-        bodyLarge = TextStyle(
-            fontFamily = GilroyFontFamily,
-            fontWeight = FontWeight.Medium,
-            fontSize = 16.sp,
-            lineHeight = 22.sp,
-            letterSpacing = 0.5.sp
-        ),*/
-    // Card item subtext
+
+    // Title styles - using 16sp as base
+    titleLarge = TextStyle(
+        fontFamily = GilroyFontFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 22.sp, // 16 * 1.375 ≈ 22
+        lineHeight = 28.sp,
+        letterSpacing = 0.sp
+    ),
+    titleMedium = TextStyle(
+        fontFamily = GilroyFontFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 16.sp, // Base size for titles
+        lineHeight = 24.sp,
+        letterSpacing = 0.15.sp
+    ),
+    titleSmall = TextStyle(
+        fontFamily = GilroyFontFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.1.sp
+    ),
+
+    // Body styles - using 16sp as base
+    bodyLarge = TextStyle(
+        fontFamily = GilroyFontFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 16.sp, // Base size for body
+        lineHeight = 24.sp,
+        letterSpacing = 0.5.sp
+    ),
     bodyMedium = TextStyle(
         fontFamily = GilroyFontFamily,
         fontWeight = FontWeight.W400,
-        fontSize = 14.sp,
+        fontSize = 14.sp, // 16 / 1.14 ≈ 14
         lineHeight = 20.sp,
         letterSpacing = 0.25.sp
     ),
-    // Call to Action buttons text
+    bodySmall = TextStyle(
+        fontFamily = GilroyFontFamily,
+        fontWeight = FontWeight.W400,
+        fontSize = 12.sp, // 16 / 1.33 ≈ 12
+        lineHeight = 16.sp,
+        letterSpacing = 0.4.sp
+    ),
+
+    // Label styles - using 14sp as base
     labelLarge = TextStyle(
         fontFamily = GilroyFontFamily,
         fontWeight = FontWeight.Bold,
-        fontSize = 14.sp,
+        fontSize = 14.sp, // Base size for labels
         lineHeight = 20.sp,
-        letterSpacing = 1.25.sp
+        letterSpacing = 0.1.sp
+    ),
+    labelMedium = TextStyle(
+        fontFamily = GilroyFontFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 12.sp, // 14 / 1.16 ≈ 12
+        lineHeight = 16.sp,
+        letterSpacing = 0.5.sp
+    ),
+    labelSmall = TextStyle(
+        fontFamily = GilroyFontFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 11.sp, // 14 / 1.27 ≈ 11
+        lineHeight = 16.sp,
+        letterSpacing = 0.5.sp
     )
 )

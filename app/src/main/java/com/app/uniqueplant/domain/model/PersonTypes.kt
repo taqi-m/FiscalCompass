@@ -1,4 +1,4 @@
-package com.app.uniqueplant.data.model
+package com.app.uniqueplant.domain.model
 
 enum class PersonTypes {
     CUSTOMER,

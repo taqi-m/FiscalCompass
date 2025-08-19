@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.R
-import com.app.uniqueplant.data.model.Category
+import com.app.uniqueplant.domain.model.Category
 import com.app.uniqueplant.domain.model.InputField
 import com.app.uniqueplant.ui.components.dialogs.DatePickerDialog
 import com.app.uniqueplant.ui.components.dialogs.TimePickerDialog
@@ -212,7 +212,7 @@ fun AddTransactionContent(
                     onDismissRequest = {
                         onEvent(
                             AddTransactionEvent.OnAddTransactionDialogToggle(
-                                AddTransactionDialog.DatePicker
+                                AddTransactionDialog.Hidden
                             )
                         )
                     },
@@ -235,7 +235,7 @@ fun AddTransactionContent(
                     onDismiss = {
                         onEvent(
                             AddTransactionEvent.OnAddTransactionDialogToggle(
-                                AddTransactionDialog.TimePicker
+                                AddTransactionDialog.Hidden
                             )
                         )
                     },

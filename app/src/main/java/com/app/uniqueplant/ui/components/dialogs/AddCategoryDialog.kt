@@ -20,7 +20,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.app.uniqueplant.data.model.PersonTypes
+import com.app.uniqueplant.domain.model.PersonTypes
 import com.app.uniqueplant.ui.components.input.GenericExposedDropDownMenu
 
 @Composable

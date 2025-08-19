@@ -1,14 +1,15 @@
 package com.app.uniqueplant.domain.usecase.transaction
 
-import com.app.uniqueplant.data.model.Expense
-import com.app.uniqueplant.data.model.Income
-import com.app.uniqueplant.domain.mapper.TransactionMapper
+import com.app.uniqueplant.data.mapper.toTransaction
 import com.app.uniqueplant.domain.model.Transaction
 import com.app.uniqueplant.domain.repository.ExpenseRepository
 import com.app.uniqueplant.domain.repository.IncomeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 class LoadTransactionsUseCase @Inject constructor(
@@ -21,16 +22,16 @@ class LoadTransactionsUseCase @Inject constructor(
             incomeRepository.getAllIncomes()
         ) { expenses, incomes ->
             val expenseTransactions = expenses.map { expense ->
-                TransactionMapper.mapExpenseToTransaction(expense)
+                expense.toTransaction()
             }
             val incomeTransactions = incomes.map { income ->
-                TransactionMapper.mapIncomeToTransaction(income)
+                income.toTransaction()
             }
             expenseTransactions + incomeTransactions
         }
     }
 
-    suspend fun loadCurrentMonthTransactions(): Flow<List<Transaction>> {
+    suspend fun loadCurrentMonthTransactions(): Flow<Map<Date, List<Transaction>>> {
         return combine(
             expenseRepository.getExpensesByMonth(
                 month = Calendar.getInstance().get(Calendar.MONTH),
@@ -41,13 +42,19 @@ class LoadTransactionsUseCase @Inject constructor(
                 year = Calendar.getInstance().get(Calendar.YEAR)
             )
         ) { expenses, incomes ->
+            val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             val expenseTransactions = expenses.map { expense ->
-                TransactionMapper.mapExpenseToTransaction(expense)
+                expense.toTransaction()
             }
             val incomeTransactions = incomes.map { income ->
-                TransactionMapper.mapIncomeToTransaction(income)
+                income.toTransaction()
             }
-            expenseTransactions + incomeTransactions
+            (expenseTransactions + incomeTransactions)
+                .sortedByDescending { it.date }
+                .groupBy { transaction ->
+                    @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
+                    dateFormatter.parse(dateFormatter.format(transaction.date))
+                }
         }
     }
 
@@ -65,11 +72,10 @@ class LoadTransactionsUseCase @Inject constructor(
         )
     }
 
-    suspend fun deleteTransaction(transaction: Any?) {
-        when (transaction) {
-            is Expense -> expenseRepository.deleteExpense(transaction)
-            is Income -> incomeRepository.deleteIncome(transaction)
-            else -> throw IllegalArgumentException("Unknown transaction type")
+    suspend fun deleteTransaction(transactionId: Long, isExpense: Boolean) {
+        when (isExpense) {
+            true -> expenseRepository.deleteExpenseById(transactionId)
+            false -> incomeRepository.deleteIncomeById(transactionId)
         }
     }
 }

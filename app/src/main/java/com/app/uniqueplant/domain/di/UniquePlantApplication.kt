@@ -1,4 +1,4 @@
-package com.app.uniqueplant.di
+package com.app.uniqueplant.domain.di
 
 import android.app.Application
 import com.google.firebase.FirebaseApp

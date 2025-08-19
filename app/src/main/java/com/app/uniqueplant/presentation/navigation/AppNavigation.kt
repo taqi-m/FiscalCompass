@@ -1,5 +1,12 @@
 package com.app.uniqueplant.presentation.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -21,6 +28,29 @@ import com.app.uniqueplant.presentation.settings.SettingsViewModel
 import com.app.uniqueplant.presentation.transactions.AddTransactionScreen
 import com.app.uniqueplant.presentation.transactions.AddTransactionViewModel
 
+
+// Animation duration constant for consistent transitions
+private const val TRANSITION_DURATION = 500
+
+// Pre-defined transition animations
+private val enterFromLeft = fadeIn(animationSpec = tween(TRANSITION_DURATION)) +
+        slideInHorizontally(animationSpec = tween(TRANSITION_DURATION)) { fullWidth -> -fullWidth }
+
+private val enterFromRight = fadeIn(animationSpec = tween(TRANSITION_DURATION)) +
+        slideInHorizontally(animationSpec = tween(TRANSITION_DURATION)) { fullWidth -> fullWidth }
+
+private val enterFromUp = fadeIn(animationSpec = tween(TRANSITION_DURATION)) +
+        slideInVertically(animationSpec = tween(TRANSITION_DURATION)) { fullHeight -> fullHeight }
+
+private val exitToLeft = fadeOut(animationSpec = tween(TRANSITION_DURATION)) +
+        slideOutHorizontally(animationSpec = tween(TRANSITION_DURATION)) { fullWidth -> -fullWidth }
+
+private val exitToRight = fadeOut(animationSpec = tween(TRANSITION_DURATION)) +
+        slideOutHorizontally(animationSpec = tween(TRANSITION_DURATION)) { fullWidth -> fullWidth }
+
+private val exitToDown = fadeOut(animationSpec = tween(TRANSITION_DURATION)) +
+        slideOutVertically(animationSpec = tween(TRANSITION_DURATION)) { fullHeight -> fullHeight }
+
 @Composable
 fun AppNavigation(
     navController: NavHostController,
@@ -40,7 +70,12 @@ fun AppNavigation(
         }
     ) {
 
-        composable(route = MainScreens.Auth.route) { backStackEntry ->
+        composable(
+            route = MainScreens.Auth.route,
+            enterTransition = { enterFromLeft },
+            exitTransition = { exitToLeft },
+            popEnterTransition = { enterFromLeft },
+            popExitTransition = { exitToLeft }) { backStackEntry ->
             val authViewModel: AuthViewModel = hiltViewModel(backStackEntry)
             val authState by authViewModel.state.collectAsState()
 
@@ -48,15 +83,20 @@ fun AppNavigation(
                 appNavController = navController,
                 state = authState,
                 onEvent = authViewModel::onEvent,
-/*                onLoginSuccess = {
-                    navController.navigate(MainScreens.Home.route) {
-                        popUpTo(MainScreens.Auth.route) { inclusive = true }
-                    }
-                }*/
+                /*                onLoginSuccess = {
+                                    navController.navigate(MainScreens.Home.route) {
+                                        popUpTo(MainScreens.Auth.route) { inclusive = true }
+                                    }
+                                }*/
             )
         }
 
-        composable(route = MainScreens.Home.route) { backStackEntry ->
+        composable(
+            route = MainScreens.Home.route,
+            enterTransition = { enterFromLeft },
+            exitTransition = { exitToLeft },
+            popEnterTransition = { enterFromLeft },
+            popExitTransition = { exitToLeft }) { backStackEntry ->
             val homeViewModel: HomeViewModel = hiltViewModel(backStackEntry)
             val homeState by homeViewModel.state.collectAsState()
             HomeScreen(
@@ -70,7 +110,12 @@ fun AppNavigation(
             // User home screen content
         }
 
-        composable(route = MainScreens.AdminHome.route) { backStackEntry ->
+        composable(
+            route = MainScreens.AdminHome.route,
+            enterTransition = { enterFromLeft },
+            exitTransition = { exitToLeft },
+            popEnterTransition = { enterFromLeft },
+            popExitTransition = { exitToLeft }) { backStackEntry ->
             val homeViewModel: HomeViewModel = hiltViewModel(backStackEntry)
             val homeState by homeViewModel.state.collectAsState()
             HomeScreen(
@@ -80,7 +125,12 @@ fun AppNavigation(
             )
         }
 
-        composable(route = MainScreens.AddTransaction.route) { backStackEntry ->
+        composable(
+            route = MainScreens.AddTransaction.route,
+            enterTransition = { enterFromRight },
+            exitTransition = { exitToLeft },
+            popEnterTransition = { enterFromRight },
+            popExitTransition = { exitToLeft }) { backStackEntry ->
             val addTransactionViewModel: AddTransactionViewModel = hiltViewModel(backStackEntry)
             val addTransactionState by addTransactionViewModel.state.collectAsState()
             AddTransactionScreen(
@@ -90,7 +140,12 @@ fun AppNavigation(
             )
         }
 
-        composable(MainScreens.Settings.route) { backStackEntry ->
+        composable(
+            MainScreens.Settings.route,
+            enterTransition = { enterFromRight },
+            exitTransition = { exitToRight },
+            popEnterTransition = { enterFromRight },
+            popExitTransition = { exitToRight }) { backStackEntry ->
             val settingsViewModel: SettingsViewModel = hiltViewModel(backStackEntry)
             val state by settingsViewModel.state.collectAsState()
             SettingsScreen(
@@ -104,16 +159,26 @@ fun AppNavigation(
             )
         }
 
-        composable(route = MainScreens.Categories.route) { backStackEntry ->
+        composable(
+            route = MainScreens.Categories.route,
+            enterTransition = { enterFromUp },
+            exitTransition = { exitToDown },
+            popEnterTransition = { enterFromRight },
+            popExitTransition = { exitToDown }) { backStackEntry ->
             val categoriesViewModel: CategoriesViewModel = hiltViewModel(backStackEntry)
             val state by categoriesViewModel.state.collectAsState()
-            CategoriesScreen (
+            CategoriesScreen(
                 state = state,
                 onEvent = categoriesViewModel::onEvent
             )
         }
 
-        composable(route = MainScreens.Person.route) {
+        composable(
+            route = MainScreens.Person.route,
+            enterTransition = { enterFromLeft },
+            exitTransition = { exitToLeft },
+            popEnterTransition = { enterFromLeft },
+            popExitTransition = { exitToLeft }) {
             val personViewModel: PersonViewModel = hiltViewModel()
             val state by personViewModel.state.collectAsState()
             PersonScreen(

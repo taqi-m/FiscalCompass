@@ -1,6 +1,6 @@
 package com.app.uniqueplant.domain.repository
 
-import com.app.uniqueplant.data.model.Income
+import com.app.uniqueplant.domain.model.Income
 import kotlinx.coroutines.flow.Flow
 
 interface IncomeRepository {
@@ -9,6 +9,8 @@ interface IncomeRepository {
     suspend fun updateIncome(income: Income)
 
     suspend fun deleteIncome(income: Income)
+
+    suspend fun deleteIncomeById(id: Long)
 
     suspend fun getIncomeById(id: Long): Income?
 

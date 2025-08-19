@@ -1,14 +1,12 @@
 package com.app.uniqueplant.data.model
 
 import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "persons"
 )
-data class Person(
+data class PersonEntity(
     @PrimaryKey(autoGenerate = true)
     val personId: Long = 0,
     val name: String,

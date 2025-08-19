@@ -1,18 +1,19 @@
 package com.app.uniqueplant.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,120 +21,144 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.app.uniqueplant.R
+import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import com.app.uniqueplant.ui.util.LocalThemeMode
 import com.app.uniqueplant.ui.util.ThemeMode
-
-/*
-
-@Composable
-fun rememberThemeState(): MutableState<Boolean> {
-    val dataStore = DatastoreManager.getDataStore()
-    return remember { ThemePreferenceState(dataStore) }
-}
-
-*/
 
 
 @Composable
 fun ThemeSwitch(
     modifier: Modifier = Modifier,
-    onSwitchChange: (Boolean) -> Unit
-){
+    onSwitchChange: (ThemeMode) -> Unit
+) {
     val currentThemeMode = LocalThemeMode.current
     val switchValue = when (currentThemeMode) {
         ThemeMode.FOLLOW_SYSTEM -> isSystemInDarkTheme()
         ThemeMode.DARK -> true
         ThemeMode.LIGHT -> false
     }
-    var isInDarkMode by remember { mutableStateOf(switchValue) } // Default to light mode
+
+    var isDialogVisible by remember { mutableStateOf(false) }
+
     Card(
-        modifier = modifier
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            SwitchText(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 16.dp),
-                text = "App Theme",
-                isInDarkMode = isInDarkMode
-            )
-            Switch(
-                modifier = Modifier.padding(16.dp),
-                checked = !isInDarkMode,
-                onCheckedChange = { isChecked ->
-                    isInDarkMode = !isChecked
-                    onSwitchChange(isChecked)
-                },
-                thumbContent = {
-                    ThumbContent(
-                        checked = !isInDarkMode
-                    )
-                }
-            )
+        modifier = modifier,
+        onClick = {
+            isDialogVisible = !isDialogVisible
         }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .padding(vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(
+                text = "Dark Mode",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = when(currentThemeMode) {
+                    ThemeMode.FOLLOW_SYSTEM -> "Follow system"
+                    ThemeMode.DARK -> "Dark"
+                    ThemeMode.LIGHT -> "Light"
+                },
+                style = MaterialTheme.typography.bodyMedium
+
+            )
+
+        }
+    }
+
+    if (isDialogVisible){
+        SingleChoiceDialog(
+            title = "Dark Mode",
+            options = listOf("Follow System", "Dark", "Light"),
+            selectedOption = when (currentThemeMode) {
+                ThemeMode.FOLLOW_SYSTEM -> "Follow System"
+                ThemeMode.DARK -> "Dark"
+                ThemeMode.LIGHT -> "Light"
+            },
+            onOptionSelected = { option ->
+                when (option) {
+                    "Follow System" -> onSwitchChange(ThemeMode.FOLLOW_SYSTEM)
+                    "Dark" -> onSwitchChange(ThemeMode.DARK)
+                    "Light" -> onSwitchChange(ThemeMode.LIGHT)
+                }
+                isDialogVisible = false
+            },
+            onDismiss = { isDialogVisible = false },
+        )
     }
 }
 
-@Composable
-fun ThumbContent(
-    modifier: Modifier = Modifier,
-    checked: Boolean = false
-) {
-    val iconResource = if (checked) {
-        R.drawable.ic_light_mode_24
-    } else {
-        R.drawable.ic_nightlight_24
-    }
 
-    Icon(
-        painter = painterResource(iconResource),
-        contentDescription = null,
-        modifier = Modifier.size(SwitchDefaults.IconSize),
+@Composable
+fun SingleChoiceDialog(
+    title: String = "Select an Option",
+    options: List<String>,
+    selectedOption: String,
+    onOptionSelected: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            Column {
+                options.forEach { option ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onOptionSelected(option) },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = (option == selectedOption),
+                            onClick = { onOptionSelected(option) }
+                        )
+                        Text(option, modifier = Modifier.padding(start = 8.dp))
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton (onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
     )
 }
 
+@Preview
 @Composable
-fun SwitchText(
-    modifier: Modifier = Modifier,
-    text: String,
-    isInDarkMode: Boolean
-) {
-    val subtitle = if (isInDarkMode) {
-        "Dark Mode"
-    } else {
-        "Light Mode"
-    }
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Text(
-            text = "App Theme",
-            style = MaterialTheme.typography.bodyLarge,
-        )
-        Text(
-            text = subtitle,
-            style = MaterialTheme.typography.bodyMedium,
-        )
-    }
-}
+fun SingleChoiceDialogPreview() {
+    val options = listOf("Option 1", "Option 2", "Option 3")
+    var selectedOption by remember { mutableStateOf(options[0]) }
 
+    SingleChoiceDialog(
+        options = options,
+        selectedOption = selectedOption,
+        onOptionSelected = { selectedOption = it },
+        onDismiss = {}
+    )
+}
 
 
 
 @Preview
 @Composable
 fun ThemeSwitchPreview() {
-    ThemeSwitch(
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
-        onSwitchChange = {}
-    )
+    UniquePlantTheme {
+        ThemeSwitch(
+            modifier = Modifier
+                .fillMaxWidth(),
+            onSwitchChange = {}
+        )
+    }
 }
