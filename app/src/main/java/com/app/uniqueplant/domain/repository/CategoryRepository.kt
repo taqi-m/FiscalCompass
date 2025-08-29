@@ -1,6 +1,7 @@
 package com.app.uniqueplant.domain.repository
 
 import com.app.uniqueplant.domain.model.Category
+import com.app.uniqueplant.domain.model.CategoryTree
 import kotlinx.coroutines.flow.Flow
 
 interface CategoryRepository {
@@ -12,6 +13,18 @@ interface CategoryRepository {
     suspend fun deleteCategory(category: Category): Int
 
     suspend fun getAllCategories(): List<Category>
+
+    suspend fun getAllCategoriesTreeFlow(): Flow<CategoryTree>
+
+    suspend fun getExpenseCategoriesTreeFLow(): Flow<CategoryTree>
+
+    suspend fun getExpenseCategoriesTree(): CategoryTree
+
+    suspend fun getIncomeCategoriesTreeFLow(): Flow<CategoryTree>
+
+    suspend fun getIncomeCategoriesTree(): CategoryTree
+
+    suspend fun seedDefaultCategories(defaultCategories: Map<Category, List<Category>>)
 
     suspend fun getIncomeCategoriesWithFlow(): Flow<List<Category>>
 

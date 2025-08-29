@@ -1,6 +1,7 @@
 package com.app.uniqueplant.domain.usecase.categories
 
 import com.app.uniqueplant.domain.model.Category
+import com.app.uniqueplant.domain.model.CategoryTree
 import com.app.uniqueplant.domain.repository.CategoryRepository
 import kotlinx.coroutines.flow.Flow
 
@@ -8,6 +9,16 @@ class GetCategoriesUseCase(
     private val categoryRepository: CategoryRepository
 ) {
     suspend fun getAllCategories(): List<Category> = categoryRepository.getAllCategories()
+
+    suspend fun getAllCategoryTreeFlow(): Flow<CategoryTree> = categoryRepository.getAllCategoriesTreeFlow()
+
+    suspend fun getExpenseCategoryTreeFlow(): Flow<CategoryTree> = categoryRepository.getExpenseCategoriesTreeFLow()
+
+    suspend fun getIncomeCategoryTreeFlow(): Flow<CategoryTree> = categoryRepository.getIncomeCategoriesTreeFLow()
+
+    suspend fun getIncomeCategoriesTree(): CategoryTree = categoryRepository.getIncomeCategoriesTree()
+
+    suspend fun getExpenseCategoriesTree(): CategoryTree = categoryRepository.getExpenseCategoriesTree()
 
     suspend fun getExpenseCategoriesWithFlow(): Flow<List<Category>> = categoryRepository.getExpenseCategoriesWithFlow()
 

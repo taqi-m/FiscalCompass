@@ -23,6 +23,8 @@ sealed class AddTransactionEvent {
     data class OnDateChange(val date: Date) : AddTransactionEvent()
     data class OnCategorySelected(val categoryId: Long) : AddTransactionEvent()
 
+    data class OnSubCategorySelected(val subCategoryId: Long?) : AddTransactionEvent()
+
     data class OnTypeSelected(val selectedType: TransactionType) : AddTransactionEvent()
 
     object OnSaveClicked : AddTransactionEvent()

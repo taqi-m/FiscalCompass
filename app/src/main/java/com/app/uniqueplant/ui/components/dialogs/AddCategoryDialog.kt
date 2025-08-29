@@ -20,8 +20,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.app.uniqueplant.domain.model.PersonTypes
-import com.app.uniqueplant.ui.components.input.GenericExposedDropDownMenu
+import com.app.uniqueplant.data.model.PersonType
 
 @Composable
 fun AddCategoryDialog(
@@ -32,7 +31,7 @@ fun AddCategoryDialog(
     var categoryName by remember { mutableStateOf("") }
     var categoryDescription by remember { mutableStateOf("") }
 
-    val personTypes = PersonTypes.getDefaultTypes()
+    val personTypes = PersonType.getDefaultTypes()
 
     var expectedPersonType by remember { mutableStateOf(personTypes.first()) }
 

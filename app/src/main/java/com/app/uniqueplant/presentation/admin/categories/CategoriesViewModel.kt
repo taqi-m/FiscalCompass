@@ -2,16 +2,15 @@ package com.app.uniqueplant.presentation.admin.categories
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.app.uniqueplant.domain.model.Category
 import com.app.uniqueplant.domain.usecase.categories.AddCategoryUseCase
 import com.app.uniqueplant.domain.usecase.categories.DeleteCategoryUseCase
 import com.app.uniqueplant.domain.usecase.categories.GetCategoriesUseCase
 import com.app.uniqueplant.domain.usecase.categories.UpdateCategoryUseCase
+import com.app.uniqueplant.presentation.mappers.toGroupedCategoryUi
 import com.app.uniqueplant.presentation.model.TransactionType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -75,7 +74,14 @@ class CategoriesViewModel @Inject constructor(
     private fun onDialogToggle(event: CategoryDialogToggle) {
         when (event) {
             is CategoryDialogToggle.Add -> {
-                updateState { copy(currentDialog = CategoriesDialog.AddCategory) }
+                updateState {
+                    copy(
+                        currentDialog = CategoriesDialog.AddCategory,
+                        dialogState = CategoryDialogState(
+                            parentId = event.parentId,
+                        )
+                    )
+                }
             }
 
             is CategoryDialogToggle.Edit -> {
@@ -113,6 +119,7 @@ class CategoriesViewModel @Inject constructor(
                 viewModelScope.launch(Dispatchers.IO) {
                     val updatedState = addCategoryUseCase.invoke(
                         name = event.name,
+                        parentId = event.parentId,
                         description = event.description,
                         transactionType = _state.value.transactionType,
                         expectedPersonType = event.expectedPersonType
@@ -129,10 +136,23 @@ class CategoriesViewModel @Inject constructor(
                 viewModelScope.launch(Dispatchers.IO) {
                     val result = updateCategoryUseCase.invoke(event.category)
                     if (result.isFailure) {
-                        updateState { copy(uiState = UiState.Error(result.exceptionOrNull()?.message ?: "An unexpected error occurred")) }
+                        updateState {
+                            copy(
+                                uiState = UiState.Error(
+                                    result.exceptionOrNull()?.message
+                                        ?: "An unexpected error occurred"
+                                )
+                            )
+                        }
                         return@launch
                     }
-                    updateState { copy(uiState = UiState.Success(result.getOrNull() ?: "Category updated successfully")) }
+                    updateState {
+                        copy(
+                            uiState = UiState.Success(
+                                result.getOrNull() ?: "Category updated successfully"
+                            )
+                        )
+                    }
                 }
             }
 
@@ -157,15 +177,15 @@ class CategoriesViewModel @Inject constructor(
             _state.value = _state.value.copy(uiState = UiState.Loading)
             try {
                 val type = _state.value.transactionType
-                val currentFlow: Flow<List<Category>> = when (type) {
-                    TransactionType.EXPENSE -> getCategoriesUseCase.getExpenseCategoriesWithFlow()
-                    TransactionType.INCOME -> getCategoriesUseCase.getIncomeCategoriesWithFlow()
+                val currentFlow = when (type) {
+                    TransactionType.EXPENSE -> getCategoriesUseCase.getExpenseCategoryTreeFlow()
+                    TransactionType.INCOME -> getCategoriesUseCase.getIncomeCategoryTreeFlow()
                 }
                 currentFlow.collect { updatedCategories ->
                     updateState {
                         copy(
                             uiState = UiState.Idle,
-                            categories = updatedCategories
+                            categories = updatedCategories.toGroupedCategoryUi()
                         )
                     }
                 }

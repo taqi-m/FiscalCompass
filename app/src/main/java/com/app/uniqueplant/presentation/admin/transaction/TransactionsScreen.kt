@@ -3,7 +3,6 @@ package com.app.uniqueplant.presentation.admin.transaction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,8 +16,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -28,7 +25,6 @@ import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
 import com.app.uniqueplant.presentation.admin.categories.UiState
 import com.app.uniqueplant.ui.components.cards.TransactionCard
 import com.app.uniqueplant.ui.components.dialogs.DeleteTransactionDialog
-import com.app.uniqueplant.ui.components.dialogs.EditTransactionDialog
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -69,7 +65,6 @@ fun TransactionsScreen(
                     .fillMaxSize()
                     .padding(horizontal = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(vertical = 8.dp)
             ) {
                 item {
                     TransactionHeading(
@@ -324,8 +319,7 @@ fun TransactionHeadingPreview() {
     UniquePlantTheme {
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+                .fillMaxSize(),
         ) {
             TransactionHeading(
                 modifier = Modifier.fillMaxWidth(),

@@ -21,30 +21,30 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.app.uniqueplant.domain.model.Category
+import com.app.uniqueplant.presentation.model.CategoryUi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomExposedDropDownMenu(
+fun <T> CustomExposedDropDownMenu(
     modifier: Modifier = Modifier,
     label: String,
-    options: List<Category>,
-    selectedOption: Category?,
-    onOptionSelected: (Category) -> Unit
+    options: List<T>,
+    selectedOption: T?,
+    onOptionSelected: (T) -> Unit,
+    optionToString: (T) -> String = { it.toString() }
 ) {
     if (selectedOption == null) {
         return // If no option is selected, do not render the dropdown
     }
-//    val selectedOption = remember { mutableStateOf(selectedOption) }
     var expanded by remember { mutableStateOf(false) }
-    val enabled = options.isNotEmpty() && selectedOption.name.isNotEmpty()
+    val enabled = options.isNotEmpty() && optionToString(selectedOption).isNotEmpty()
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = !expanded },
         modifier = modifier
     ) {
         OutlinedTextField(
-            value = selectedOption.name,
+            value = optionToString(selectedOption),
             onValueChange = {},
             readOnly = true,
             label = { Text(text = label) },
@@ -65,11 +65,11 @@ fun CustomExposedDropDownMenu(
             onDismissRequest = { expanded = false }
         ) {
 
-            options.forEachIndexed { index, category ->
+            options.forEachIndexed { index, option ->
                 DropdownMenuItem(
-                    text = { Text(text = category.name) },
+                    text = { Text(text = optionToString(option)) },
                     onClick = {
-                        onOptionSelected(category)
+                        onOptionSelected(option)
                         expanded = false
                     }
                 )
@@ -143,24 +143,19 @@ fun GenericExposedDropDownMenu(
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
 fun CustomExposedDropDownMenuPreview() {
+
     val options = listOf(
-        Category(
+        CategoryUi(
             categoryId = 1L,
             name = "Option 1",
-            color = 0xFF6200EE.toInt(),
-            isExpenseCategory = false,
         ),
-        Category(
+        CategoryUi(
             categoryId = 2L,
             name = "Option 2",
-            color = 0xFF03DAC5.toInt(),
-            isExpenseCategory = false,
         ),
-        Category(
+        CategoryUi(
             categoryId = 3L,
             name = "Option 3",
-            color = 0xFFFF5722.toInt(),
-            isExpenseCategory = false,
         )
     )
     CustomExposedDropDownMenu(
@@ -171,7 +166,8 @@ fun CustomExposedDropDownMenuPreview() {
         options = options,
         selectedOption = options.first(),
         onOptionSelected = {
-        }
+        },
+        optionToString = { it.name }
     )
 }
 

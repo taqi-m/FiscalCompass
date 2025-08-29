@@ -4,10 +4,11 @@ import android.util.Log
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.app.uniqueplant.domain.model.Category
 import com.app.uniqueplant.domain.model.InputField
 import com.app.uniqueplant.domain.usecase.categories.GetCategoriesUseCase
 import com.app.uniqueplant.domain.usecase.transaction.AddTransactionUseCase
+import com.app.uniqueplant.presentation.mappers.toGroupedCategoryUi
+import com.app.uniqueplant.presentation.model.GroupedCategoryUi
 import com.app.uniqueplant.presentation.model.TransactionType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -27,22 +28,22 @@ class AddTransactionViewModel @Inject constructor(
     private val _state = MutableStateFlow(
         AddTransactionState(
             date = Calendar.getInstance().time,
-            categories = emptyList(),
+            categories = emptyMap(),
             categoryId = 0L,
         )
     )
     val state: StateFlow<AddTransactionState> = _state.asStateFlow()
 
-    private var expenseCategories: List<Category> = emptyList()
-    private var incomeCategories: List<Category> = emptyList()
+    private var expenseCategories: GroupedCategoryUi = emptyMap()
+    private var incomeCategories: GroupedCategoryUi = emptyMap()
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
             try {
 
-                expenseCategories = categoryUseCase.getExpenseCategories()
+                expenseCategories = categoryUseCase.getExpenseCategoriesTree().toGroupedCategoryUi()
 
-                incomeCategories = categoryUseCase.getIncomeCategories()
+                incomeCategories = categoryUseCase.getIncomeCategoriesTree().toGroupedCategoryUi()
 
                 assignCategories()
             } catch (e: Exception) {
@@ -78,8 +79,11 @@ class AddTransactionViewModel @Inject constructor(
             }
 
             is AddTransactionEvent.OnCategorySelected -> {
-                _state.value = _state.value.copy(categoryId = event.categoryId)
-                Log.d(TAG, "Category selected: ${event.categoryId}")
+                updateState { copy(categoryId = event.categoryId) }
+            }
+
+            is AddTransactionEvent.OnSubCategorySelected -> {
+                updateState { copy(subCategoryId = event.subCategoryId) }
             }
 
             is AddTransactionEvent.OnSaveClicked -> {
@@ -206,18 +210,21 @@ class AddTransactionViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             when (_state.value.transactionType) {
                 TransactionType.EXPENSE -> {
-                    _state.value = _state.value.copy(
-                        categories = expenseCategories,
-                        categoryId = expenseCategories.firstOrNull()?.categoryId ?: 0L
-
-                    )
+                    updateState {
+                        copy(
+                            categories = expenseCategories,
+                            categoryId = expenseCategories.keys.first().categoryId,
+                        )
+                    }
                 }
 
                 TransactionType.INCOME -> {
-                    _state.value = _state.value.copy(
-                        categories = incomeCategories,
-                        categoryId = incomeCategories.firstOrNull()?.categoryId ?: 0L
-                    )
+                    updateState {
+                        copy(
+                            categories = incomeCategories,
+                            categoryId = incomeCategories.keys.first().categoryId
+                        )
+                    }
                 }
             }
         }
@@ -228,7 +235,7 @@ class AddTransactionViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             addTransactionUseCase.addTransaction(
                 amount = _state.value.amount.value.toDoubleOrNull() ?: 0.0,
-                categoryId = _state.value.categoryId,
+                categoryId = _state.value.subCategoryId ?: _state.value.categoryId,
                 description = _state.value.description.value,
                 date = _state.value.date,
                 transactionType = _state.value.transactionType

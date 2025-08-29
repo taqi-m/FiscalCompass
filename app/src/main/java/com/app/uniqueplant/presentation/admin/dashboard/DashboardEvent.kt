@@ -9,4 +9,5 @@ sealed class DashboardEvent {
     data class OnScreenLoad(val appNavController: NavHostController) : DashboardEvent()
     object OnCategoriesClicked : DashboardEvent()
     object OnPersonsClicked : DashboardEvent()
+    object OnJobsClicked : DashboardEvent()
 }

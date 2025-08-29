@@ -4,6 +4,7 @@ import java.util.Date
 
 data class Category(
     val categoryId: Long = 0,
+    val parentCategoryId : Long? = null,
     val name: String,
     val color: Int = 0xFF000000.toInt(),
     val isExpenseCategory: Boolean,
@@ -13,3 +14,5 @@ data class Category(
     val createdAt: Date = Date(),
     val updatedAt: Date = Date()
 )
+
+typealias CategoryTree = Map<Category, List<Category>>

@@ -13,6 +13,9 @@ import kotlinx.coroutines.flow.Flow
 interface CategoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCategory(categoryEntity: CategoryEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertAll(defaultEntities: List<CategoryEntity>)
     
     @Update
     suspend fun updateCategory(categoryEntity: CategoryEntity): Int
@@ -22,6 +25,11 @@ interface CategoryDao {
 
     @Query("SELECT * FROM categories ORDER BY name ASC")
     suspend fun getAllCategories(): List<CategoryEntity>
+
+    @Query("SELECT * FROM categories ORDER BY name ASC")
+    fun getAllCategoriesFlow(): Flow<List<CategoryEntity>>
+
+
     
     @Query("SELECT * FROM categories WHERE categoryId = :id")
     suspend fun getCategoryById(id: Long): CategoryEntity?
@@ -36,13 +44,15 @@ interface CategoryDao {
     suspend fun getCategoryByName(name: String) : CategoryEntity?
 
     @Query("SELECT * FROM categories WHERE isExpenseCategory = 0 ORDER BY name ASC")
-    fun getIncomeCategoriesWithFlow(): Flow<List<CategoryEntity>>
+    fun getIncomeCategoriesFlow(): Flow<List<CategoryEntity>>
 
     @Query("SELECT * FROM categories WHERE isExpenseCategory = 1 ORDER BY name ASC")
-    fun getExpenseCategoriesWithFlow(): Flow<List<CategoryEntity>>
+    fun getExpenseCategoriesFlow(): Flow<List<CategoryEntity>>
+
     @Query("SELECT * FROM categories WHERE isExpenseCategory = 0 ORDER BY name ASC")
     fun getIncomeCategories(): List<CategoryEntity>
 
     @Query("SELECT * FROM categories WHERE isExpenseCategory = 1 ORDER BY name ASC")
     fun getExpenseCategories(): List<CategoryEntity>
+
 }

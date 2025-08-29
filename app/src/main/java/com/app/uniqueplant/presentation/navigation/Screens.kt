@@ -11,6 +11,7 @@ sealed class MainScreens(val route: String) {
     object Settings : MainScreens("settings_screen")
     object Categories : MainScreens("categories_screen")
     object Person : MainScreens("person_screen")
+    object Jobs : MainScreens("jobs_screen")
 }
 
 sealed class HomeBottomScreen(val route: String, val label: String, val iconResource: Int) {

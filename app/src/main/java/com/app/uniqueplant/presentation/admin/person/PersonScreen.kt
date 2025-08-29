@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -31,7 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.R
-import com.app.uniqueplant.domain.model.PersonTypes
+import com.app.uniqueplant.data.model.PersonType
 import com.app.uniqueplant.presentation.admin.categories.UiState
 import com.app.uniqueplant.ui.components.LoadingProgress
 import com.app.uniqueplant.ui.components.cards.PersonItem
@@ -51,6 +50,27 @@ fun PersonScreen(
 
     val uiState = state.uiState
 
+    LaunchedEffect(uiState) {
+        val message: String? = when (uiState) {
+            is UiState.Error -> uiState.message
+            is UiState.Success -> uiState.message
+            else -> null
+        }
+        message?.let { msg ->
+            if (msg.isNotEmpty()) {
+                snackBarHostState.showSnackbar(
+                    message = msg,
+                    duration = SnackbarDuration.Short,
+                    actionLabel = "Dismiss"
+                )
+                Log.d(
+                    "CategoriesScreen",
+                    "Snackbar message: $snackBarHostState.currentSnackbarData?.visuals?.message"
+                )
+                onEvent(PersonEvent.OnUiReset)
+            }
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -88,29 +108,9 @@ fun PersonScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(it)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 8.dp)
+
         ) {
-            LaunchedEffect(uiState) {
-                val message: String? = when (uiState) {
-                    is UiState.Error -> uiState.message
-                    is UiState.Success -> uiState.message
-                    else -> null
-                }
-                message?.let { msg ->
-                    if (msg.isNotEmpty()) {
-                        snackBarHostState.showSnackbar(
-                            message = msg,
-                            duration = SnackbarDuration.Short,
-                            actionLabel = "Dismiss"
-                        )
-                        Log.d(
-                            "CategoriesScreen",
-                            "Snackbar message: $snackBarHostState.currentSnackbarData?.visuals?.message"
-                        )
-                        onEvent(PersonEvent.OnUiReset)
-                    }
-                }
-            }
             PersonScreenContent(
                 modifier = Modifier
                     .fillMaxSize(),
@@ -196,10 +196,10 @@ fun PersonList(
                 GenericExposedDropDownMenu(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp),
+                        .padding(bottom = 8.dp),
                     label = "Filter by Type",
                     selectedOption = state.selectedType,
-                    options = PersonTypes.getDefaultTypes(),
+                    options = PersonType.getDefaultTypes(),
                     onOptionSelected = { selectedType ->
                         onEvent(PersonEvent.OnFilterTypeSelected(selectedType))
                     }
@@ -221,7 +221,7 @@ fun PersonList(
                     items(state.persons) { person ->
                         PersonItem(
                             personName = person.name,
-                            personType = person.personType,
+                            personType = person.personType.name,
                             onEditClick = {
                                 onEvent(
                                     PersonEvent.OnPersonDialogToggle(

@@ -6,14 +6,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -54,6 +55,8 @@ data class HomeOption(
 )
 
 
+
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun DashboardScreen(
@@ -61,10 +64,10 @@ fun DashboardScreen(
     onEvent: (DashboardEvent) -> Unit,
     appNavController: NavHostController,
 ) {
+
     onEvent(DashboardEvent.OnScreenLoad(appNavController))
     DashboardScreenContent(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         state = state,
         onEvent = onEvent,
     )
@@ -77,14 +80,44 @@ fun DashboardScreenContent(
     state: DashboardScreenState,
     onEvent: (DashboardEvent) -> Unit,
 ) {
-    Column(
-        modifier = modifier.then(
-            Modifier
-                .fillMaxSize()
+
+    val options = listOf(
+        HomeOption(
+            title = "Categories",
+            description = "Manage your categories",
+            icon = painterResource(id = R.drawable.ic_category_02),
+            onClick = {
+                onEvent(DashboardEvent.OnCategoriesClicked)
+            }
         ),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        HomeOption(
+            title = "People",
+            description = "Manage your people",
+            icon = painterResource(id = R.drawable.ic_person_02),
+            onClick = {
+                onEvent(DashboardEvent.OnPersonsClicked)
+            }
+        ),
+        HomeOption(
+            title = "Jobs",
+            description = "Manage all jobs",
+            icon = painterResource(id = R.drawable.ic_jobs_48),
+            onClick = {
+                onEvent(DashboardEvent.OnJobsClicked)
+            }
+        )
+    )
+    Column(
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(
+            space = 16.dp,
+            alignment = Alignment.Top
+        )
     ) {
+        val cornerSize = 8
+
+        // Fixed Hero Section at the top
         HeroSection(
             modifier = Modifier
                 .fillMaxWidth()
@@ -93,47 +126,25 @@ fun DashboardScreenContent(
             onEvent = onEvent,
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        val options = listOf(
-            HomeOption(
-                title = "Categories",
-                description = "Manage your categories",
-                icon = painterResource(id = R.drawable.ic_category_02),
-                onClick = {
-                    onEvent(DashboardEvent.OnCategoriesClicked)
-                }
-            ),
-            HomeOption(
-                title = "People",
-                description = "Manage your people",
-                icon = painterResource(id = R.drawable.ic_person_02),
-                onClick = {
-                    onEvent(DashboardEvent.OnPersonsClicked)
-                }
-            )
-        )
-
-        val cornerSize = 8
-
+        // Scrollable Options Section that fills remaining height
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .weight(1f) // Fill remaining space
                 .clip(
                     RoundedCornerShape(topStartPercent = cornerSize, topEndPercent = cornerSize)
                 )
-//                .background(MaterialTheme.colorScheme.surfaceVariant.copy(0.35f))
                 .background(
                     color = Color(0xFF808080)
                         .compositeOver(MaterialTheme.colorScheme.surface).copy(alpha = 0.125f)
                 )
-                .padding(8.dp)
         ) {
             OptionsRow(
+                options = options,
                 modifier = Modifier
-                    .padding(8.dp)
-                    .padding(top = 8.dp),
-                options = options
+                    .fillMaxHeight()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp)
             )
         }
     }

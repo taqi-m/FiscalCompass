@@ -19,7 +19,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.app.uniqueplant.domain.model.PersonTypes
+import com.app.uniqueplant.data.model.PersonType
 import com.app.uniqueplant.ui.components.input.GenericExposedDropDownMenu
 
 @Composable
@@ -29,7 +29,7 @@ fun AddPersonDialog(
 ){
     val focusRequester = remember { FocusRequester() }
     val personName = remember { mutableStateOf("") }
-    val personTypes = PersonTypes.getDefaultTypes()
+    val personTypes = PersonType.getDefaultTypes()
     var selectedPersonType by remember { mutableStateOf(personTypes.firstOrNull()) }
 
     if (selectedPersonType == null) {

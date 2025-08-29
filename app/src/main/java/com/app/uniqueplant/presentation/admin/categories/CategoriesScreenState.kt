@@ -1,6 +1,7 @@
 package com.app.uniqueplant.presentation.admin.categories
 
 import com.app.uniqueplant.domain.model.Category
+import com.app.uniqueplant.presentation.model.GroupedCategoryUi
 import com.app.uniqueplant.presentation.model.TransactionType
 
 
@@ -12,6 +13,7 @@ sealed class UiState {
 }
 
 data class CategoryDialogState(
+    val parentId: Long? = null,
     val category: Category? = null
 ) {
     companion object {
@@ -29,10 +31,7 @@ sealed class CategoriesDialog {
 
 data class CategoriesScreenState(
     val uiState: UiState = UiState.Idle,
-//    val isLoading: Boolean = false,
-//    val error: String? = null,
-//    val successMessage: String? = null,
-    val categories: List<Category> = emptyList(),
+    val categories: GroupedCategoryUi = emptyMap(),
     val transactionType: TransactionType = TransactionType.EXPENSE,
     val currentDialog: CategoriesDialog = CategoriesDialog.Hidden,
     val dialogState: CategoryDialogState = CategoryDialogState.Idle

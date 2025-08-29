@@ -5,14 +5,14 @@ import com.app.uniqueplant.presentation.model.TransactionType
 
 
 sealed class CategoryDialogToggle {
-    object Add : CategoryDialogToggle()
+    data class Add(val parentId: Long? = null) : CategoryDialogToggle()
     data class Edit(val category: Category) : CategoryDialogToggle()
     data class Delete(val category: Category) : CategoryDialogToggle()
     object Hidden : CategoryDialogToggle()
 }
 
 sealed class CategoryDialogSubmit {
-    data class Add(val name: String, val description: String, val expectedPersonType: String) : CategoryDialogSubmit()
+    data class Add(val name: String,val parentId: Long? = null, val description: String, val expectedPersonType: String) : CategoryDialogSubmit()
     data class Edit(val category: Category) : CategoryDialogSubmit()
 
     object Delete : CategoryDialogSubmit()

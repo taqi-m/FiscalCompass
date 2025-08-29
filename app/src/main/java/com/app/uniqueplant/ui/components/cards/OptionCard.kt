@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
@@ -52,6 +51,9 @@ fun OptionsRow(
                 onClick = option.onClick
             )
         }
+
+        // Add some space at the bottom to ensure proper padding when scrolling
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 @Composable

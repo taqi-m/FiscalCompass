@@ -2,6 +2,7 @@ package com.app.uniqueplant.domain.usecase.person
 
 import com.app.uniqueplant.data.datasource.local.dao.PersonDao
 import com.app.uniqueplant.data.model.PersonEntity
+import com.app.uniqueplant.data.model.PersonType
 import com.app.uniqueplant.presentation.admin.categories.UiState
 
 
@@ -16,7 +17,7 @@ class AddPersonUseCase(
         try{
             val person = PersonEntity(
                 name = name,
-                personType = personType
+                personType = PersonType.fromString(personType)
             )
             personDao.insert(person)
             return UiState.Success("Person added successfully.")

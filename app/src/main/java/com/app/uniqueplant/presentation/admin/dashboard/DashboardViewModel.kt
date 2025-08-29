@@ -49,9 +49,14 @@ class DashboardViewModel @Inject constructor(
                 appNavController?.navigate(MainScreens.Categories.route)
             }
 
-            DashboardEvent.OnPersonsClicked -> {
+            is DashboardEvent.OnPersonsClicked -> {
                 val appNavController = _state.value.appNavController
                 appNavController?.navigate(MainScreens.Person.route)
+            }
+
+            is DashboardEvent.OnJobsClicked -> {
+                val appNavController = _state.value.appNavController
+                appNavController?.navigate(MainScreens.Jobs.route)
             }
         }
     }

@@ -2,7 +2,6 @@ package com.app.uniqueplant.presentation.admin.home
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -13,8 +12,10 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,6 +34,7 @@ fun HomeScreen(
     onEvent: (HomeEvent) -> Unit = {},
 ) {
     onEvent(HomeEvent.OnScreenLoad(appNavController))
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val homeNavController = rememberNavController()
     val items = listOf(
         HomeBottomScreen.Dashboard,
@@ -106,6 +108,8 @@ fun HomeScreen(
 
                     }
                 },*/
+                scrollBehavior = scrollBehavior,
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 title = {
                     Text(
                         text = "Unique Stone Plant",

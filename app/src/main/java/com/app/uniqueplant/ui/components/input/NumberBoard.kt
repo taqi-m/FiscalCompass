@@ -2,7 +2,6 @@ package com.app.uniqueplant.ui.components.input
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,7 +28,6 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -89,177 +87,175 @@ fun Calculator(
         }
     }
 
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.BottomCenter
-    ) {
-        Column(
+    Column(
+        modifier = modifier
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.SpaceBetween
+    )
+    {
+        // Display with trailing icon
+        OutlinedTextField(
+            value = CurrencyFormaterUseCase.formatCalculatorCurrency(
+                displayText
+            ),
+            onValueChange = { onValueChange(it) },
             modifier = Modifier
                 .fillMaxWidth(),
-        ) {
-            // Display with trailing icon
-            OutlinedTextField(
-                value = CurrencyFormaterUseCase.formatCalculatorCurrency(
-                    displayText
+            readOnly = true,
+            textStyle = LocalTextStyle.current.copy(
+                fontSize = 28.sp,
+                textAlign = TextAlign.End,
+                color = if (errorState) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+            ),
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors().copy(
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.75f),
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.75f),
+                focusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.75f),
+                unfocusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.75f),
+                // Disable selection appearance
+                textSelectionColors = TextSelectionColors(
+                    backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                    handleColor = MaterialTheme.colorScheme.surfaceVariant
                 ),
-                onValueChange = { onValueChange(it) },
-                modifier = Modifier
-                    .fillMaxWidth(),
-                readOnly = true,
-                textStyle = LocalTextStyle.current.copy(
-                    fontSize = 28.sp,
-                    textAlign = TextAlign.End,
-                    color = if (errorState) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
-                ),
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors().copy(
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                    unfocusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                    // Disable selection appearance
-                    textSelectionColors = TextSelectionColors(
-                        backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
-                        handleColor = MaterialTheme.colorScheme.surfaceVariant
-                    ),
-                    disabledTextColor = if (errorState)
-                        MaterialTheme.colorScheme.error
-                    else
-                        OutlinedTextFieldDefaults.colors().focusedTextColor,
-                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    disabledIndicatorColor = MaterialTheme.colorScheme.primary
-                ),
-                interactionSource = remember { MutableInteractionSource() },
-                enabled = false,
-                trailingIcon = {
-                    IconButton(
-                        modifier = Modifier
-                            .padding(horizontal = 8.dp),
-                        onClick = { deleteLastChar() },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Clear,
-                            contentDescription = "Delete/Clear",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                disabledTextColor = if (errorState)
+                    MaterialTheme.colorScheme.error
+                else
+                    OutlinedTextFieldDefaults.colors().focusedTextColor,
+                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                disabledIndicatorColor = MaterialTheme.colorScheme.primary
+            ),
+            interactionSource = remember { MutableInteractionSource() },
+            enabled = false,
+            trailingIcon = {
+                IconButton(
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp),
+                    onClick = { deleteLastChar() },
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = "Delete/Clear",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            },
+            leadingIcon = {
+                if (operation != null) {
+                    Text(
+                        text = operation ?: "",
+                        fontSize = 24.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+            }
+        )
+
+        // Number pad
+        NumberBoard(
+            modifier = Modifier
+                .fillMaxWidth(),
+            onNumberClick = { number ->
+                if (errorState) {
+                    clearDisplay()
+                    displayText = number.toString()
+                } else if (clearOnNextInput) {
+                    displayText = number.toString()
+                    clearOnNextInput = false
+                } else {
+                    // Check if we already have 2 decimal places
+                    val decimalIndex = displayText.indexOf('.')
+                    if (decimalIndex != -1 && displayText.length - decimalIndex > 2) {
+                        // Already have 2 decimal places, don't add more digits
+                        return@NumberBoard
                     }
-                },
-                leadingIcon = {
-                    if (operation != null) {
-                        Text(
-                            text = operation ?: "",
-                            fontSize = 24.sp,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
+
+                    displayText =
+                        if (displayText == "0") number.toString() else displayText + number
+                }
+            },
+            onOperatorClick = { op ->
+                if (errorState) {
+                    clearDisplay()
+                } else {
+                    try {
+                        val value = displayText.toDouble()
+                        if (isValueWithinLimits(value)) {
+                            firstOperand = value
+                            operation = op
+                            clearOnNextInput = true
+                        } else {
+                            handleError()
+                        }
+                    } catch (e: NumberFormatException) {
+                        handleError()
                     }
                 }
-            )
+            },
+            onEqualsClick = {
+                if (errorState) {
+                    clearDisplay()
+                } else {
+                    try {
+                        val secondOperand = displayText.toDouble()
 
-            // Number pad
-            NumberBoard(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                onNumberClick = { number ->
-                    if (errorState) {
-                        clearDisplay()
-                        displayText = number.toString()
-                    } else if (clearOnNextInput) {
-                        displayText = number.toString()
-                        clearOnNextInput = false
-                    } else {
-                        // Check if we already have 2 decimal places
-                        val decimalIndex = displayText.indexOf('.')
-                        if (decimalIndex != -1 && displayText.length - decimalIndex > 2) {
-                            // Already have 2 decimal places, don't add more digits
+                        if (!isValueWithinLimits(secondOperand)) {
+                            handleError()
                             return@NumberBoard
                         }
 
-                        displayText =
-                            if (displayText == "0") number.toString() else displayText + number
-                    }
-                },
-                onOperatorClick = { op ->
-                    if (errorState) {
-                        clearDisplay()
-                    } else {
-                        try {
-                            val value = displayText.toDouble()
-                            if (isValueWithinLimits(value)) {
-                                firstOperand = value
-                                operation = op
-                                clearOnNextInput = true
-                            } else {
-                                handleError()
-                            }
-                        } catch (e: NumberFormatException) {
-                            handleError()
+                        val result = when (operation) {
+                            "+" -> firstOperand + secondOperand
+                            "-" -> firstOperand - secondOperand
+                            "×" -> firstOperand * secondOperand
+                            "÷" -> if (secondOperand != 0.0) firstOperand / secondOperand else Double.NaN
+                            else -> secondOperand
                         }
-                    }
-                },
-                onEqualsClick = {
-                    if (errorState) {
-                        clearDisplay()
-                    } else {
-                        try {
-                            val secondOperand = displayText.toDouble()
 
-                            if (!isValueWithinLimits(secondOperand)) {
-                                handleError()
-                                return@NumberBoard
-                            }
-
-                            val result = when (operation) {
-                                "+" -> firstOperand + secondOperand
-                                "-" -> firstOperand - secondOperand
-                                "×" -> firstOperand * secondOperand
-                                "÷" -> if (secondOperand != 0.0) firstOperand / secondOperand else Double.NaN
-                                else -> secondOperand
-                            }
-
-                            if (result.isNaN() || result.isInfinite() || !isValueWithinLimits(result)) {
-                                handleError()
-                                return@NumberBoard
-                            }
-
-                            // Format the result with max 3 decimal places
-                            displayText = if (result == result.toInt().toDouble()) {
-                                // If it's a whole number, show as integer
-                                result.toInt().toString()
-                            } else {
-                                // Round to 3 decimal places
-                                "%.2f".format(result).trimEnd('0').trimEnd('.')
-                            }
-
-                            operation = null
-                            clearOnNextInput = true
-                        } catch (e: NumberFormatException) {
+                        if (result.isNaN() || result.isInfinite() || !isValueWithinLimits(result)) {
                             handleError()
-                        } catch (e: Exception) {
-                            handleError()
+                            return@NumberBoard
                         }
+
+                        // Format the result with max 3 decimal places
+                        displayText = if (result == result.toInt().toDouble()) {
+                            // If it's a whole number, show as integer
+                            result.toInt().toString()
+                        } else {
+                            // Round to 3 decimal places
+                            "%.2f".format(result).trimEnd('0').trimEnd('.')
+                        }
+
+                        operation = null
+                        clearOnNextInput = true
+                    } catch (e: NumberFormatException) {
+                        handleError()
+                    } catch (e: Exception) {
+                        handleError()
                     }
-                },
-                onClearClick = clearDisplay,
-                onDecimalClick = {
-                    if (errorState) {
-                        clearDisplay()
-                        displayText = "0."
-                    } else if (clearOnNextInput) {
-                        displayText = "0."
-                        clearOnNextInput = false
-                    } else if (!displayText.contains(".")) {
-                        displayText = "$displayText."
-                    }
-                },
-                onSaveClick = {
-                    if (!errorState) {
-                        onSaveClick()
-                    }
-                },
-            )
-        }
+                }
+            },
+            onClearClick = clearDisplay,
+            onDecimalClick = {
+                if (errorState) {
+                    clearDisplay()
+                    displayText = "0."
+                } else if (clearOnNextInput) {
+                    displayText = "0."
+                    clearOnNextInput = false
+                } else if (!displayText.contains(".")) {
+                    displayText = "$displayText."
+                }
+            },
+            onSaveClick = {
+                if (!errorState) {
+                    onSaveClick()
+                }
+            },
+        )
     }
+    
 }
 
 

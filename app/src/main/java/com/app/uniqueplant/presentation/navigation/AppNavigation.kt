@@ -15,6 +15,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesRepository
+import com.app.uniqueplant.presentation.admin.JobsScreen
+import com.app.uniqueplant.presentation.admin.JobsViewModel
 import com.app.uniqueplant.presentation.admin.categories.CategoriesScreen
 import com.app.uniqueplant.presentation.admin.categories.CategoriesViewModel
 import com.app.uniqueplant.presentation.admin.home.HomeScreen
@@ -161,10 +163,10 @@ fun AppNavigation(
 
         composable(
             route = MainScreens.Categories.route,
-            enterTransition = { enterFromUp },
-            exitTransition = { exitToDown },
+            enterTransition = { enterFromRight },
+            exitTransition = { exitToRight },
             popEnterTransition = { enterFromRight },
-            popExitTransition = { exitToDown }) { backStackEntry ->
+            popExitTransition = { exitToRight }) { backStackEntry ->
             val categoriesViewModel: CategoriesViewModel = hiltViewModel(backStackEntry)
             val state by categoriesViewModel.state.collectAsState()
             CategoriesScreen(
@@ -175,15 +177,29 @@ fun AppNavigation(
 
         composable(
             route = MainScreens.Person.route,
-            enterTransition = { enterFromLeft },
-            exitTransition = { exitToLeft },
-            popEnterTransition = { enterFromLeft },
-            popExitTransition = { exitToLeft }) {
+            enterTransition = { enterFromRight },
+            exitTransition = { exitToRight },
+            popEnterTransition = { enterFromRight },
+            popExitTransition = { exitToRight }) {
             val personViewModel: PersonViewModel = hiltViewModel()
             val state by personViewModel.state.collectAsState()
             PersonScreen(
                 state = state,
                 onEvent = personViewModel::onEvent
+            )
+        }
+
+        composable(
+            route = MainScreens.Jobs.route,
+            enterTransition = { enterFromRight },
+            exitTransition = { exitToRight },
+            popEnterTransition = { enterFromRight },
+            popExitTransition = { exitToRight }) {
+            val jobsViewModel: JobsViewModel = hiltViewModel()
+            val state by jobsViewModel.state.collectAsState()
+            JobsScreen(
+                state = state,
+                onEvent = jobsViewModel::onEvent
             )
         }
 

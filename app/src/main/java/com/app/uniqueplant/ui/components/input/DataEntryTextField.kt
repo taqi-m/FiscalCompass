@@ -38,7 +38,7 @@ fun DataEntryTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(text = label) },
-        isError = isError,
+//        isError = isError,
         singleLine = true,
         keyboardOptions = keyboardOptions,
         placeholder = {
@@ -47,11 +47,11 @@ fun DataEntryTextField(
                 style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
             )
         },
-        supportingText = {
+        /*supportingText = {
             if (isError && errorMessage != null) {
                 Text(text = errorMessage)
             }
-        }
+        }*/
     )
 }
 
@@ -79,7 +79,7 @@ fun ReadOnlyDataEntryTextField(
             label = { Text(text = label) },
             readOnly = true,
             enabled = false,
-            isError = isError,
+//            isError = isError,
             colors = OutlinedTextFieldDefaults.colors(
                 disabledTextColor = MaterialTheme.colorScheme.onSurface,
                 disabledContainerColor = MaterialTheme.colorScheme.surface,
@@ -91,11 +91,11 @@ fun ReadOnlyDataEntryTextField(
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Next
             ),
-            supportingText = {
+            /*supportingText = {
                 if (isError && errorMessage != null) {
                     Text(text = errorMessage)
                 }
-            }
+            }*/
         )
     }
 }
@@ -104,7 +104,6 @@ fun ReadOnlyDataEntryTextField(
 @Composable
 fun ReadOnlyDataEntryTextFieldPreview() {
     ReadOnlyDataEntryTextField(
-        modifier = Modifier.padding(8.dp),
         label = "Start Date",
         value = "01/01/2023",
         isError = false,
