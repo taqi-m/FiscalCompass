@@ -1,11 +1,5 @@
 package com.app.uniqueplant.domain.di
 
-import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesRepository
-import com.app.uniqueplant.data.repository.AuthRepositoryImpl
-import com.app.uniqueplant.domain.repository.AuthRepository
-import com.app.uniqueplant.domain.repository.UserRepository
-import com.app.uniqueplant.domain.usecase.auth.LoginUseCase
-import com.app.uniqueplant.domain.usecase.auth.SignUpUseCase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
@@ -25,25 +19,5 @@ object FirebaseModule {
     @Provides
     @Singleton
     fun provideFirebaseFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
-
-
-    @Provides
-    @Singleton
-    fun provideAuthRepository(auth: FirebaseAuth, firestore: FirebaseFirestore, userRepository: UserRepository, prefRepository: SharedPreferencesRepository): AuthRepository {
-        return AuthRepositoryImpl(auth,firestore, userRepository,prefRepository)
-    }
-
-    @Provides
-    @Singleton
-    fun provideLoginUseCase(authRepository: AuthRepository): LoginUseCase {
-        return LoginUseCase(authRepository)
-    }
-
-    @Provides
-    @Singleton
-    fun provideSignUpUseCase(authRepository: AuthRepository): SignUpUseCase {
-        return SignUpUseCase(authRepository)
-    }
-
 
 }

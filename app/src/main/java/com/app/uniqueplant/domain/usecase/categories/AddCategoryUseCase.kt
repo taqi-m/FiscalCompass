@@ -2,10 +2,11 @@ package com.app.uniqueplant.domain.usecase.categories
 
 import com.app.uniqueplant.domain.model.Category
 import com.app.uniqueplant.domain.repository.CategoryRepository
-import com.app.uniqueplant.presentation.admin.categories.UiState
 import com.app.uniqueplant.presentation.model.TransactionType
+import com.app.uniqueplant.presentation.screens.categories.UiState
+import javax.inject.Inject
 
-class AddCategoryUseCase(
+class AddCategoryUseCase @Inject constructor(
     private val categoryRepository: CategoryRepository
 ) {
     suspend fun invoke(name: String, parentId: Long?, description: String, transactionType: TransactionType, expectedPersonType: String): UiState {

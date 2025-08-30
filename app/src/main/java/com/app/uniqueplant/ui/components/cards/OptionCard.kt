@@ -26,7 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.R
-import com.app.uniqueplant.presentation.admin.dashboard.HomeOption
+import com.app.uniqueplant.presentation.screens.dashboard.HomeOption
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
 

@@ -8,7 +8,6 @@ import dagger.hilt.android.HiltAndroidApp
 class UniquePlantApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        // Initialize Firebase
         FirebaseApp.initializeApp(this)
     }
 }

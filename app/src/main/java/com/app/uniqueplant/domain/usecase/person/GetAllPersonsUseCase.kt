@@ -3,8 +3,9 @@ package com.app.uniqueplant.domain.usecase.person
 import com.app.uniqueplant.data.datasource.local.dao.PersonDao
 import com.app.uniqueplant.data.mapper.toDomain
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
-class GetAllPersonsUseCase(
+class GetAllPersonsUseCase @Inject constructor(
     private val personDao: PersonDao
 ) {
     suspend fun getAllPersonsWithFlow() = personDao.getAllWithFlow().map { personList -> personList.map { it.toDomain() } }

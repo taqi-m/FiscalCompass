@@ -2,14 +2,15 @@ package com.app.uniqueplant.domain.usecase.transaction
 
 import com.app.uniqueplant.domain.model.Expense
 import com.app.uniqueplant.domain.model.Income
-import com.app.uniqueplant.presentation.model.TransactionType
 import com.app.uniqueplant.domain.repository.ExpenseRepository
 import com.app.uniqueplant.domain.repository.IncomeRepository
 import com.app.uniqueplant.domain.usecase.auth.SessionUseCase
 import com.app.uniqueplant.domain.usecase.categories.GetCategoriesUseCase
+import com.app.uniqueplant.presentation.model.TransactionType
 import java.util.Date
+import javax.inject.Inject
 
-class AddTransactionUseCase(
+class AddTransactionUseCase @Inject constructor(
     private val sessionUseCase: SessionUseCase,
     private val incomeRepository: IncomeRepository,
     private val expenseRepository: ExpenseRepository,

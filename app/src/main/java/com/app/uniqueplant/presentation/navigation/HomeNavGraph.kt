@@ -1,8 +1,5 @@
 package com.app.uniqueplant.presentation.navigation
 
-import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -18,13 +15,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.app.uniqueplant.presentation.admin.analytics.AnalyticsScreen
-import com.app.uniqueplant.presentation.admin.analytics.AnalyticsViewModel
-import com.app.uniqueplant.presentation.admin.dashboard.DashboardScreen
-import com.app.uniqueplant.presentation.admin.dashboard.DashboardViewModel
-import com.app.uniqueplant.presentation.admin.supervisor.SupervisorScreen
-import com.app.uniqueplant.presentation.admin.transaction.TransactionViewModel
-import com.app.uniqueplant.presentation.admin.transaction.TransactionsScreen
+import com.app.uniqueplant.presentation.screens.analytics.AnalyticsScreen
+import com.app.uniqueplant.presentation.screens.analytics.AnalyticsViewModel
+import com.app.uniqueplant.presentation.screens.dashboard.DashboardScreen
+import com.app.uniqueplant.presentation.screens.dashboard.DashboardViewModel
+import com.app.uniqueplant.presentation.screens.viewTransactions.TransactionViewModel
+import com.app.uniqueplant.presentation.screens.viewTransactions.TransactionsScreen
 
 // Animation duration constant for consistent transitions
 private const val TRANSITION_DURATION = 300
@@ -104,16 +100,6 @@ fun HomeNavGraph(
                 state = state,
                 onEvent = analyticsViewModel::onEvent
             )
-        }
-
-        composable(
-            route = HomeBottomScreen.Supervisor.route,
-            enterTransition = { enterFromUp },
-            exitTransition = { exitToDown },
-            popEnterTransition = { enterFromUp },
-            popExitTransition = { exitToDown }
-        ) { backStackEntry ->
-            SupervisorScreen()
         }
     }
 }

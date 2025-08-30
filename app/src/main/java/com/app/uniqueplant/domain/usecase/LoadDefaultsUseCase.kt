@@ -3,8 +3,9 @@ package com.app.uniqueplant.domain.usecase
 import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesRepository
 import com.app.uniqueplant.domain.model.Category
 import com.app.uniqueplant.domain.repository.CategoryRepository
+import javax.inject.Inject
 
-class LoadDefaultsUseCase(
+class LoadDefaultsUseCase @Inject constructor(
     private val categoryRepository: CategoryRepository,
     private val prefRepository: SharedPreferencesRepository
 ) {

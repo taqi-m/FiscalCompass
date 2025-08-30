@@ -6,8 +6,9 @@ import com.app.uniqueplant.domain.repository.ExpenseRepository
 import com.app.uniqueplant.domain.repository.IncomeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import javax.inject.Inject
 
-class GetMonthlyReportUseCase(
+class GetMonthlyReportUseCase @Inject constructor(
     private val incomesRepository: IncomeRepository,
     private val expensesRepository: ExpenseRepository,
     private val categoryRepository: CategoryRepository

@@ -15,20 +15,20 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesRepository
-import com.app.uniqueplant.presentation.admin.JobsScreen
-import com.app.uniqueplant.presentation.admin.JobsViewModel
-import com.app.uniqueplant.presentation.admin.categories.CategoriesScreen
-import com.app.uniqueplant.presentation.admin.categories.CategoriesViewModel
-import com.app.uniqueplant.presentation.admin.home.HomeScreen
-import com.app.uniqueplant.presentation.admin.home.HomeViewModel
-import com.app.uniqueplant.presentation.admin.person.PersonScreen
-import com.app.uniqueplant.presentation.admin.person.PersonViewModel
-import com.app.uniqueplant.presentation.auth.AuthScreen
-import com.app.uniqueplant.presentation.auth.AuthViewModel
-import com.app.uniqueplant.presentation.settings.SettingsScreen
-import com.app.uniqueplant.presentation.settings.SettingsViewModel
-import com.app.uniqueplant.presentation.transactions.AddTransactionScreen
-import com.app.uniqueplant.presentation.transactions.AddTransactionViewModel
+import com.app.uniqueplant.presentation.screens.addTransaction.AddTransactionScreen
+import com.app.uniqueplant.presentation.screens.addTransaction.AddTransactionViewModel
+import com.app.uniqueplant.presentation.screens.auth.AuthScreen
+import com.app.uniqueplant.presentation.screens.auth.AuthViewModel
+import com.app.uniqueplant.presentation.screens.categories.CategoriesScreen
+import com.app.uniqueplant.presentation.screens.categories.CategoriesViewModel
+import com.app.uniqueplant.presentation.screens.home.HomeScreen
+import com.app.uniqueplant.presentation.screens.home.HomeViewModel
+import com.app.uniqueplant.presentation.screens.jobs.JobsScreen
+import com.app.uniqueplant.presentation.screens.jobs.JobsViewModel
+import com.app.uniqueplant.presentation.screens.person.PersonScreen
+import com.app.uniqueplant.presentation.screens.person.PersonViewModel
+import com.app.uniqueplant.presentation.screens.settings.SettingsScreen
+import com.app.uniqueplant.presentation.screens.settings.SettingsViewModel
 
 
 // Animation duration constant for consistent transitions
@@ -155,7 +155,7 @@ fun AppNavigation(
                 onEvent = settingsViewModel::onEvent,
                 onLogout = { route ->
                     navController.navigate(MainScreens.Auth.route) {
-                        popUpTo(route) { inclusive = true }
+                        popUpTo(MainScreens.Auth.route) { inclusive = false }
                     }
                 },
             )

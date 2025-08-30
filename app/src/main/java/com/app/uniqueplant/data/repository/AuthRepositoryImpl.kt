@@ -4,7 +4,7 @@ import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesReposito
 import com.app.uniqueplant.domain.model.Resource
 import com.app.uniqueplant.domain.repository.AuthRepository
 import com.app.uniqueplant.domain.repository.UserRepository
-import com.app.uniqueplant.presentation.settings.UserInfo
+import com.app.uniqueplant.presentation.screens.settings.UserInfo
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
