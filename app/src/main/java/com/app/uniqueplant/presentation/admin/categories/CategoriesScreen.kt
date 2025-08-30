@@ -1,6 +1,5 @@
 package com.app.uniqueplant.presentation.admin.categories
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -8,10 +7,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -27,7 +31,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import com.app.uniqueplant.domain.model.Category
+import com.app.uniqueplant.presentation.mappers.toCategory
+import com.app.uniqueplant.presentation.model.CategoryUi
 import com.app.uniqueplant.presentation.model.GroupedCategoryUi
 import com.app.uniqueplant.presentation.model.TransactionType
 import com.app.uniqueplant.ui.components.buttons.AddNewButton
@@ -171,8 +176,8 @@ fun CategoriesList(
     uiState: UiState,
     transactionType: TransactionType,
     categoriesMap: GroupedCategoryUi,
-    onEditCategoryClicked: (Category) -> Unit,
-    onDeleteCategoryClicked: (Category) -> Unit,
+    onEditCategoryClicked: (CategoryUi) -> Unit,
+    onDeleteCategoryClicked: (CategoryUi) -> Unit,
     onAddNewCategoryClicked: (Long?) -> Unit,
     onTransactionTypeChange: (TransactionType) -> Unit,
 ) {
@@ -218,35 +223,31 @@ fun CategoriesList(
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp),
                             title = category.name,
-                            initiallyExpanded = true,
-                            chips = categories.map { it.name },
-                            onChipClick = { chip ->
-                                Log.d("CategoriesScreen", "Chip clicked: $chip")
+                            trailingIcon = {
+                                FilledTonalIconButton (
+                                    modifier = Modifier
+                                        .height(32.dp)
+                                        .width(32.dp),
+                                    shape = RoundedCornerShape(15),
+                                    onClick = {
+                                        onAddNewCategoryClicked(category.categoryId)
+                                    }
+                                ) {
+                                    Icon(
+                                        modifier = Modifier.height(24.dp),
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = "Filter"
+                                    )
+                                }
                             },
-                            onAddNewClicked = { categoryGroup ->
-                                onAddNewCategoryClicked(category.categoryId)
-                            }
+                            chips = categories,
+                            onChipClick = { category ->
+                                onEditCategoryClicked(category)
+                            },
+                            initiallyExpanded = true,
+                            chipToLabel = { it.name }
                         )
                     }
-
-                    /*items(items = categoriesMap, key = {
-                        it.categoryId
-                    })
-                    { category ->
-                        CategoryItem(
-                            modifier = Modifier
-                                .padding(vertical = 4.dp)
-                                .border(
-                                    width = 1.dp,
-//                                    color = MaterialTheme.colorScheme.outlineVariant,
-                                    color = MaterialTheme.colorScheme.outline,
-                                    shape = RoundedCornerShape(4.dp)
-                                ), categoryName = category.name, onEditClick = {
-                                onEditCategoryClicked(category)
-                            }, onDeleteClicked = {
-                                onDeleteCategoryClicked(category)
-                            })
-                    }*/
                 }
 
                 item {
@@ -295,7 +296,7 @@ fun CategoryScreenDialogs(
 
         is CategoriesDialog.EditCategory -> {
             EditCategoryDialog(
-                category = dialogState.category,
+                category = dialogState.category?.toCategory(),
                 onEditCategory = { category ->
                     onDialogSubmit(
                         CategoryDialogSubmit.Edit(
@@ -309,10 +310,6 @@ fun CategoryScreenDialogs(
         }
 
         is CategoriesDialog.DeleteCategory -> {
-            Log.d(
-                "CategoriesScreen",
-                "DeleteCategoryDialog: ${dialogState.category?.name}"
-            )
             DeleteCategoryDialog(
                 categoryName = dialogState.category?.name,
                 onDeleteConfirm = {
@@ -328,35 +325,3 @@ fun CategoryScreenDialogs(
         else -> {}
     }
 }
-
-/*
-
-@Preview(showBackground = true)
-@Composable
-fun CategoriesScreenPreview() {
-    CategoriesScreen(
-        state = CategoriesScreenState(
-            categories = listOf(
-                Category(
-                    categoryId = 1L,
-                    name = "Fruits",
-                    description = "All types of fruits",
-                    isExpenseCategory = true
-                ),
-                Category(
-                    categoryId = 2L,
-                    name = "Vegetables",
-                    description = "All types of vegetables",
-                    isExpenseCategory = true
-                ),
-                Category(
-                    categoryId = 3L,
-                    name = "Dairy",
-                    description = "All types of dairy products",
-                    isExpenseCategory = true
-                ),
-            ),
-        ),
-        onEvent = {},
-    )
-}*/

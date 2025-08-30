@@ -1,6 +1,6 @@
 package com.app.uniqueplant.presentation.admin.categories
 
-import com.app.uniqueplant.domain.model.Category
+import com.app.uniqueplant.presentation.model.CategoryUi
 import com.app.uniqueplant.presentation.model.GroupedCategoryUi
 import com.app.uniqueplant.presentation.model.TransactionType
 
@@ -14,7 +14,7 @@ sealed class UiState {
 
 data class CategoryDialogState(
     val parentId: Long? = null,
-    val category: Category? = null
+    val category: CategoryUi? = null
 ) {
     companion object {
         val Idle = CategoryDialogState()

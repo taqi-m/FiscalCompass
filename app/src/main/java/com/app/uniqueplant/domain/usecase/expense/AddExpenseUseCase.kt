@@ -1,6 +1,5 @@
 package com.app.uniqueplant.domain.usecase.expense
 
-import android.util.Log
 import com.app.uniqueplant.domain.model.Expense
 import com.app.uniqueplant.domain.repository.ExpenseRepository
 import com.app.uniqueplant.domain.usecase.auth.SessionUseCase
@@ -30,17 +29,11 @@ class AddExpenseUseCase(
                 userId = uid
             )
 
-            Log.d(TAG, "Adding income: $newExpense")
-
 
             expenseRepository.addExpense(newExpense)
             Result.success(Unit) // Placeholder for successful operation
         } catch (e: Exception) {
             Result.failure(e) // Handle any exceptions that occur
         }
-    }
-
-    companion object {
-        const val TAG = "AddExpenseUseCase"
     }
 }

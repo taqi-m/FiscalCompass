@@ -1,6 +1,5 @@
 package com.app.uniqueplant.data.mapper
 
-import android.util.Log
 import com.app.uniqueplant.data.model.CategoryEntity
 import com.app.uniqueplant.domain.model.Category
 import com.app.uniqueplant.domain.model.CategoryTree
@@ -60,7 +59,6 @@ fun List<CategoryEntity>.toCategoryTree(): CategoryTree {
     }
 
     result.forEach { category, categories ->
-        Log.d("CategoryMapper", "Category: ${category.name}, Subcategories: ${categories.joinToString { it.name }}")
     }
 
     return result

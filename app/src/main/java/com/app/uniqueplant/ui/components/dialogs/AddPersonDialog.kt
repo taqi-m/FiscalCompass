@@ -24,13 +24,14 @@ import com.app.uniqueplant.ui.components.input.GenericExposedDropDownMenu
 
 @Composable
 fun AddPersonDialog(
+    selectedType: String? = null,
     onAddNewPerson: (String, String) -> Unit,
     onDismiss: () -> Unit
 ){
     val focusRequester = remember { FocusRequester() }
     val personName = remember { mutableStateOf("") }
     val personTypes = PersonType.getDefaultTypes()
-    var selectedPersonType by remember { mutableStateOf(personTypes.firstOrNull()) }
+    var selectedPersonType by remember { mutableStateOf(personTypes.find { it == selectedType } ?: personTypes.firstOrNull()) }
 
     if (selectedPersonType == null) {
         return

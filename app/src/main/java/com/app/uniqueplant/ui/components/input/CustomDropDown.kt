@@ -146,17 +146,18 @@ fun CustomExposedDropDownMenuPreview() {
 
     val options = listOf(
         CategoryUi(
-            categoryId = 1L,
-            name = "Option 1",
+            categoryId = 1,
+            isExpenseCategory = true,
+            name = "Category 1",
+            color = "#FF0000"
         ),
         CategoryUi(
-            categoryId = 2L,
-            name = "Option 2",
+            categoryId = 2,
+            isExpenseCategory = false,
+            name = "Category 2",
+            color = "#00FF00"
         ),
-        CategoryUi(
-            categoryId = 3L,
-            name = "Option 3",
-        )
+
     )
     CustomExposedDropDownMenu(
         modifier = Modifier

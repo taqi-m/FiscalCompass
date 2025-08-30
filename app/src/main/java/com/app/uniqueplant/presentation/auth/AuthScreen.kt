@@ -1,6 +1,5 @@
 package com.app.uniqueplant.presentation.auth
 
-import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
@@ -59,9 +58,9 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.R
-import com.app.uniqueplant.ui.components.input.FormTextField
 import com.app.uniqueplant.ui.components.drawings.MountainSpikes
 import com.app.uniqueplant.ui.components.drawings.RelativeCircle
+import com.app.uniqueplant.ui.components.input.FormTextField
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
 @Composable
@@ -87,9 +86,7 @@ fun AuthScreen(
 
     // Navigate if login is successful
     LaunchedEffect(key1 = state.isSuccess) {
-        Log.d("AuthScreen", "Auth Success Detected")
         if (state.isSuccess) {
-            Log.d("AuthScreen", "Login Success Called")
             onEvent(AuthEvent.LoginSuccess(appNavController))
         }
     }

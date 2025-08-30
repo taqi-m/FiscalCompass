@@ -6,6 +6,8 @@ import com.app.uniqueplant.domain.usecase.person.AddPersonUseCase
 import com.app.uniqueplant.domain.usecase.person.DeletePersonUseCase
 import com.app.uniqueplant.domain.usecase.person.GetAllPersonsUseCase
 import com.app.uniqueplant.presentation.admin.categories.UiState
+import com.app.uniqueplant.presentation.mappers.toDomain
+import com.app.uniqueplant.presentation.mappers.toUi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -55,15 +57,14 @@ class PersonViewModel @Inject constructor(
 
             is PersonEvent.OnFilterTypeSelected -> {
                 updateState { copy(selectedType = event.selectedType) }
-                updatePeople()
             }
         }
     }
 
     private fun updatePeople() {
         coroutineScope.launch {
-            getAllPersonsUseCase.getPersonByType(_state.value.selectedType).collect {
-                updateState { copy(persons = it) }
+            getAllPersonsUseCase.getAllPersonsWithFlow().collect { personList ->
+                updateState { copy(persons = personList.map { it.toUi() }) }
             }
         }
     }
@@ -111,10 +112,11 @@ class PersonViewModel @Inject constructor(
         when (event) {
             is PersonDialogSubmit.Add -> {
                 updateState { copy(uiState = UiState.Loading) }
+                val personType = _state.value.selectedType
                 viewModelScope.launch {
                     val updatedState = addPersonUseCase.invoke(
                         name = event.name,
-                        personType = event.personType
+                        personType = personType
                     )
                     updateState {
                         copy(
@@ -131,7 +133,7 @@ class PersonViewModel @Inject constructor(
             }
 
             is PersonDialogSubmit.Delete -> {
-                val person = _state.value.dialogState.person
+                val person = _state.value.dialogState.person?.toDomain()
                 if (person == null) {
                     updateState {
                         copy(uiState = UiState.Error("No person selected for deletion."))

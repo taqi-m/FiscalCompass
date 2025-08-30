@@ -1,13 +1,14 @@
 package com.app.uniqueplant.presentation.admin.categories
 
 import com.app.uniqueplant.domain.model.Category
+import com.app.uniqueplant.presentation.model.CategoryUi
 import com.app.uniqueplant.presentation.model.TransactionType
 
 
 sealed class CategoryDialogToggle {
     data class Add(val parentId: Long? = null) : CategoryDialogToggle()
-    data class Edit(val category: Category) : CategoryDialogToggle()
-    data class Delete(val category: Category) : CategoryDialogToggle()
+    data class Edit(val category: CategoryUi) : CategoryDialogToggle()
+    data class Delete(val category: CategoryUi) : CategoryDialogToggle()
     object Hidden : CategoryDialogToggle()
 }
 

@@ -1,6 +1,5 @@
 package com.app.uniqueplant.presentation.auth
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
@@ -50,8 +49,6 @@ class AuthViewModel @Inject constructor(
             }
 
             is AuthEvent.LoginClicked -> {
-
-                Log.d("AuthViewModel", "Login Click Triggered")
                 signIn(state.value.email, state.value.password)
             }
 
@@ -64,15 +61,12 @@ class AuthViewModel @Inject constructor(
             }
 
             is AuthEvent.LoginSuccess -> {
-                // Handle login success, e.g., navigate to home screen
-                Log.d("AuthViewModel", "Login Success Triggered")
                 navigateToHomeScreen(event.appNavController)
             }
         }
     }
 
     private fun navigateToHomeScreen(appNavController: NavHostController) {
-        Log.d("AuthViewModel", "Hone Navigation Triggered")
         viewModelScope.launch {
             sessionUseCase.getUserType().collect { resource ->
                 when (resource) {
@@ -132,7 +126,6 @@ class AuthViewModel @Inject constructor(
                     when (result) {
                         is Resource.Loading -> it.copy(isLoading = true, error = "")
                         is Resource.Success -> {
-                            Log.d("AuthViewModel", "Login Success: ${result.data?.user?.email}")
                             it.copy(
                                 isSuccess = true,
                                 error = ""

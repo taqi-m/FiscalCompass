@@ -1,7 +1,6 @@
 package com.app.uniqueplant.presentation.transactions
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -77,7 +76,6 @@ fun AddTransactionScreen(
 
     LaunchedEffect(state) {
         if (state.isSuccess) {
-            Log.d("AddExpenseScreen", state.message)
             snackbarHostState.showSnackbar(state.message)
             onEvent(AddTransactionEvent.OnSuccessHandled)
         }
@@ -370,25 +368,60 @@ fun AddTransactionFormContentPreview() {
                     categories = mapOf(
                         CategoryUi(
                             categoryId = 1L,
-                            name = "Food",
-                            icon = "",
+                            parentId = null,
+                            isExpenseCategory = false,
+                            name = "Income",
+                            description = "Income Category",
+                            icon = "ic_income",
+                            color = "FF4CAF50"
                         ) to listOf(
                             CategoryUi(
                                 categoryId = 2L,
-                                name = "Groceries",
-                                icon = "",
+                                parentId = 1L,
+                                isExpenseCategory = false,
+                                name = "Salary",
+                                description = "Salary Category",
+                                icon = "ic_salary",
+                                color = "FF2196F3"
                             ),
                             CategoryUi(
                                 categoryId = 3L,
-                                name = "Restaurants",
-                                icon = "",
+                                parentId = 1L,
+                                isExpenseCategory = false,
+                                name = "Business",
+                                description = "Business Category",
+                                icon = "ic_business",
+                                color = "FFFF9800"
                             )
                         ),
                         CategoryUi(
                             categoryId = 4L,
-                            name = "Salary",
-                            icon = "",
-                        ) to emptyList()
+                            parentId = null,
+                            isExpenseCategory = true,
+                            name = "Expense",
+                            description = "Expense Category",
+                            icon = "ic_expense",
+                            color = "FFF44336"
+                        ) to listOf(
+                            CategoryUi(
+                                categoryId = 5L,
+                                parentId = 4L,
+                                isExpenseCategory = true,
+                                name = "Food",
+                                description = "Food Category",
+                                icon = "ic_food",
+                                color = "FFFFEB3B"
+                            ),
+                            CategoryUi(
+                                categoryId = 6L,
+                                parentId = 4L,
+                                isExpenseCategory = true,
+                                name = "Transport",
+                                description = "Transport Category",
+                                icon = "ic_transport",
+                                color = "FF9C27B0"
+                            )
+                        )
                     )
                 ),
                 onEvent = {},

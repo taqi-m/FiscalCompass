@@ -6,6 +6,7 @@ import com.app.uniqueplant.domain.usecase.categories.AddCategoryUseCase
 import com.app.uniqueplant.domain.usecase.categories.DeleteCategoryUseCase
 import com.app.uniqueplant.domain.usecase.categories.GetCategoriesUseCase
 import com.app.uniqueplant.domain.usecase.categories.UpdateCategoryUseCase
+import com.app.uniqueplant.presentation.mappers.toCategory
 import com.app.uniqueplant.presentation.mappers.toGroupedCategoryUi
 import com.app.uniqueplant.presentation.model.TransactionType
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -159,7 +160,7 @@ class CategoriesViewModel @Inject constructor(
             is CategoryDialogSubmit.Delete -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     val category = _state.value.dialogState.category ?: return@launch
-                    val updatedState = deleteCategoryUseCase.invoke(category)
+                    val updatedState = deleteCategoryUseCase.invoke(category.toCategory())
                     updateState {
                         copy(
                             uiState = updatedState

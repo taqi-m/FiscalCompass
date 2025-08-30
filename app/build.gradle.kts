@@ -49,8 +49,6 @@ android {
     buildFeatures {
         compose = true
     }
-
-
 }
 
 ksp {
@@ -61,6 +59,7 @@ dependencies {
 
     // Hilt dependencies
     implementation(libs.hilt.android)
+    debugImplementation(libs.ui.tooling)
     ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
 

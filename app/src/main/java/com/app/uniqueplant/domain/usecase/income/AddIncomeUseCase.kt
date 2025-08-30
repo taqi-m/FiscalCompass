@@ -1,6 +1,5 @@
 package com.app.uniqueplant.domain.usecase.income
 
-import android.util.Log
 import com.app.uniqueplant.domain.model.Income
 import com.app.uniqueplant.domain.repository.IncomeRepository
 import com.app.uniqueplant.domain.usecase.auth.SessionUseCase
@@ -30,17 +29,11 @@ class AddIncomeUseCase(
                 userId = uid
             )
 
-            Log.d(TAG, "Adding income: $newIncome")
-
 
             incomeRepository.addIncome(newIncome)
             Result.success(Unit) // Placeholder for successful operation
         } catch (e: Exception) {
             Result.failure(e) // Handle any exceptions that occur
         }
-    }
-
-    companion object {
-        val TAG = AddIncomeUseCase::class.java.simpleName
     }
 }

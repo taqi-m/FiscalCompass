@@ -1,6 +1,5 @@
 package com.app.uniqueplant.presentation.transactions
 
-import android.util.Log
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -47,7 +46,6 @@ class AddTransactionViewModel @Inject constructor(
 
                 assignCategories()
             } catch (e: Exception) {
-                Log.e(TAG, "Error fetching categories", e)
             }
         }
     }
@@ -115,13 +113,11 @@ class AddTransactionViewModel @Inject constructor(
 
             is AddTransactionEvent.OnTypeSelected -> {
                 if (event.selectedType == _state.value.transactionType) {
-                    Log.d(TAG, "Transaction type already selected: ${event.selectedType}")
                 } else {
                     _state.value = _state.value.copy(
                         transactionType = event.selectedType
                     )
                     assignCategories()
-                    Log.d(TAG, "Transaction type changed to: ${event.selectedType}")
                 }
             }
 
@@ -183,9 +179,7 @@ class AddTransactionViewModel @Inject constructor(
                         set(Calendar.MINUTE, pickedTime.minute)
                     }
                     _state.value = _state.value.copy(date = calendar.time)
-                    Log.d(TAG, "Time selected: ${_state.value.date}")
                 } ?: run {
-                    Log.w(TAG, "Selected time is null")
                 }
 
 
@@ -240,15 +234,12 @@ class AddTransactionViewModel @Inject constructor(
                 date = _state.value.date,
                 transactionType = _state.value.transactionType
             ).onSuccess {
-                Log.d(TAG, "Transaction added successfully")
                 // Reset state after successful addition
                 _state.value = _state.value.copy(
                     isSuccess = true,
                     message = "${_state.value.transactionType.name} added successfully"
                 )
-                Log.d(TAG, "State after adding transaction: ${_state.value}")
             }.onFailure { e ->
-                Log.e(TAG, "Error adding transaction", e)
                 _state.value = _state.value.copy(
                     isSuccess = false,
                     message = "${e.message}"
@@ -256,10 +247,6 @@ class AddTransactionViewModel @Inject constructor(
                 // Handle error, e.g., show a message to the user
             }
         }
-    }
-
-    companion object {
-        private const val TAG = "AddIncomeViewModel"
     }
 
     private fun updateState(update: AddTransactionState.() -> AddTransactionState) {

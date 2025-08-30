@@ -1,15 +1,16 @@
 package com.app.uniqueplant.domain.usecase.person
 
 import com.app.uniqueplant.data.datasource.local.dao.PersonDao
-import com.app.uniqueplant.data.model.PersonEntity
+import com.app.uniqueplant.data.mapper.toEntity
+import com.app.uniqueplant.domain.model.Person
 import com.app.uniqueplant.presentation.admin.categories.UiState
 
 class DeletePersonUseCase(
     private val personDao: PersonDao
 ) {
-    suspend operator fun invoke(person: PersonEntity): UiState {
+    suspend operator fun invoke(person: Person): UiState {
         try {
-            personDao.delete(person)
+            personDao.delete(person.toEntity())
             return UiState.Success("Person deleted successfully.")
 
         } catch (e: Exception) {
