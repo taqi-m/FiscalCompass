@@ -1,12 +1,14 @@
 package com.app.uniqueplant.domain.di
 
-import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesRepository
-import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesRepositoryImpl
+import com.app.uniqueplant.data.datasource.preferences.PreferenceManager
+import com.app.uniqueplant.data.datasource.preferences.PreferenceManagerImpl
+import com.app.uniqueplant.data.repository.AppPreferenceRepositoryImpl
 import com.app.uniqueplant.data.repository.AuthRepositoryImpl
 import com.app.uniqueplant.data.repository.CategoryRepositoryImpl
 import com.app.uniqueplant.data.repository.ExpenseRepositoryImpl
 import com.app.uniqueplant.data.repository.IncomeRepositoryImpl
 import com.app.uniqueplant.data.repository.UserRepositoryImpl
+import com.app.uniqueplant.domain.repository.AppPreferenceRepository
 import com.app.uniqueplant.domain.repository.AuthRepository
 import com.app.uniqueplant.domain.repository.CategoryRepository
 import com.app.uniqueplant.domain.repository.ExpenseRepository
@@ -53,7 +55,13 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindSharedPreferencesRepository(
-        sharedPreferencesRepositoryImpl: SharedPreferencesRepositoryImpl
-    ): SharedPreferencesRepository
+    abstract fun bindPreferenceManager(
+        preferenceManagerImpl: PreferenceManagerImpl
+    ): PreferenceManager
+
+    @Binds
+    @Singleton
+    abstract fun bindAppPreferencesRepository(
+        appPreferencesRepositoryImpl: AppPreferenceRepositoryImpl
+    ): AppPreferenceRepository
 }

@@ -9,7 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
-import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesRepository
+import com.app.uniqueplant.domain.repository.AppPreferenceRepository
 import com.app.uniqueplant.presentation.navigation.AppNavigation
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import com.app.uniqueplant.ui.util.ThemePreferenceProvider
@@ -19,7 +19,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @Inject
-    lateinit var sharedPreferencesRepository: SharedPreferencesRepository
+    lateinit var preferenceManager: AppPreferenceRepository
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
                         color = MaterialTheme.colorScheme.background
                     ) {
                         val navController = rememberNavController()
-                        AppNavigation(navController = navController, sharedPreferencesRepository)
+                        AppNavigation(navController = navController, preferenceManager)
                     }
                 }
             }

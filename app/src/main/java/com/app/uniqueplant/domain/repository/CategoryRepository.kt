@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface CategoryRepository {
 
+
     suspend fun insertCategory(category: Category): Long
 
     suspend fun updateCategory(category: Category): Int

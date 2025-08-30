@@ -1,6 +1,6 @@
 package com.app.uniqueplant.data.datasource.preferences
 
-interface SharedPreferencesRepository {
+interface PreferenceManager {
     // String preferences
     fun saveString(key: String, value: String)
     fun getString(key: String, defaultValue: String = ""): String

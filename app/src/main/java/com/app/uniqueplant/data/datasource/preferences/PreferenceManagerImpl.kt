@@ -8,9 +8,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class SharedPreferencesRepositoryImpl @Inject constructor(
+class PreferenceManagerImpl @Inject constructor(
     @ApplicationContext context: Context
-) : SharedPreferencesRepository {
+) : PreferenceManager {
 
     companion object {
         private const val PREFERENCES_NAME = "unique_plant_preferences"

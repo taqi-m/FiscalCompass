@@ -14,7 +14,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesRepository
+import com.app.uniqueplant.domain.repository.AppPreferenceRepository
 import com.app.uniqueplant.presentation.screens.addTransaction.AddTransactionScreen
 import com.app.uniqueplant.presentation.screens.addTransaction.AddTransactionViewModel
 import com.app.uniqueplant.presentation.screens.auth.AuthScreen
@@ -54,9 +54,9 @@ private val exitToDown = fadeOut(animationSpec = tween(TRANSITION_DURATION)) +
         slideOutVertically(animationSpec = tween(TRANSITION_DURATION)) { fullHeight -> fullHeight }
 
 @Composable
-fun AppNavigation(
+fun AppNavigation (
     navController: NavHostController,
-    prefs: SharedPreferencesRepository
+    prefs: AppPreferenceRepository
 ) {
 
     NavHost(

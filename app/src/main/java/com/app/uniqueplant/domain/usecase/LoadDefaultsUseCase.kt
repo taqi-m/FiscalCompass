@@ -1,111 +1,18 @@
 package com.app.uniqueplant.domain.usecase
 
-import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesRepository
 import com.app.uniqueplant.domain.model.Category
+import com.app.uniqueplant.domain.repository.AppPreferenceRepository
 import com.app.uniqueplant.domain.repository.CategoryRepository
 import javax.inject.Inject
 
 class LoadDefaultsUseCase @Inject constructor(
     private val categoryRepository: CategoryRepository,
-    private val prefRepository: SharedPreferencesRepository
+    private val appPreference: AppPreferenceRepository
 ) {
     suspend fun addDefaultCategories() {
-        if (prefRepository.isDefaultCategoriesAdded()) {
+        if (appPreference.isDefaultPersonTypesAdded()) {
             return
         }
-        /*val defaultCategories = listOf(
-            Category(
-                name = "Roda",
-                color = 0xFFE57373.toInt(),
-                isExpenseCategory = false,
-                icon = "🍔"
-            ),
-            Category(
-                name = "Bajar",
-                color = 0xFF64B5F6.toInt(),
-                isExpenseCategory = false,
-                icon = "🚗"
-            ),
-            Category(
-                name = "Mix",
-                color = 0xFFBA68C8.toInt(),
-                isExpenseCategory = false,
-                icon = "🎉"
-            ),
-            Category(
-                name = "Scrap",
-                color = 0xFF4DB6AC.toInt(),
-                isExpenseCategory = false,
-                icon = "💊"
-            ),
-            Category(
-                name = "Dumper",
-                color = 0xFF81C784.toInt(),
-                isExpenseCategory = true,
-                icon = "💼"
-            ),
-            Category(
-                name = "Loader",
-                color = 0xFFAED581.toInt(),
-                isExpenseCategory = true,
-                icon = "🏢"
-            ),
-            Category(
-                name = "Excavator",
-                color = 0xFFFFD54F.toInt(),
-                isExpenseCategory = true,
-                icon = "🎁"
-            ),
-            Category(
-                name = "Plant Maintenance",
-                color = 0xFF4FC3F7.toInt(),
-                isExpenseCategory = true,
-                icon = "📈"
-            ),
-            Category(
-                name = "Diesel",
-                color = 0xFF9575CD.toInt(),
-                isExpenseCategory = true,
-                icon = "💰"
-            ),
-            Category(
-                name = "Mobil Oil",
-                color = 0xFFF06292.toInt(),
-                isExpenseCategory = true,
-                icon = "🛢️"
-            ),
-            Category(
-                name = "Hassan Khata",
-                color = 0xFF4DD0E1.toInt(),
-                isExpenseCategory = true,
-                icon = "🧾"
-            ),
-            Category(
-                name = "Crushing",
-                color = 0xFFA1887F.toInt(),
-                isExpenseCategory = true,
-                icon = "⚖️"
-            ),
-            Category(
-                name = "Stone Purchase",
-                color = 0xFF795548.toInt(),
-                isExpenseCategory = true,
-                icon = "🧱"
-            ),
-            Category(
-                name = "Electricity Bill",
-                color = 0xFFFF8A65.toInt(),
-                isExpenseCategory = true,
-                icon = "💡"
-            ),
-            Category(
-                name = "Salary",
-                color = 0xFFDCE775.toInt(),
-                isExpenseCategory = true,
-                icon = "💵"
-            )
-        )*/
-
         val defaultCategories: Map<Category, List<Category>> = mapOf(
             Category(name = "Stone Sales", isExpenseCategory = false) to listOf(
                 Category(name = "Crushed Stone", isExpenseCategory = false),
@@ -141,9 +48,7 @@ class LoadDefaultsUseCase @Inject constructor(
                 Category(name = "Misc Expenses", isExpenseCategory = true)
             )
         )
-
-
         categoryRepository.seedDefaultCategories(defaultCategories)
-        prefRepository.setDefaultCategoriesAdded(true)
+        appPreference.setDefaultCategoriesAdded(true)
     }
 }

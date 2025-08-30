@@ -1,7 +1,7 @@
 package com.app.uniqueplant.data.repository
 
-import com.app.uniqueplant.data.datasource.preferences.SharedPreferencesRepository
 import com.app.uniqueplant.domain.model.Resource
+import com.app.uniqueplant.domain.repository.AppPreferenceRepository
 import com.app.uniqueplant.domain.repository.AuthRepository
 import com.app.uniqueplant.domain.repository.UserRepository
 import com.app.uniqueplant.presentation.screens.settings.UserInfo
@@ -22,7 +22,7 @@ class AuthRepositoryImpl @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
     private val firebaseFirestore: FirebaseFirestore,
     private val userRepository: UserRepository,
-    private val prefRepository: SharedPreferencesRepository
+    private val appPreferences: AppPreferenceRepository
 ) : AuthRepository {
 
     override fun loginUser(email: String, password: String): Flow<Resource<AuthResult>> = flow {
@@ -37,8 +37,8 @@ class AuthRepositoryImpl @Inject constructor(
             .document(result.user?.uid ?: "")
             .get().await().getString("userType")
         if (userType != null) {
-            prefRepository.setUserLoggedIn(true)
-            prefRepository.setUserType(userType)
+            appPreferences.setUserLoggedIn(true)
+            appPreferences.setUserType(userType)
             userRepository.addUserToDatabase(
                 userId = result.user?.uid ?: "",
                 username = result.user?.displayName ?: "",
@@ -74,12 +74,11 @@ class AuthRepositoryImpl @Inject constructor(
         try {
             firebaseAuth.signOut()
         } catch (e: Exception) {
-            // Handle any exceptions that may occur during sign out
             e.printStackTrace()
             emit(Resource.Error(e.message ?: "An error occurred during sign out"))
         } finally {
-            prefRepository.setUserLoggedIn(false)
-            prefRepository.removeUserType()
+            appPreferences.setUserLoggedIn(false)
+            appPreferences.removeUserType()
             emit(Resource.Success("User logged out successfully"))
         }
     }
@@ -87,12 +86,12 @@ class AuthRepositoryImpl @Inject constructor(
     override fun getCurrentUser(): FirebaseUser? = firebaseAuth.currentUser
 
     override fun isUserLoggedIn(): Boolean {
-        return prefRepository.isUserLoggedIn()
+        return appPreferences.isUserLoggedIn()
     }
 
     override fun getUserType(): Flow<Resource<String>> = flow {
         emit(Resource.Loading())
-        var userType: String? = prefRepository.getUserType()
+        var userType: String? = appPreferences.getUserType()
         if (userType != null) {
             emit(Resource.Success(userType))
             return@flow
@@ -110,7 +109,7 @@ class AuthRepositoryImpl @Inject constructor(
         }
         userType = document.getString("userType")
         userType?.let {
-            prefRepository.setUserType(it)
+            appPreferences.setUserType(it)
             emit(Resource.Success(it))
         } ?: emit(Resource.Error("User type not found"))
     }.catch { e ->
@@ -141,14 +140,6 @@ class AuthRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             emit(Resource.Error(e.message ?: "An error occurred while fetching user info"))
         }
-    }
-
-
-
-
-
-    companion object{
-        private const val TAG = "AuthRepositoryImpl"
     }
 
 }
