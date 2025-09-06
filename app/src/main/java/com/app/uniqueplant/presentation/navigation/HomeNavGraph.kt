@@ -1,12 +1,6 @@
 package com.app.uniqueplant.presentation.navigation
 
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideOutVertically
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -15,34 +9,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.app.uniqueplant.presentation.screens.analytics.AnalyticsScreen
-import com.app.uniqueplant.presentation.screens.analytics.AnalyticsViewModel
-import com.app.uniqueplant.presentation.screens.dashboard.DashboardScreen
-import com.app.uniqueplant.presentation.screens.dashboard.DashboardViewModel
-import com.app.uniqueplant.presentation.screens.viewTransactions.TransactionViewModel
-import com.app.uniqueplant.presentation.screens.viewTransactions.TransactionsScreen
-
-// Animation duration constant for consistent transitions
-private const val TRANSITION_DURATION = 300
-
-// Pre-defined transition animations
-private val enterFromRight = fadeIn(animationSpec = tween(TRANSITION_DURATION)) +
-        slideInHorizontally(animationSpec = tween(TRANSITION_DURATION)) { fullWidth -> -fullWidth }
-
-private val enterFromLeft = fadeIn(animationSpec = tween(TRANSITION_DURATION)) +
-        slideInHorizontally(animationSpec = tween(TRANSITION_DURATION)) { fullWidth -> fullWidth }
-
-private val enterFromUp = fadeIn(animationSpec = tween(TRANSITION_DURATION)) +
-        slideInVertically(animationSpec = tween(TRANSITION_DURATION)) { fullHeight -> fullHeight }
-
-private val exitToLeft = fadeOut(animationSpec = tween(TRANSITION_DURATION)) +
-        slideOutHorizontally(animationSpec = tween(TRANSITION_DURATION)) { fullWidth -> -fullWidth }
-
-private val exitToRight = fadeOut(animationSpec = tween(TRANSITION_DURATION)) +
-        slideOutHorizontally(animationSpec = tween(TRANSITION_DURATION)) { fullWidth -> fullWidth }
-
-private val exitToDown = fadeOut(animationSpec = tween(TRANSITION_DURATION)) +
-        slideOutVertically(animationSpec = tween(TRANSITION_DURATION)) { fullHeight -> fullHeight }
+import com.app.uniqueplant.presentation.screens.homeScreens.analytics.AnalyticsScreen
+import com.app.uniqueplant.presentation.screens.homeScreens.analytics.AnalyticsViewModel
+import com.app.uniqueplant.presentation.screens.homeScreens.dashboard.DashboardScreen
+import com.app.uniqueplant.presentation.screens.homeScreens.dashboard.DashboardViewModel
+import com.app.uniqueplant.presentation.screens.transactionScreens.viewTransactions.TransactionViewModel
+import com.app.uniqueplant.presentation.screens.transactionScreens.viewTransactions.TransactionsScreen
+import com.google.gson.Gson
 
 
 @Composable
@@ -54,15 +27,14 @@ fun HomeNavGraph(
     NavHost(
         homeNavController,
         startDestination = HomeBottomScreen.Dashboard.route,
-        modifier = modifier
+        modifier = modifier,
+        enterTransition = { androidx.compose.animation.EnterTransition.None },
+        exitTransition = { androidx.compose.animation.ExitTransition.None }
     ) {
         composable(
             route = HomeBottomScreen.Dashboard.route,
-            enterTransition = { enterFromRight },
-            exitTransition = { exitToLeft },
-            popEnterTransition = { enterFromRight },
-            popExitTransition = { exitToLeft }
-        ) { backStackEntry ->
+
+            ) { backStackEntry ->
             val dashboardViewModel: DashboardViewModel = hiltViewModel(backStackEntry)
             val state by dashboardViewModel.state.collectAsState()
             DashboardScreen(
@@ -74,26 +46,28 @@ fun HomeNavGraph(
 
         composable(
             route = HomeBottomScreen.Transactions.route,
-            enterTransition = { enterFromLeft },
-            exitTransition = { exitToRight },
-            popEnterTransition = { enterFromLeft },
-            popExitTransition = { exitToRight }
-        ) { backStackEntry ->
+
+            ) { backStackEntry ->
             val transactionViewModel: TransactionViewModel = hiltViewModel(backStackEntry)
             val state by transactionViewModel.state.collectAsState()
             TransactionsScreen(
                 state = state,
-                onEvent = transactionViewModel::onEvent
+                onEvent = transactionViewModel::onEvent,
+                onNavigateClicked = { transactionUi ->
+                    val transaction = Uri.encode(Gson().toJson(transactionUi))
+                    appNavController.navigate(
+                        MainScreens.TransactionDetail.passTransaction(
+                            transaction
+                        )
+                    )
+                }
             )
         }
 
         composable(
             route = HomeBottomScreen.Analytics.route,
-            enterTransition = { enterFromLeft },
-            exitTransition = { exitToRight },
-            popEnterTransition = { enterFromLeft },
-            popExitTransition = { exitToRight }
-        ) { backStackEntry ->
+
+            ) { backStackEntry ->
             val analyticsViewModel: AnalyticsViewModel = hiltViewModel(backStackEntry)
             val state by analyticsViewModel.state.collectAsState()
             AnalyticsScreen(

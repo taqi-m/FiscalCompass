@@ -1,5 +1,6 @@
 package com.app.uniqueplant.domain.usecase
 
+import android.util.Log
 import com.app.uniqueplant.domain.model.Category
 import com.app.uniqueplant.domain.repository.AppPreferenceRepository
 import com.app.uniqueplant.domain.repository.CategoryRepository
@@ -10,9 +11,10 @@ class LoadDefaultsUseCase @Inject constructor(
     private val appPreference: AppPreferenceRepository
 ) {
     suspend fun addDefaultCategories() {
-        if (appPreference.isDefaultPersonTypesAdded()) {
+        if (appPreference.isDefaultCategoriesAdded()) {
             return
         }
+        Log.d(("ROOM_DEFAULT"), "Seeding default categories")
         val defaultCategories: Map<Category, List<Category>> = mapOf(
             Category(name = "Stone Sales", isExpenseCategory = false) to listOf(
                 Category(name = "Crushed Stone", isExpenseCategory = false),

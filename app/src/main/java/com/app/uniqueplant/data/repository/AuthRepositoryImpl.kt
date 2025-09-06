@@ -136,6 +136,7 @@ class AuthRepositoryImpl @Inject constructor(
                 userEmail = document.getString("email") ?: "Unknown",
                 profilePictureUrl = document.getString("profilePictureUrl")
             )
+
             emit(Resource.Success(userInfo))
         } catch (e: Exception) {
             emit(Resource.Error(e.message ?: "An error occurred while fetching user info"))

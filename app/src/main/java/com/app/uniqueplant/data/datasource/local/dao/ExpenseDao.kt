@@ -9,13 +9,14 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.app.uniqueplant.data.model.ExpenseEntity
-import com.app.uniqueplant.data.model.ExpenseWithCategory
+import com.app.uniqueplant.data.model.ExpenseWithCategoryAndPersonDbo
+import com.app.uniqueplant.data.model.ExpenseWithCategoryDbo
 import kotlinx.coroutines.flow.Flow
 import java.util.Date
 
 @Dao
 interface ExpenseDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertExpense(expenseEntity: ExpenseEntity): Long
     
     @Update
@@ -35,7 +36,11 @@ interface ExpenseDao {
     
     @Transaction
     @Query("SELECT * FROM expenses WHERE userId = :userId ORDER BY date DESC")
-    fun getExpensesWithCategory(userId: String): Flow<List<ExpenseWithCategory>>
+    fun getExpensesWithCategory(userId: String): Flow<List<ExpenseWithCategoryDbo>>
+
+    @Transaction
+    @Query("SELECT * FROM expenses WHERE expenseId = :id ORDER BY date DESC LIMIT 1")
+    suspend fun getExpensesWithCategoryAndPerson(id: Long): ExpenseWithCategoryAndPersonDbo
     
     @Query("SELECT * FROM expenses WHERE userId = :userId AND date BETWEEN :startDate AND :endDate ORDER BY date DESC")
     fun getExpensesByDateRange(userId: String, startDate: Date, endDate: Date): Flow<List<ExpenseEntity>>

@@ -1,9 +1,11 @@
 package com.app.uniqueplant.data.repository
 
 import com.app.uniqueplant.data.datasource.local.dao.ExpenseDao
-import com.app.uniqueplant.data.mapper.toExpense
+import com.app.uniqueplant.data.mapper.toDomain
 import com.app.uniqueplant.data.mapper.toExpenseEntity
 import com.app.uniqueplant.domain.model.Expense
+import com.app.uniqueplant.domain.model.ExpenseWithCategory
+import com.app.uniqueplant.domain.model.ExpenseWithCategoryAndPerson
 import com.app.uniqueplant.domain.repository.ExpenseRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -34,14 +36,14 @@ class ExpenseRepositoryImpl @Inject constructor(
 
     override suspend fun getExpenseById(id: Long): Expense? {
         return expenseDao.getExpenseById(id)
-            ?.toExpense()
+            ?.toDomain()
             ?: throw IllegalArgumentException("Expense with id $id not found")
     }
 
     override suspend fun getAllExpenses(): Flow<List<Expense>> {
         return expenseDao.getAllExpenses().map {
             it.map { expenseEntity ->
-                expenseEntity.toExpense()
+                expenseEntity.toDomain()
             }
         }
     }
@@ -60,7 +62,7 @@ class ExpenseRepositoryImpl @Inject constructor(
             }.time
         ).map {
             it.map { expenseEntity ->
-                expenseEntity.toExpense()
+                expenseEntity.toDomain()
             }
         }
     }
@@ -68,13 +70,25 @@ class ExpenseRepositoryImpl @Inject constructor(
     override suspend fun getExpensesByUser(userId: String): Flow<List<Expense>> {
         return expenseDao.getAllExpensesByUser(userId).map {
             it.map { expenseEntity ->
-                expenseEntity.toExpense()
+                expenseEntity.toDomain()
             }
         }
     }
 
     override suspend fun getExpensesByCategory(categoryId: Long): List<Expense> {
         TODO("Not yet implemented")
+    }
+
+    override suspend fun getExpensesWithCategory(userId: String): Flow<List<ExpenseWithCategory>> {
+        return expenseDao.getExpensesWithCategory(userId).map {
+            it.map { expenseItem ->
+                expenseItem.toDomain()
+            }
+        }
+    }
+
+    override suspend fun getExpensesWithCategoryAndPerson(id: Long): ExpenseWithCategoryAndPerson {
+        return expenseDao.getExpensesWithCategoryAndPerson(id).toDomain()
     }
 
     override suspend fun getTotalExpenses(): Double {

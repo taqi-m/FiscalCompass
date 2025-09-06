@@ -1,9 +1,12 @@
 package com.app.uniqueplant.data.repository
 
 import com.app.uniqueplant.data.datasource.local.dao.IncomeDao
-import com.app.uniqueplant.data.mapper.toIncome
+import com.app.uniqueplant.data.mapper.toDomain
 import com.app.uniqueplant.data.mapper.toIncomeEntity
+import com.app.uniqueplant.data.mapper.toIncomeWithCategory
 import com.app.uniqueplant.domain.model.Income
+import com.app.uniqueplant.domain.model.IncomeWithCategory
+import com.app.uniqueplant.domain.model.IncomeWithCategoryAndPerson
 import com.app.uniqueplant.domain.repository.IncomeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -33,13 +36,13 @@ class IncomeRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getIncomeById(id: Long): Income? {
-        return incomeDao.getIncomeById(id)?.toIncome()
+        return incomeDao.getIncomeById(id)?.toDomain()
     }
 
     override suspend fun getAllIncomes(): Flow<List<Income>> {
         return incomeDao.getAllIncomes().map {
             it.map { incomeEntity ->
-                incomeEntity.toIncome()
+                incomeEntity.toDomain()
             }
         }
     }
@@ -50,6 +53,18 @@ class IncomeRepositoryImpl @Inject constructor(
 
     override suspend fun getIncomesByCategory(categoryId: Long): List<Income> {
         TODO("Not yet implemented")
+    }
+
+    override suspend fun getIncomesWithCategory(userId: String): Flow<List<IncomeWithCategory>> {
+        return incomeDao.getIncomesWithCategory(userId).map { incomeWithCategoryDboList ->
+            incomeWithCategoryDboList.map { incomeWithCategoryDbo ->
+                incomeWithCategoryDbo.toIncomeWithCategory()
+            }
+        }
+    }
+
+    override suspend fun getIncomesWithCategoryAndPerson(id: Long): IncomeWithCategoryAndPerson {
+        return incomeDao.getIncomesWithCategoryAndPerson(id).toDomain()
     }
 
     override suspend fun getTotalIncomes(): Double {
@@ -70,7 +85,7 @@ class IncomeRepositoryImpl @Inject constructor(
             }.time
         ).map {
             it.map { incomeEntity ->
-                incomeEntity.toIncome()
+                incomeEntity.toDomain()
             }
         }
     }

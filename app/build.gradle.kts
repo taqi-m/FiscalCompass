@@ -31,10 +31,10 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
             signingConfig = signingConfigs.getByName("test-release")
         }
@@ -59,6 +59,7 @@ dependencies {
 
     // Hilt dependencies
     implementation(libs.hilt.android)
+    implementation(libs.androidx.material3.window.size.class1)
     debugImplementation(libs.ui.tooling)
     ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
@@ -92,6 +93,10 @@ dependencies {
     //Coil dependencies
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+
+    //
+    implementation(libs.gson)
+
 
 
     testImplementation(libs.junit)

@@ -1,11 +1,12 @@
 package com.app.uniqueplant.data.model
 
+import androidx.annotation.Keep
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.util.Date
-
+@Keep
 @Entity(
     tableName = "incomes",
     foreignKeys = [

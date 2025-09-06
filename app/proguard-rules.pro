@@ -1,21 +1,54 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+####################################################################
+# Room Database (Entities, DAOs, Converters, Generated Classes)
+####################################################################
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep all @Entity annotated classes (tables)
+-keep @androidx.room.Entity class * { *; }
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Keep all @Dao interfaces
+-keep @androidx.room.Dao class * { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Keep your RoomDatabase and its generated implementation
+-keep class * extends androidx.room.RoomDatabase
+
+# Keep all fields annotated with Room annotations
+-keepclassmembers class * {
+    @androidx.room.PrimaryKey <fields>;
+    @androidx.room.ColumnInfo <fields>;
+    @androidx.room.Embedded <fields>;
+    @androidx.room.Relation <fields>;
+}
+
+# Keep all methods annotated with @TypeConverter
+-keepclassmembers class * {
+    @androidx.room.TypeConverter <methods>;
+}
+
+# Keep TypeConverters classes themselves
+-keep @androidx.room.TypeConverters class * { *; }
+
+####################################################################
+# Kotlin Metadata (important for Room + coroutines)
+####################################################################
+-keepclassmembers class kotlin.Metadata {
+    public <fields>;
+}
+
+####################################################################
+# Keep annotations (Room uses reflection on them)
+####################################################################
+-keepattributes *Annotation*
+-keepattributes Signature
+-keepattributes InnerClasses
+
+####################################################################
+# SQLite Support (needed by Room’s generated code)
+####################################################################
+-keep class androidx.sqlite.db.** { *; }
+-keep interface androidx.sqlite.db.** { *; }
+
+####################################################################
+# (Optional) If you use Paging with Room
+####################################################################
+-keep class androidx.paging.DataSource
+-keep class androidx.paging.PositionalDataSource

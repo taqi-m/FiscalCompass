@@ -9,7 +9,7 @@ import com.app.uniqueplant.domain.model.Transaction
  * Mapper functions to convert between [IncomeEntity] and [Income].
  * These functions are used to convert data between the database layer and the domain layer.
  */
-fun IncomeEntity.toIncome(): Income {
+fun IncomeEntity.toDomain(): Income {
     return Income(
         incomeId = this.incomeId,
         amount = this.amount,
@@ -31,6 +31,8 @@ fun Income.toTransaction(): Transaction {
     return Transaction(
         transactionId = this.incomeId,
         amount = this.amount,
+        categoryId = this.categoryId,
+        personId = this.personId,
         date = this.date,
         description = this.description,
         isExpense = false,

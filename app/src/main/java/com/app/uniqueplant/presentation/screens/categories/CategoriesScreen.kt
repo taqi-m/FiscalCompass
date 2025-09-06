@@ -3,19 +3,23 @@ package com.app.uniqueplant.presentation.screens.categories
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -30,7 +34,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import com.app.uniqueplant.R
 import com.app.uniqueplant.presentation.mappers.toCategory
 import com.app.uniqueplant.presentation.model.CategoryUi
 import com.app.uniqueplant.presentation.model.GroupedCategoryUi
@@ -45,6 +52,7 @@ import com.app.uniqueplant.ui.components.input.TransactionTypeSelector
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoriesScreen(
+    appNavController: NavHostController,
     state: CategoriesScreenState,
     onEvent: (CategoriesEvent) -> Unit,
 ) {
@@ -61,13 +69,17 @@ fun CategoriesScreen(
             TopAppBar(
                 scrollBehavior = scrollBehavior,
                 title = { Text(text = "Categories") },
-                actions = {
-                    Button(
+                navigationIcon = {
+                    IconButton(
                         onClick = {
-                            onEvent(CategoriesEvent.OnCategoryDialogToggle(CategoryDialogToggle.Add()))
-                        }, shape = RoundedCornerShape(8.dp), modifier = Modifier.padding(end = 8.dp)
+                            appNavController.popBackStack()
+                        }
                     ) {
-                        Text(text = "Add New")
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_arrow_back_24),
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
             )
@@ -224,7 +236,7 @@ fun CategoriesList(
                                 .padding(vertical = 4.dp),
                             title = category.name,
                             trailingIcon = {
-                                FilledTonalIconButton (
+                                FilledTonalIconButton(
                                     modifier = Modifier
                                         .height(32.dp)
                                         .width(32.dp),
@@ -264,6 +276,14 @@ fun CategoriesList(
                         onClick = {
                             onAddNewCategoryClicked(null)
                         })
+                }
+
+                item {
+                    Spacer(
+                        modifier = Modifier.height(
+                            WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
+                        )
+                    )
                 }
             }
         }

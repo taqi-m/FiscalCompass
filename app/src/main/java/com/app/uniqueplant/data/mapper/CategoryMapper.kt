@@ -8,7 +8,7 @@ import com.app.uniqueplant.domain.model.CategoryTree
  * Mapper functions to convert between [CategoryEntity] and [Category].
  * These functions are used to convert data between the database layer and the domain layer.
  */
-fun CategoryEntity.toCategory(): Category {
+fun CategoryEntity.toDomain(): Category {
     return Category(
         categoryId = this.categoryId,
         parentCategoryId = this.parentCategoryId,
@@ -49,7 +49,7 @@ fun Category.toCategoryEntity(parentId: Long? = null): CategoryEntity {
  * @return A [CategoryTree] representation of the list of [CategoryEntity].
  */
 fun List<CategoryEntity>.toCategoryTree(): CategoryTree {
-    val categories = this.map { it.toCategory() }
+    val categories = this.map { it.toDomain() }
     val byParent = categories.groupBy { it.parentCategoryId }
 
     val result = mutableMapOf<Category, List<Category>>()

@@ -1,9 +1,10 @@
 package com.app.uniqueplant.data.model
 
+import androidx.annotation.Keep
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.util.Date
-
+@Keep
 @Entity(tableName = "users")
 data class UserEntity(
     @PrimaryKey

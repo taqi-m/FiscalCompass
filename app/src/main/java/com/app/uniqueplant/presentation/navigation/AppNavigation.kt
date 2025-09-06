@@ -15,20 +15,24 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.app.uniqueplant.domain.repository.AppPreferenceRepository
-import com.app.uniqueplant.presentation.screens.addTransaction.AddTransactionScreen
-import com.app.uniqueplant.presentation.screens.addTransaction.AddTransactionViewModel
+import com.app.uniqueplant.presentation.model.TransactionUi
 import com.app.uniqueplant.presentation.screens.auth.AuthScreen
 import com.app.uniqueplant.presentation.screens.auth.AuthViewModel
 import com.app.uniqueplant.presentation.screens.categories.CategoriesScreen
 import com.app.uniqueplant.presentation.screens.categories.CategoriesViewModel
-import com.app.uniqueplant.presentation.screens.home.HomeScreen
-import com.app.uniqueplant.presentation.screens.home.HomeViewModel
+import com.app.uniqueplant.presentation.screens.homeScreens.home.HomeScreen
+import com.app.uniqueplant.presentation.screens.homeScreens.home.HomeViewModel
 import com.app.uniqueplant.presentation.screens.jobs.JobsScreen
 import com.app.uniqueplant.presentation.screens.jobs.JobsViewModel
 import com.app.uniqueplant.presentation.screens.person.PersonScreen
 import com.app.uniqueplant.presentation.screens.person.PersonViewModel
 import com.app.uniqueplant.presentation.screens.settings.SettingsScreen
 import com.app.uniqueplant.presentation.screens.settings.SettingsViewModel
+import com.app.uniqueplant.presentation.screens.transactionScreens.addTransaction.AddTransactionScreen
+import com.app.uniqueplant.presentation.screens.transactionScreens.addTransaction.AddTransactionViewModel
+import com.app.uniqueplant.presentation.screens.transactionScreens.transactionDetails.TransactionDetailsScreen
+import com.app.uniqueplant.presentation.screens.transactionScreens.transactionDetails.TransactionDetailsViewModel
+import com.google.gson.Gson
 
 
 // Animation duration constant for consistent transitions
@@ -61,7 +65,10 @@ fun AppNavigation (
 
     NavHost(
         navController = navController,
-        startDestination = if (prefs.isUserLoggedIn()) {
+        startDestination = MainScreens.AdminHome.route
+            /*
+            TODO: Enable this after implementing persistent login
+            if (prefs.isUserLoggedIn()) {
             when (prefs.getUserType()) {
                 "admin" -> MainScreens.AdminHome.route
                 "employee" -> MainScreens.EmployeeHome.route
@@ -69,15 +76,12 @@ fun AppNavigation (
             }
         } else {
             MainScreens.Auth.route
-        }
+        }*/
     ) {
 
         composable(
             route = MainScreens.Auth.route,
-            enterTransition = { enterFromLeft },
-            exitTransition = { exitToLeft },
-            popEnterTransition = { enterFromLeft },
-            popExitTransition = { exitToLeft }) { backStackEntry ->
+        ) { backStackEntry ->
             val authViewModel: AuthViewModel = hiltViewModel(backStackEntry)
             val authState by authViewModel.state.collectAsState()
 
@@ -85,20 +89,12 @@ fun AppNavigation (
                 appNavController = navController,
                 state = authState,
                 onEvent = authViewModel::onEvent,
-                /*                onLoginSuccess = {
-                                    navController.navigate(MainScreens.Home.route) {
-                                        popUpTo(MainScreens.Auth.route) { inclusive = true }
-                                    }
-                                }*/
             )
         }
 
         composable(
             route = MainScreens.Home.route,
-            enterTransition = { enterFromLeft },
-            exitTransition = { exitToLeft },
-            popEnterTransition = { enterFromLeft },
-            popExitTransition = { exitToLeft }) { backStackEntry ->
+        ) { backStackEntry ->
             val homeViewModel: HomeViewModel = hiltViewModel(backStackEntry)
             val homeState by homeViewModel.state.collectAsState()
             HomeScreen(
@@ -114,10 +110,7 @@ fun AppNavigation (
 
         composable(
             route = MainScreens.AdminHome.route,
-            enterTransition = { enterFromLeft },
-            exitTransition = { exitToLeft },
-            popEnterTransition = { enterFromLeft },
-            popExitTransition = { exitToLeft }) { backStackEntry ->
+            ) { backStackEntry ->
             val homeViewModel: HomeViewModel = hiltViewModel(backStackEntry)
             val homeState by homeViewModel.state.collectAsState()
             HomeScreen(
@@ -130,9 +123,9 @@ fun AppNavigation (
         composable(
             route = MainScreens.AddTransaction.route,
             enterTransition = { enterFromRight },
-            exitTransition = { exitToLeft },
+            exitTransition = { exitToRight },
             popEnterTransition = { enterFromRight },
-            popExitTransition = { exitToLeft }) { backStackEntry ->
+            popExitTransition = { exitToRight }) { backStackEntry ->
             val addTransactionViewModel: AddTransactionViewModel = hiltViewModel(backStackEntry)
             val addTransactionState by addTransactionViewModel.state.collectAsState()
             AddTransactionScreen(
@@ -155,7 +148,7 @@ fun AppNavigation (
                 onEvent = settingsViewModel::onEvent,
                 onLogout = { route ->
                     navController.navigate(MainScreens.Auth.route) {
-                        popUpTo(MainScreens.Auth.route) { inclusive = false }
+                        popUpTo(0) { inclusive = true }
                     }
                 },
             )
@@ -170,6 +163,7 @@ fun AppNavigation (
             val categoriesViewModel: CategoriesViewModel = hiltViewModel(backStackEntry)
             val state by categoriesViewModel.state.collectAsState()
             CategoriesScreen(
+                appNavController = navController,
                 state = state,
                 onEvent = categoriesViewModel::onEvent
             )
@@ -184,6 +178,7 @@ fun AppNavigation (
             val personViewModel: PersonViewModel = hiltViewModel()
             val state by personViewModel.state.collectAsState()
             PersonScreen(
+                appNavController = navController,
                 state = state,
                 onEvent = personViewModel::onEvent
             )
@@ -194,7 +189,8 @@ fun AppNavigation (
             enterTransition = { enterFromRight },
             exitTransition = { exitToRight },
             popEnterTransition = { enterFromRight },
-            popExitTransition = { exitToRight }) {
+            popExitTransition = { exitToRight }
+        ) {
             val jobsViewModel: JobsViewModel = hiltViewModel()
             val state by jobsViewModel.state.collectAsState()
             JobsScreen(
@@ -203,6 +199,26 @@ fun AppNavigation (
             )
         }
 
+        composable(
+            route = MainScreens.TransactionDetail.route,
+            enterTransition = { enterFromRight },
+            exitTransition = { exitToRight },
+            popEnterTransition = { enterFromRight },
+            popExitTransition = { exitToRight }
+        ) { backstackEntry ->
+            val transactionJson = backstackEntry.arguments?.getString("transaction")
+            val transactionUi = Gson().fromJson(transactionJson, TransactionUi::class.java)
+            val transactionDetailsViewModel: TransactionDetailsViewModel = hiltViewModel()
+            val state by transactionDetailsViewModel.state.collectAsState()
+            TransactionDetailsScreen(
+                state = state,
+                onEvent = transactionDetailsViewModel::onEvent,
+                onBackPressed = {
+                    navController.popBackStack()
+                },
+                transactionUi = transactionUi,
+            )
+        }
 
     }
 }

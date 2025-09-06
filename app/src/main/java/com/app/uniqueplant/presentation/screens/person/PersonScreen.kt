@@ -11,11 +11,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -30,6 +30,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.R
 import com.app.uniqueplant.data.model.PersonType
 import com.app.uniqueplant.presentation.screens.categories.UiState
@@ -41,6 +43,8 @@ import com.app.uniqueplant.ui.components.dialogs.DeletePersonDialog
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonScreen(
+
+    appNavController: NavHostController,
     state: PersonScreenState,
     onEvent: (PersonEvent) -> Unit,
 ) {
@@ -71,24 +75,17 @@ fun PersonScreen(
         topBar = {
             TopAppBar(
                 title = { Text(text = "Persons") },
-                actions = {
-                    Button(
-                        onClick = {
-                            onEvent(PersonEvent.OnPersonDialogToggle(PersonDialogToggle.Add))
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.padding(end = 8.dp)
-                    ) {
-                        Text(text = "Add Person")
-                    }
-                },
                 navigationIcon = {
-                    IconButton(onClick = {
 
-                    }) {
+                    IconButton(
+                        onClick = {
+                            appNavController.popBackStack()
+                        }
+                    ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_arrow_back_24),
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -189,14 +186,14 @@ fun PersonList(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-             personTypes.forEach{ personType ->
-                 item {
+            personTypes.forEach { personType ->
+                item {
                     ExpandableChipCard(
                         modifier = Modifier
                             .fillMaxWidth(),
                         title = personType,
                         trailingIcon = {
-                            FilledTonalIconButton (
+                            FilledTonalIconButton(
                                 modifier = Modifier
                                     .height(32.dp)
                                     .width(32.dp),
@@ -242,6 +239,7 @@ fun PersonList(
 @Composable
 fun PersonScreenPreview() {
     PersonScreen(
+        appNavController = rememberNavController(),
         state = PersonScreenState(),
         onEvent = {},
     )

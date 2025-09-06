@@ -1,6 +1,8 @@
 package com.app.uniqueplant.domain.repository
 
 import com.app.uniqueplant.domain.model.Expense
+import com.app.uniqueplant.domain.model.ExpenseWithCategory
+import com.app.uniqueplant.domain.model.ExpenseWithCategoryAndPerson
 import kotlinx.coroutines.flow.Flow
 
 interface ExpenseRepository {
@@ -21,6 +23,10 @@ interface ExpenseRepository {
     suspend fun getExpensesByUser(userId: String): Flow<List<Expense>>
 
     suspend fun getExpensesByCategory(categoryId: Long): List<Expense>
+
+    suspend fun getExpensesWithCategory(userId: String): Flow<List<ExpenseWithCategory>>
+
+    suspend fun getExpensesWithCategoryAndPerson(id: Long): ExpenseWithCategoryAndPerson
 
     suspend fun getTotalExpenses(): Double
 

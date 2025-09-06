@@ -9,13 +9,14 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.app.uniqueplant.data.model.IncomeEntity
-import com.app.uniqueplant.data.model.IncomeWithCategory
+import com.app.uniqueplant.data.model.IncomeWithCategoryAndPersonDbo
+import com.app.uniqueplant.data.model.IncomeWithCategoryDbo
 import kotlinx.coroutines.flow.Flow
 import java.util.Date
 
 @Dao
 interface IncomeDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertIncome(incomeEntity: IncomeEntity): Long
     
     @Update
@@ -38,7 +39,11 @@ interface IncomeDao {
     
     @Transaction
     @Query("SELECT * FROM incomes WHERE userId = :userId ORDER BY date DESC")
-    fun getIncomesWithCategory(userId: String): Flow<List<IncomeWithCategory>>
+    fun getIncomesWithCategory(userId: String): Flow<List<IncomeWithCategoryDbo>>
+
+    @Transaction
+    @Query("SELECT * FROM incomes WHERE incomeId = :id ORDER BY date DESC LIMIT 1")
+    suspend fun getIncomesWithCategoryAndPerson(id: Long): IncomeWithCategoryAndPersonDbo
     
     @Query("SELECT * FROM incomes WHERE userId = :userId AND date BETWEEN :startDate AND :endDate ORDER BY date DESC")
     fun getIncomesByDateRange(userId: String, startDate: Date, endDate: Date): Flow<List<IncomeEntity>>

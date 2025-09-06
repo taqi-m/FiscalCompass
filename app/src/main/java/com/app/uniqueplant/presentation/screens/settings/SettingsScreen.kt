@@ -1,5 +1,6 @@
 package com.app.uniqueplant.presentation.screens.settings
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,19 +15,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.app.uniqueplant.presentation.navigation.MainScreens
 import com.app.uniqueplant.ui.components.ThemeSwitch
 import com.app.uniqueplant.ui.components.cards.ProfileCard
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
-import com.app.uniqueplant.ui.util.ThemePreferenceViewModel
+import com.app.uniqueplant.ui.util.PreferenceUtil
 
 @Composable
 fun SettingsScreen(
     state: SettingsScreenState,
     onEvent: (SettingsEvent) -> Unit,
-    onLogout: (String) -> Unit,
-    themeViewModel: ThemePreferenceViewModel = viewModel()
+    onLogout: (String) -> Unit
 ) {
     LaunchedEffect(
         state.isLogOutSuccess
@@ -41,6 +40,7 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
                 .padding(it)
                 .padding(vertical =  16.dp, horizontal = 8.dp),
             horizontalAlignment = Alignment.Start,
@@ -64,7 +64,9 @@ fun SettingsScreen(
             ThemeSwitch(
                 modifier = Modifier.fillMaxWidth(),
                 onSwitchChange = { themeMode ->
-                    themeViewModel.setThemeMode(themeMode)
+                    PreferenceUtil.modifyDarkThemePreference(
+                        darkThemeValue = themeMode as Int,
+                    )
                 }
             )
         }

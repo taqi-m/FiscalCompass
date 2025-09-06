@@ -12,6 +12,12 @@ sealed class MainScreens(val route: String) {
     object Categories : MainScreens("categories_screen")
     object Person : MainScreens("person_screen")
     object Jobs : MainScreens("jobs_screen")
+
+    object TransactionDetail : MainScreens("transaction_detail_screen/{transaction}"){
+        fun passTransaction(transaction: String): String {
+            return "transaction_detail_screen/$transaction"
+        }
+    }
 }
 
 sealed class HomeBottomScreen(val route: String, val label: String, val iconResource: Int) {

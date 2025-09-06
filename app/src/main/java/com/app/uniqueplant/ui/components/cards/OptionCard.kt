@@ -1,6 +1,5 @@
 package com.app.uniqueplant.ui.components.cards
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,10 +11,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,9 +24,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.R
-import com.app.uniqueplant.presentation.screens.dashboard.HomeOption
+import com.app.uniqueplant.presentation.screens.homeScreens.dashboard.HomeOption
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
-
 
 
 @Composable
@@ -51,25 +48,19 @@ fun OptionsRow(
                 onClick = option.onClick
             )
         }
-
-        // Add some space at the bottom to ensure proper padding when scrolling
         Spacer(modifier = Modifier.height(8.dp))
     }
 }
 @Composable
-fun OptionCard(
+private fun OptionCard(
     modifier: Modifier = Modifier,
     title: String,
     description: String,
     painter: Painter,
     onClick: () -> Unit
 ) {
-    ElevatedCard (
+    OutlinedCard (
         modifier = modifier,
-        colors = CardDefaults.cardColors().copy(
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface
-        ),
         onClick = onClick
     ) {
         OptionCardContent(
@@ -84,7 +75,7 @@ fun OptionCard(
 
 @Preview
 @Composable
-fun OptionsRowPreview() {
+private fun OptionsRowPreview() {
     UniquePlantTheme {
         val options = listOf(
             HomeOption(
@@ -109,7 +100,7 @@ fun OptionsRowPreview() {
 
 
 @Composable
-fun OptionCardContent(
+private fun OptionCardContent(
     modifier: Modifier = Modifier,
     title: String,
     description: String,
@@ -131,9 +122,7 @@ fun OptionCardContent(
                 .width(48.dp)
                 .aspectRatio(1 / 1f)
                 .clip(RoundedCornerShape(50))
-                .background(MaterialTheme.colorScheme.onSurface.copy(0.1f))
                 .padding(12.dp),
-            tint = MaterialTheme.colorScheme.primary
         )
         Column(
             modifier = Modifier
@@ -145,7 +134,7 @@ fun OptionCardContent(
                 maxLines = 1,
                 style = MaterialTheme.typography.labelLarge
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = description,
                 maxLines = 1,

@@ -73,12 +73,12 @@ class AuthViewModel @Inject constructor(
                     is Resource.Success -> {
                         _state.update { it.copy(isLoading = false) }
                         var route: String = MainScreens.AdminHome.route
-                        if (resource.data == "employee") {
+                        /*if (resource.data == "employee") {
                             route = MainScreens.EmployeeHome.route
-                        }
+                        }*/
                         appNavController.navigate(route) {
-                            popUpTo(route) {
-                                inclusive = false
+                            popUpTo(appNavController.graph.startDestinationId) {
+                                inclusive = true
                             }
                             launchSingleTop = true
                             restoreState = true

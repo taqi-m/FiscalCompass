@@ -6,7 +6,7 @@ import com.app.uniqueplant.presentation.model.CategoryUi
 import com.app.uniqueplant.presentation.model.GroupedCategoryUi
 
 
-fun Category.toCategoryUi(): CategoryUi {
+fun Category.toUi(): CategoryUi {
     return CategoryUi(
         categoryId = this.categoryId,
         parentId = this.parentCategoryId,
@@ -32,8 +32,8 @@ fun CategoryUi.toCategory(): Category {
 
 fun CategoryTree.toGroupedCategoryUi(): GroupedCategoryUi {
     return this.mapKeys {
-        it.key.toCategoryUi()
+        it.key.toUi()
     }.mapValues { entry ->
-        entry.value.map { it.toCategoryUi() }
+        entry.value.map { it.toUi() }
     }
 }

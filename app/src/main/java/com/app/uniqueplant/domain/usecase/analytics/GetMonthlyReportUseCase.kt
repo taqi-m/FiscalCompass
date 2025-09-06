@@ -13,6 +13,18 @@ class GetMonthlyReportUseCase @Inject constructor(
     private val expensesRepository: ExpenseRepository,
     private val categoryRepository: CategoryRepository
 ) {
+
+    suspend fun getNetAmount(month: Int, year: Int): Flow<Double> {
+        return combine(
+            incomesRepository.getIncomeSumByMonth(month,year),
+            expensesRepository.getExpenseSumByMonth(month, year)
+        ) { incomes, expenses ->
+
+            val netAmount = (incomes ?: 0.0) - (expenses ?: 0.0)
+            netAmount
+        }
+    }
+
     suspend operator fun invoke(month: Int, year: Int): Flow<MonthlyReport> {
         return combine(
             incomesRepository.getIncomesByMonth(month, year),

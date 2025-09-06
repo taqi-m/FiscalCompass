@@ -11,6 +11,10 @@ fun Person.toUi(): PersonUi {
     )
 }
 
+fun List<Person>.toUiList(): List<PersonUi> {
+    return this.map { it.toUi() }
+}
+
 fun PersonUi.toDomain(): Person {
     return Person(
         personId = this.personId,

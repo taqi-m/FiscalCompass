@@ -1,7 +1,6 @@
 package com.app.uniqueplant.ui.components.cards
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,8 +20,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.R
-import com.app.uniqueplant.presentation.model.TransactionType
 import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
+import com.app.uniqueplant.presentation.model.TransactionType
 import com.app.uniqueplant.presentation.model.TransactionUi
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -32,6 +31,7 @@ import java.util.Locale
 fun TransactionCard(
     modifier: Modifier = Modifier,
     transaction: TransactionUi,
+    onClicked: () -> Unit,
     onEditClicked: () -> Unit,
     onDeleteClicked: () -> Unit
 ) {
@@ -42,7 +42,8 @@ fun TransactionCard(
         ),
         colors = CardDefaults.cardColors().copy(
             containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(0.8f),
-        )
+        ),
+        onClick = onClicked
     ) {
         TransactionCardContent(
             modifier = Modifier
@@ -126,6 +127,8 @@ fun TransactionCardPreview() {
     TransactionCard(
         transaction = TransactionUi(
             transactionId = 1L,
+            categoryId = 0L,
+            personId = 0L,
             formatedAmount = CurrencyFormaterUseCase.formatCurrency(100.0),
             formatedDate = SimpleDateFormat("dd MM, yyyy", Locale.getDefault()).format(Date()),
             formatedTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
@@ -133,6 +136,7 @@ fun TransactionCardPreview() {
             isExpense = true,
             transactionType = TransactionType.INCOME.name
         ),
+        onClicked = {},
         onEditClicked = {},
         onDeleteClicked = {},
     )

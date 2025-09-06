@@ -23,4 +23,5 @@ class SessionUseCase @Inject constructor(
     }
 
     fun getUserInfo() = authRepository.getUserInfo()
+
 }
