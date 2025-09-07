@@ -5,8 +5,8 @@ import com.app.uniqueplant.data.mapper.toDomain
 import com.app.uniqueplant.data.mapper.toIncomeEntity
 import com.app.uniqueplant.data.mapper.toIncomeWithCategory
 import com.app.uniqueplant.domain.model.Income
+import com.app.uniqueplant.domain.model.IncomeFull
 import com.app.uniqueplant.domain.model.IncomeWithCategory
-import com.app.uniqueplant.domain.model.IncomeWithCategoryAndPerson
 import com.app.uniqueplant.domain.repository.IncomeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -63,8 +63,26 @@ class IncomeRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getIncomesWithCategoryAndPerson(id: Long): IncomeWithCategoryAndPerson {
-        return incomeDao.getIncomesWithCategoryAndPerson(id).toDomain()
+    override suspend fun getSingleFullIncomeById(id: Long): IncomeFull {
+        return incomeDao.getSingleFullIncome(id).toDomain()
+    }
+
+    override suspend fun getAllFullIncomesFiltered(
+        personIds: List<Long>?,
+        categoryIds: List<Long>?,
+        startDate: Long?,
+        endDate: Long?
+    ): List<Income> {
+        val personIds = personIds?.takeIf { it.isNotEmpty() }
+        val categoryIds = categoryIds?.takeIf { it.isNotEmpty() }
+        return incomeDao.getAllFullIncomesFiltered(
+            personIds = personIds,
+            categoryIds = categoryIds,
+            startDate = startDate,
+            endDate = endDate
+        ).map {
+            it.toDomain()
+        }
     }
 
     override suspend fun getTotalIncomes(): Double {

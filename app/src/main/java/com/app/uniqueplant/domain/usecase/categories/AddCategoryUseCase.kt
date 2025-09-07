@@ -10,7 +10,7 @@ class AddCategoryUseCase @Inject constructor(
     private val categoryRepository: CategoryRepository
 ) {
     suspend fun invoke(name: String, parentId: Long?, description: String, transactionType: TransactionType, expectedPersonType: String): UiState {
-        // Check if the category already exists
+        // Check if the categoryId already exists
         val existingCategory = categoryRepository.getCategoryByName(name)
         if (existingCategory != null) {
             return UiState.Error("Category with name $name already exists.")
@@ -18,7 +18,7 @@ class AddCategoryUseCase @Inject constructor(
 
         val isExpenseCategory = transactionType == TransactionType.EXPENSE
 
-        // Create a new category
+        // Create a new categoryId
         val newCategory = Category(
             parentCategoryId = parentId,
             name = name,
@@ -29,12 +29,12 @@ class AddCategoryUseCase @Inject constructor(
         )
 
 
-        // Add the new category to the repository
+        // Add the new categoryId to the repository
         val result = categoryRepository.insertCategory(newCategory)
         return if (result >= 0) {
             UiState.Success("Category added successfully")
         } else {
-            UiState.Error("Unknown error occurred while adding category")
+            UiState.Error("Unknown error occurred while adding categoryId")
         }
     }
 }

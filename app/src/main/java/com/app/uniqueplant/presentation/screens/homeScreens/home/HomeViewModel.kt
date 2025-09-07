@@ -29,7 +29,7 @@ class HomeViewModel @Inject constructor(
                 // Handle logout logic here
             }
 
-            HomeEvent.ToggleFabExpanded -> {
+            is HomeEvent.ToggleFabExpanded -> {
                 _state.update { it.copy(isFabExpanded = !it.isFabExpanded) }
             }
 
@@ -37,9 +37,14 @@ class HomeViewModel @Inject constructor(
                 _state.update { it.copy(appNavController = event.appNavController) }
             }
 
-            HomeEvent.OnSettingsClicked -> {
+            is HomeEvent.OnSettingsClicked -> {
                 val navController = _state.value.appNavController
                 navController?.navigate(MainScreens.Settings.route)
+            }
+
+            is HomeEvent.OnSearchClicked -> {
+                val navController = _state.value.appNavController
+                navController?.navigate(MainScreens.Search.route)
             }
         }
     }

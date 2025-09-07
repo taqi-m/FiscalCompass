@@ -9,7 +9,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.app.uniqueplant.data.model.IncomeEntity
-import com.app.uniqueplant.data.model.IncomeWithCategoryAndPersonDbo
+import com.app.uniqueplant.data.model.IncomeFullDbo
 import com.app.uniqueplant.data.model.IncomeWithCategoryDbo
 import kotlinx.coroutines.flow.Flow
 import java.util.Date
@@ -43,7 +43,25 @@ interface IncomeDao {
 
     @Transaction
     @Query("SELECT * FROM incomes WHERE incomeId = :id ORDER BY date DESC LIMIT 1")
-    suspend fun getIncomesWithCategoryAndPerson(id: Long): IncomeWithCategoryAndPersonDbo
+    suspend fun getSingleFullIncome(id: Long): IncomeFullDbo
+
+    @Query("""
+        SELECT * FROM incomes
+        WHERE (:personIds IS NULL OR personId IN (:personIds))
+          AND (:categoryIds IS NULL OR categoryId IN (:categoryIds))
+          AND (
+              (:startDate IS NULL AND :endDate IS NULL)
+              OR (:startDate IS NOT NULL AND :endDate IS NULL AND date >= :startDate)
+              OR (:startDate IS NULL AND :endDate IS NOT NULL AND date <= :endDate)
+              OR (:startDate IS NOT NULL AND :endDate IS NOT NULL AND date BETWEEN :startDate AND :endDate)
+          )
+    """)
+    suspend fun getAllFullIncomesFiltered(
+        personIds: List<Long>?,   // pass null to ignore
+        categoryIds: List<Long>?, // pass null to ignore
+        startDate: Long?,         // nullable → open start
+        endDate: Long?            // nullable → open end
+    ): List<IncomeEntity>
     
     @Query("SELECT * FROM incomes WHERE userId = :userId AND date BETWEEN :startDate AND :endDate ORDER BY date DESC")
     fun getIncomesByDateRange(userId: String, startDate: Date, endDate: Date): Flow<List<IncomeEntity>>

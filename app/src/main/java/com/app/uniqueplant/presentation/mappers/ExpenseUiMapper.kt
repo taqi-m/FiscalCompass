@@ -1,7 +1,7 @@
 package com.app.uniqueplant.presentation.mappers
 
 import com.app.uniqueplant.domain.model.Expense
-import com.app.uniqueplant.domain.model.ExpenseWithCategoryAndPerson
+import com.app.uniqueplant.domain.model.ExpenseFull
 import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
 import com.app.uniqueplant.presentation.model.ExpenseUi
 import com.app.uniqueplant.presentation.model.ExpenseWithCategoryAndPersonUi
@@ -21,7 +21,7 @@ fun Expense.toUi(): ExpenseUi {
     )
 }
 
-fun ExpenseWithCategoryAndPerson.toUi(): ExpenseWithCategoryAndPersonUi {
+fun ExpenseFull.toUi(): ExpenseWithCategoryAndPersonUi {
     return ExpenseWithCategoryAndPersonUi(
         expense = expense.toUi(),
         category = category?.toUi(),

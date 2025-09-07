@@ -1,7 +1,7 @@
 package com.app.uniqueplant.domain.model
 
-data class IncomeWithCategoryAndPerson(
-    val income: Income,
+data class ExpenseFull(
+    val expense: Expense,
     val category: Category?,
     val person: Person?
 )

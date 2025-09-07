@@ -3,7 +3,7 @@ package com.app.uniqueplant.data.model
 import androidx.room.Embedded
 import androidx.room.Relation
 
-data class ExpenseWithCategoryAndPersonDbo(
+data class ExpenseFullDbo(
     @Embedded val expense: ExpenseEntity,
     @Relation(
         parentColumn = "categoryId",

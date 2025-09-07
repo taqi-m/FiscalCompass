@@ -242,11 +242,21 @@ fun AddTransactionFormContent(
             )
 
             if (!isCategoriesEmpty) {
-
                 val mainCategories = state.categories.keys.toList()
-                val subCategories = state.categories.entries
+                var subCategories = state.categories.entries
                     .firstOrNull { it.key.categoryId == state.categoryId }?.value
                     ?: emptyList()
+                subCategories = listOf(
+                    CategoryUi(
+                        categoryId = -1L,
+                        parentId = null,
+                        isExpenseCategory = false,
+                        name = "N/A",
+                        description = "",
+                        icon = "",
+                        color = ""
+                    )
+                ) + subCategories
 
                 CustomExposedDropDownMenu(
                     modifier = Modifier.fillMaxWidth(),
@@ -266,6 +276,10 @@ fun AddTransactionFormContent(
                     selectedOption = subCategories.firstOrNull { it.categoryId == state.subCategoryId }
                         ?: subCategories.firstOrNull(),
                     onOptionSelected = { selected ->
+                        if (selected.categoryId == -1L) {
+                            onEvent(AddTransactionEvent.OnSubCategorySelected(null))
+                            return@CustomExposedDropDownMenu
+                        }
                         onEvent(AddTransactionEvent.OnSubCategorySelected(selected.categoryId))
                     },
                     optionToString = {
@@ -274,12 +288,25 @@ fun AddTransactionFormContent(
                 )
             }
 
+            var persons = state.persons
+            persons = listOf(
+                PersonUi(
+                    personId = -1L,
+                    name = "N/A",
+                    personType = "DEALER"
+                )
+            ) + persons
+
             CustomExposedDropDownMenu(
                 modifier = Modifier.fillMaxWidth(),
                 label = "Person",
-                options = state.persons,
-                selectedOption = state.persons.firstOrNull { it.personId == state.personId },
+                options = persons,
+                selectedOption = persons.firstOrNull { it.personId == state.personId } ?: persons.firstOrNull(),
                 onOptionSelected = { selected ->
+                    if (selected.personId == -1L) {
+                        onEvent(AddTransactionEvent.OnPersonSelected(null))
+                        return@CustomExposedDropDownMenu
+                    }
                     onEvent(AddTransactionEvent.OnPersonSelected(selected.personId))
                 },
                 optionToString = {

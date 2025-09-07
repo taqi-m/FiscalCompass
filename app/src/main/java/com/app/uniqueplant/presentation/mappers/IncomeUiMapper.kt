@@ -1,7 +1,7 @@
 package com.app.uniqueplant.presentation.mappers
 
 import com.app.uniqueplant.domain.model.Income
-import com.app.uniqueplant.domain.model.IncomeWithCategoryAndPerson
+import com.app.uniqueplant.domain.model.IncomeFull
 import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
 import com.app.uniqueplant.presentation.model.IncomeUi
 import com.app.uniqueplant.presentation.model.IncomeWithCategoryAndPersonUi
@@ -21,7 +21,7 @@ fun Income.toUi(): IncomeUi {
     )
 }
 
-fun IncomeWithCategoryAndPerson.toUi(): IncomeWithCategoryAndPersonUi {
+fun IncomeFull.toUi(): IncomeWithCategoryAndPersonUi {
     return IncomeWithCategoryAndPersonUi(
         income = income.toUi(),
         category = category?.toUi(),

@@ -10,13 +10,13 @@ import com.app.uniqueplant.domain.usecase.categories.GetCategoriesUseCase
 import com.app.uniqueplant.presentation.model.TransactionType
 import javax.inject.Inject
 
-class AddTransactionUseCase @Inject constructor(
+class AddTransactionUC @Inject constructor(
     private val sessionUseCase: SessionUseCase,
     private val incomeRepository: IncomeRepository,
     private val expenseRepository: ExpenseRepository,
     private val getCategoriesUseCase: GetCategoriesUseCase
 ) {
-    suspend fun addTransaction(tr: Transaction): Result<Long> {
+    suspend operator fun invoke(tr: Transaction): Result<Long> {
         return try {
             if (tr.amount <= 0) {
                 return Result.failure(IllegalArgumentException("Amount must be greater than zero"))
@@ -28,7 +28,7 @@ class AddTransactionUseCase @Inject constructor(
             val isExpense = tr.isExpense
 
             val category = getCategoriesUseCase.getCategoryById(tr.categoryId)
-                ?: return Result.failure(IllegalArgumentException("Invalid category ID"))
+                ?: return Result.failure(IllegalArgumentException("Invalid categoryId ID"))
 
             if(category.isExpenseCategory != isExpense) {
                 return Result.failure(IllegalArgumentException("Category type does not match transaction type"))

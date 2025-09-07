@@ -71,7 +71,7 @@ private fun buildSubTree(parent: Category, grouped: Map<Long?, List<Category>>):
 
 fun Map<Category, List<Category>>.toEntityList(): List<CategoryEntity> {
     val result = mutableListOf<CategoryEntity>()
-    var tempId = -1L // use temporary negative IDs for parents before DB assigns real IDs
+    var tempId = -1L
 
     this.forEach { (parent, children) ->
         val parentEntity = parent.toCategoryEntity(parentId = null).copy(categoryId = tempId--)

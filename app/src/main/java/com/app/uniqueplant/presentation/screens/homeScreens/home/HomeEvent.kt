@@ -6,6 +6,7 @@ sealed class HomeEvent {
     data class NavigateTo(val route: String) : HomeEvent()
     data class OnScreenLoad(val appNavController: NavHostController) : HomeEvent()
     object OnSettingsClicked : HomeEvent()
+    object OnSearchClicked : HomeEvent()
     object LogoutClicked : HomeEvent()
     object ToggleFabExpanded : HomeEvent()
 }

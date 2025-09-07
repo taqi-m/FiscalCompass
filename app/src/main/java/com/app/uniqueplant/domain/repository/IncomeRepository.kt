@@ -1,8 +1,8 @@
 package com.app.uniqueplant.domain.repository
 
 import com.app.uniqueplant.domain.model.Income
+import com.app.uniqueplant.domain.model.IncomeFull
 import com.app.uniqueplant.domain.model.IncomeWithCategory
-import com.app.uniqueplant.domain.model.IncomeWithCategoryAndPerson
 import kotlinx.coroutines.flow.Flow
 
 interface IncomeRepository {
@@ -24,7 +24,14 @@ interface IncomeRepository {
 
     suspend fun getIncomesWithCategory(userId: String): Flow<List<IncomeWithCategory>>
 
-    suspend fun getIncomesWithCategoryAndPerson(id: Long): IncomeWithCategoryAndPerson
+    suspend fun getSingleFullIncomeById(id: Long): IncomeFull
+
+    suspend fun getAllFullIncomesFiltered(
+        personIds: List<Long>?,   // pass null to ignore
+        categoryIds: List<Long>?, // pass null to ignore
+        startDate: Long?,       // nullable → open start
+        endDate: Long?          // nullable → open end
+    ): List<Income>
 
     suspend fun getTotalIncomes(): Double
 

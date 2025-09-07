@@ -9,7 +9,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.app.uniqueplant.data.model.ExpenseEntity
-import com.app.uniqueplant.data.model.ExpenseWithCategoryAndPersonDbo
+import com.app.uniqueplant.data.model.ExpenseFullDbo
 import com.app.uniqueplant.data.model.ExpenseWithCategoryDbo
 import kotlinx.coroutines.flow.Flow
 import java.util.Date
@@ -40,7 +40,25 @@ interface ExpenseDao {
 
     @Transaction
     @Query("SELECT * FROM expenses WHERE expenseId = :id ORDER BY date DESC LIMIT 1")
-    suspend fun getExpensesWithCategoryAndPerson(id: Long): ExpenseWithCategoryAndPersonDbo
+    suspend fun getSingleFullExpense(id: Long): ExpenseFullDbo
+
+    @Query("""
+        SELECT * FROM expenses
+        WHERE (:personIds IS NULL OR personId IN (:personIds))
+          AND (:categoryIds IS NULL OR categoryId IN (:categoryIds))
+          AND (
+              (:startDate IS NULL AND :endDate IS NULL)
+              OR (:startDate IS NOT NULL AND :endDate IS NULL AND date >= :startDate)
+              OR (:startDate IS NULL AND :endDate IS NOT NULL AND date <= :endDate)
+              OR (:startDate IS NOT NULL AND :endDate IS NOT NULL AND date BETWEEN :startDate AND :endDate)
+          )
+    """)
+    suspend fun getAllFullExpensesFiltered(
+        personIds: List<Long>?,   // pass null to ignore
+        categoryIds: List<Long>?, // pass null to ignore
+        startDate: Long?,         // nullable → open start
+        endDate: Long?            // nullable → open end
+    ): List<ExpenseEntity>
     
     @Query("SELECT * FROM expenses WHERE userId = :userId AND date BETWEEN :startDate AND :endDate ORDER BY date DESC")
     fun getExpensesByDateRange(userId: String, startDate: Date, endDate: Date): Flow<List<ExpenseEntity>>

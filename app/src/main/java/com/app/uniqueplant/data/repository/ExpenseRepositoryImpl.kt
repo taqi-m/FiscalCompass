@@ -4,8 +4,8 @@ import com.app.uniqueplant.data.datasource.local.dao.ExpenseDao
 import com.app.uniqueplant.data.mapper.toDomain
 import com.app.uniqueplant.data.mapper.toExpenseEntity
 import com.app.uniqueplant.domain.model.Expense
+import com.app.uniqueplant.domain.model.ExpenseFull
 import com.app.uniqueplant.domain.model.ExpenseWithCategory
-import com.app.uniqueplant.domain.model.ExpenseWithCategoryAndPerson
 import com.app.uniqueplant.domain.repository.ExpenseRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -87,8 +87,26 @@ class ExpenseRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getExpensesWithCategoryAndPerson(id: Long): ExpenseWithCategoryAndPerson {
-        return expenseDao.getExpensesWithCategoryAndPerson(id).toDomain()
+    override suspend fun getSingleFulExpenseById(id: Long): ExpenseFull {
+        return expenseDao.getSingleFullExpense(id).toDomain()
+    }
+
+    override suspend fun getAllFullExpensesFiltered(
+        personIds: List<Long>?,
+        categoryIds: List<Long>?,
+        startDate: Long?,
+        endDate: Long?
+    ): List<Expense> {
+        val personIds = personIds?.takeIf { it.isNotEmpty() }
+        val categoryIds = categoryIds?.takeIf { it.isNotEmpty() }
+        return expenseDao.getAllFullExpensesFiltered(
+            personIds = personIds,
+            categoryIds = categoryIds,
+            startDate = startDate,
+            endDate = endDate
+        ).map {
+            it.toDomain()
+        }
     }
 
     override suspend fun getTotalExpenses(): Double {

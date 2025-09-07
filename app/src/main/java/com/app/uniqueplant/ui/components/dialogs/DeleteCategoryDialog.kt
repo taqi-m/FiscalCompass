@@ -27,7 +27,7 @@ fun DeleteCategoryDialog(
         text = {
             Column {
                 Text(
-                    text = "Are you sure you want to delete the category '$categoryName'? \n",
+                    text = "Are you sure you want to delete the categoryId '$categoryName'? \n",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.W500
 

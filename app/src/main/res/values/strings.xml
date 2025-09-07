@@ -14,4 +14,7 @@
     <string name="sign_up_button">Sign Up</string>
     <string name="create_account">Don\'t have an account? Sign up</string>
     <string name="already_have_account">Already have an account? Sign In</string>
+    <string name="follow_system">Follow system</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
 </resources>

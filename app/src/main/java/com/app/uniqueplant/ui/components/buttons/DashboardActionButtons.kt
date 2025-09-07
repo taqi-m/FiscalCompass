@@ -24,9 +24,5 @@ fun DashboardActionButtons(
         HomeBottomScreen.Categories -> {
 
         }
-
-        HomeBottomScreen.Supervisor -> {
-
-        }
     }
 }

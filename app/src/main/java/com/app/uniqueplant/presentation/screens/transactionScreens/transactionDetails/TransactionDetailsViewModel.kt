@@ -3,10 +3,10 @@ package com.app.uniqueplant.presentation.screens.transactionScreens.transactionD
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.uniqueplant.data.mapper.toTransaction
-import com.app.uniqueplant.domain.model.ExpenseWithCategoryAndPerson
-import com.app.uniqueplant.domain.model.IncomeWithCategoryAndPerson
+import com.app.uniqueplant.domain.model.ExpenseFull
+import com.app.uniqueplant.domain.model.IncomeFull
 import com.app.uniqueplant.domain.usecase.expense.GetExpenseWithCategoryAndPerson
-import com.app.uniqueplant.domain.usecase.income.GetIncomeWithCategoryAndPerson
+import com.app.uniqueplant.domain.usecase.income.GetSingleFullIncomeById
 import com.app.uniqueplant.presentation.mappers.toUi
 import com.app.uniqueplant.presentation.screens.categories.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,7 +18,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TransactionDetailsViewModel @Inject constructor(
-    private val incomeUseCase: GetIncomeWithCategoryAndPerson,
+    private val getSingleFullIncomeById: GetSingleFullIncomeById,
     private val expenseUseCase: GetExpenseWithCategoryAndPerson
 ) : ViewModel() {
 
@@ -45,7 +45,7 @@ class TransactionDetailsViewModel @Inject constructor(
 
         coroutineScope.launch {
             if (isExpense){
-                val data: ExpenseWithCategoryAndPerson? = expenseUseCase(id)
+                val data: ExpenseFull? = expenseUseCase(id)
                 data?.let {
                     updateState {
                         copy(
@@ -63,7 +63,7 @@ class TransactionDetailsViewModel @Inject constructor(
                     }
                 }
             } else {
-                val data: IncomeWithCategoryAndPerson? = incomeUseCase(id)
+                val data: IncomeFull? = getSingleFullIncomeById(id)
                 data?.let {
                     updateState {
                         copy(

@@ -20,9 +20,9 @@ import com.google.gson.Gson
 
 @Composable
 fun HomeNavGraph(
+    modifier: Modifier = Modifier,
     homeNavController: NavHostController,
-    appNavController: NavHostController,
-    modifier: Modifier = Modifier
+    appNavController: NavHostController
 ) {
     NavHost(
         homeNavController,

@@ -108,8 +108,8 @@ private fun DetailsContent(
             Card(
                 modifier = modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp)
-                    .padding(bottom = 16.dp),
+                    .padding(horizontal = 8.dp)
+                    .padding(bottom = 8.dp),
                 colors = CardDefaults.cardColors().copy(
                     containerColor = CardDefaults.cardColors().containerColor.copy(alpha = 0.5f)
                 )

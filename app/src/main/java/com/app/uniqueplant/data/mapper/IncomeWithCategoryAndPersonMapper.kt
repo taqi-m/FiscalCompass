@@ -1,9 +1,9 @@
 package com.app.uniqueplant.data.mapper
 
-import com.app.uniqueplant.data.model.IncomeWithCategoryAndPersonDbo
-import com.app.uniqueplant.domain.model.IncomeWithCategoryAndPerson
+import com.app.uniqueplant.data.model.IncomeFullDbo
+import com.app.uniqueplant.domain.model.IncomeFull
 
-fun IncomeWithCategoryAndPersonDbo.toDomain(): IncomeWithCategoryAndPerson = IncomeWithCategoryAndPerson(
+fun IncomeFullDbo.toDomain(): IncomeFull = IncomeFull(
     income = income.toDomain(),
     category = category?.toDomain(),
     person = person?.toDomain()

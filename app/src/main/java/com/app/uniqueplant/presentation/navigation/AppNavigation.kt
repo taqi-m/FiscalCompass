@@ -1,5 +1,6 @@
 package com.app.uniqueplant.presentation.navigation
 
+import android.net.Uri
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -26,6 +27,8 @@ import com.app.uniqueplant.presentation.screens.jobs.JobsScreen
 import com.app.uniqueplant.presentation.screens.jobs.JobsViewModel
 import com.app.uniqueplant.presentation.screens.person.PersonScreen
 import com.app.uniqueplant.presentation.screens.person.PersonViewModel
+import com.app.uniqueplant.presentation.screens.search.SearchScreen
+import com.app.uniqueplant.presentation.screens.search.SearchViewModel
 import com.app.uniqueplant.presentation.screens.settings.SettingsScreen
 import com.app.uniqueplant.presentation.screens.settings.SettingsViewModel
 import com.app.uniqueplant.presentation.screens.transactionScreens.addTransaction.AddTransactionScreen
@@ -65,18 +68,17 @@ fun AppNavigation (
 
     NavHost(
         navController = navController,
-        startDestination = MainScreens.AdminHome.route
-            /*
-            TODO: Enable this after implementing persistent login
+        startDestination =
             if (prefs.isUserLoggedIn()) {
-            when (prefs.getUserType()) {
+                MainScreens.AdminHome.route
+            /*when (prefs.getUserType()) {
                 "admin" -> MainScreens.AdminHome.route
                 "employee" -> MainScreens.EmployeeHome.route
                 else -> MainScreens.Auth.route
-            }
+            }*/
         } else {
             MainScreens.Auth.route
-        }*/
+        }
     ) {
 
         composable(
@@ -217,6 +219,29 @@ fun AppNavigation (
                     navController.popBackStack()
                 },
                 transactionUi = transactionUi,
+            )
+        }
+
+        composable(
+            route = MainScreens.Search.route,
+            enterTransition = { enterFromRight },
+            exitTransition = { exitToRight },
+            popEnterTransition = { enterFromRight },
+            popExitTransition = { exitToRight }
+        ) {
+            val searchViewModel: SearchViewModel = hiltViewModel()
+            val state by searchViewModel.state.collectAsState()
+            SearchScreen(
+                state = state,
+                onEvent = searchViewModel::onEvent,
+                onNavigateClicked = { transactionUi ->
+                    val transaction = Uri.encode(Gson().toJson(transactionUi))
+                    navController.navigate(
+                        MainScreens.TransactionDetail.passTransaction(
+                            transaction
+                        )
+                    )
+                }
             )
         }
 

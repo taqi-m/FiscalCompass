@@ -6,5 +6,5 @@ import javax.inject.Inject
 class GetExpenseWithCategoryAndPerson @Inject constructor(
     private val expenseRepository: ExpenseRepository
 ){
-    suspend operator fun invoke(id: Long) = expenseRepository.getExpensesWithCategoryAndPerson(id)
+    suspend operator fun invoke(id: Long) = expenseRepository.getSingleFulExpenseById(id)
 }

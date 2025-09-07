@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.app.uniqueplant.domain.model.InputField
 import com.app.uniqueplant.domain.usecase.categories.GetCategoriesUseCase
 import com.app.uniqueplant.domain.usecase.person.GetAllPersonsUseCase
-import com.app.uniqueplant.domain.usecase.transaction.AddTransactionUseCase
+import com.app.uniqueplant.domain.usecase.transaction.AddTransactionUC
 import com.app.uniqueplant.presentation.mappers.formatDate
 import com.app.uniqueplant.presentation.mappers.formatTime
 import com.app.uniqueplant.presentation.mappers.toGroupedCategoryUi
@@ -30,7 +30,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddTransactionViewModel @Inject constructor(
-    private val addTransactionUseCase: AddTransactionUseCase,
+    private val addTransactionUC: AddTransactionUC,
     private val categoryUseCase: GetCategoriesUseCase,
     private val getPersonUseCase: GetAllPersonsUseCase
 ) : ViewModel() {
@@ -63,8 +63,7 @@ class AddTransactionViewModel @Inject constructor(
 
 
                 _state.value = _state.value.copy(
-                    persons = persons,
-                    personId = persons.firstOrNull()?.personId
+                    persons = persons
                 )
 
                 Log.d(
@@ -255,7 +254,7 @@ class AddTransactionViewModel @Inject constructor(
         ).toTransaction()
         viewModelScope.launch(Dispatchers.IO) {
             updateState { copy(uiState = UiState.Loading) }
-            val result = addTransactionUseCase.addTransaction(transaction)
+            val result = addTransactionUC(transaction)
             result.onSuccess { transactionId ->
                 val date = Calendar.getInstance().time
                 updateState {
@@ -264,14 +263,7 @@ class AddTransactionViewModel @Inject constructor(
                         amount = InputField(""),
                         description = InputField(""),
                         formatedDate = formatDate(date),
-                        formatedTime = formatTime(date),
-                        personId = persons.firstOrNull()?.personId,
-                        categoryId = if (_state.value.transactionType == TransactionType.EXPENSE) {
-                            expenseCategories.keys.first().categoryId
-                        } else {
-                            incomeCategories.keys.first().categoryId
-                        },
-                        subCategoryId = 0L,
+                        formatedTime = formatTime(date)
                     )
                 }
             }.onFailure { exception ->

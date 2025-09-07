@@ -12,6 +12,7 @@ sealed class MainScreens(val route: String) {
     object Categories : MainScreens("categories_screen")
     object Person : MainScreens("person_screen")
     object Jobs : MainScreens("jobs_screen")
+    object Search : MainScreens("search_screen")
 
     object TransactionDetail : MainScreens("transaction_detail_screen/{transaction}"){
         fun passTransaction(transaction: String): String {
@@ -26,5 +27,4 @@ sealed class HomeBottomScreen(val route: String, val label: String, val iconReso
     object Analytics : HomeBottomScreen("analytics", "Reports", R.drawable.ic_bar_chart_24)
     object Categories : HomeBottomScreen("categories", "Categories", R.drawable.ic_category_24)
 
-    object Supervisor : HomeBottomScreen("users", "Users", R.drawable.ic_supervisor_24)
 }

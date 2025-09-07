@@ -5,8 +5,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -26,7 +30,6 @@ import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
 import com.app.uniqueplant.presentation.model.TransactionUi
 import com.app.uniqueplant.presentation.screens.categories.UiState
 import com.app.uniqueplant.ui.components.cards.TransactionCard
-import com.app.uniqueplant.ui.components.dialogs.DeleteTransactionDialog
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -87,7 +90,13 @@ fun TransactionsScreen(
                         // Convert date to string if it's a Date object
                         val formattedDate =
                             SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(date)
-                        DateHeader(date = formattedDate)
+                        DateHeader(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.background)
+                                .padding(vertical = 8.dp),
+                            date = formattedDate
+                        )
                     }
 
                     items(transactionsForDate.size) { index ->
@@ -113,53 +122,20 @@ fun TransactionsScreen(
                         )
                     }
                 }
+                item {
+                    // Add some padding at the bottom to avoid content being hidden behind navigation bars
+                    Spacer(modifier = Modifier.padding(WindowInsets.navigationBars.asPaddingValues()))
+                }
             }
         }
     }
 
     when (state.currentDialog) {
         TransactionScreenDialog.EditTransaction -> {
-            /*state.dialogState.transaction?.let { transaction ->
-                 // Show edit dialog for the selected transaction
-                 EditTransactionDialog(
-                     transaction = transaction,
-                     onDismissRequest = {
-                         onEvent(
-                             TransactionEvent.OnTransactionDialogToggle(
-                                 TransactionDialogToggle.Hidden
-                             )
-                         )
-                     },
-                     onEditConfirmed = { updatedTransaction ->
-                         onEvent(
-                             TransactionEvent.OnTransactionDialogSubmit(
-                                 TransactionDialogSubmit.Edit(updatedTransaction)
-                             )
-                         )
-                     }
-                 )
-             }*/
         }
 
         TransactionScreenDialog.DeleteTransaction -> {
-            state.dialogState.transaction?.let { transaction ->
-                // Show delete confirmation dialog for the selected transaction
-                DeleteTransactionDialog(
-                    onDismissRequest = {
-                        onEvent(
-                            TransactionEvent.OnTransactionDialogToggle(
-                                TransactionDialogToggle.Hidden
-                            )
-                        )
-                    },
-                    onDeleteConfirmed = {
-                        onEvent(
-                            TransactionEvent.OnTransactionDialogSubmit(
-                                TransactionDialogSubmit.Delete
-                            )
-                        )
-                    })
-            }
+
         }
 
         else -> {}
@@ -168,9 +144,9 @@ fun TransactionsScreen(
 
 
 @Composable
-fun DateHeader(date: String) {
+fun DateHeader(modifier: Modifier = Modifier, date: String) {
     Card(
-        modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(
+        modifier = modifier, colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
         ), shape = MaterialTheme.shapes.small
     ) {
@@ -181,60 +157,6 @@ fun DateHeader(date: String) {
         )
     }
 }
-
-
-/*
-
-@Composable
-fun TransactionList(
-    transactions: List<Any>, onEvent: (TransactionEvent) -> Unit
-) {
-    for (transaction in transactions) {
-        when (transaction) {
-            is Expense -> {
-                ExpenseTransaction(
-                    expense = transaction, onEvent = onEvent
-                )
-            }
-
-            is Income -> {
-                IncomeTransaction(
-                    income = transaction, onEvent = onEvent
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun ExpenseTransaction(
-    expense: Expense,
-    onEvent: (TransactionEvent) -> Unit,
-) {
-    ExpenseCard(expense = expense.amount, date = expense.date, onEditClicked = {
-        onEvent(TransactionEvent.OnTransactionSelected(expense))
-        onEvent(TransactionEvent.OnEditModeToggle)
-    }, onDeleteClicked = {
-        onEvent(TransactionEvent.OnTransactionSelected(expense))
-        onEvent(TransactionEvent.OnDeleteModeToggle)
-    })
-}
-
-
-@Composable
-fun IncomeTransaction(
-    income: Income,
-    onEvent: (TransactionEvent) -> Unit,
-) {
-    IncomeCard(income = income.amount, date = income.date, onEditClicked = {
-        onEvent(TransactionEvent.OnTransactionSelected(income))
-        onEvent(TransactionEvent.OnEditModeToggle)
-    }, onDeleteClicked = {
-        onEvent(TransactionEvent.OnTransactionSelected(income))
-        onEvent(TransactionEvent.OnDeleteModeToggle)
-    })
-}
-*/
 
 
 @Composable
@@ -250,71 +172,83 @@ fun TransactionHeading(
             modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.large,
             colors = CardDefaults.cardColors().copy(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
             )
         ) {
+            val textColor = MaterialTheme.colorScheme.onSecondaryContainer
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
+                    .padding(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
                     text = "Total Balance",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(top = 8.dp)
+                    style = MaterialTheme.typography.labelLarge,
+                    color = textColor
                 )
                 Text(
                     text = currentBalance,
-                    style = MaterialTheme.typography.headlineLarge,
-                    modifier = Modifier.padding(vertical = 4.dp)
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = textColor
                 )
                 HorizontalDivider(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                        .padding(horizontal = 8.dp),
                     thickness = 1.dp,
                     color = MaterialTheme.colorScheme.outlineVariant
                 )
                 Row {
-                    Column(
+                    BalanceView(
+                        label = "Incoming",
+                        amount = incoming,
                         modifier = Modifier
                             .weight(1f)
                             .padding(8.dp),
-                        horizontalAlignment = Alignment.Start
-                    ) {
-                        Text(
-                            text = "Incoming",
-                            style = MaterialTheme.typography.titleMedium,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = incoming,
-                            style = MaterialTheme.typography.titleLarge,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                    Column(
+                        textAlign = TextAlign.Start
+                    )
+                    BalanceView(
+                        label = "Outgoing",
+                        amount = outgoing,
                         modifier = Modifier
                             .weight(1f)
                             .padding(8.dp),
-                        horizontalAlignment = Alignment.End
-                    ) {
-                        Text(
-                            text = "Outgoing",
-                            style = MaterialTheme.typography.titleMedium,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = outgoing,
-                            style = MaterialTheme.typography.titleLarge,
-                            textAlign = TextAlign.Center
-                        )
-                    }
+                        textAlign = TextAlign.End
+                    )
                 }
             }
         }
+    }
+}
+
+
+@Composable
+private fun BalanceView(
+    label: String,
+    amount: String,
+    modifier: Modifier = Modifier,
+    textAlign: TextAlign = TextAlign.Start
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            textAlign = textAlign
+        )
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = amount,
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = textAlign
+        )
     }
 }
 

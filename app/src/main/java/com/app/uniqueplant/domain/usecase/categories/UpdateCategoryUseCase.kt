@@ -21,7 +21,7 @@ class UpdateCategoryUseCase @Inject constructor (
             Result.success("Category updated successfully")
         } else {
             Result.failure(
-                IllegalStateException("Unknown error occurred while updating the category")
+                IllegalStateException("Unknown error occurred while updating the categoryId")
             )
         }
     }
