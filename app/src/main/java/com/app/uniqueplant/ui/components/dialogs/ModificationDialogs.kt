@@ -108,7 +108,7 @@ fun EditDialogPreview() {
             transaction = ExpenseEntity(
                 amount = 50.0,
                 description = "Groceries",
-                date = Date(),
+                date = Date().time,
                 categoryId = 1,
                 userId = "1"
             ),
@@ -148,7 +148,7 @@ fun EditExpenseContentPreview() {
             expense = ExpenseEntity(
                 description = "Groceries",
                 amount = 50.0,
-                date = Date(),
+                date = Date().time,
                 categoryId = 1,
                 userId = "1"
             )

@@ -1,4 +1,4 @@
-package com.app.uniqueplant.data.datasource.preferences
+package com.app.uniqueplant.data.sources.preferences
 
 interface PreferenceManager {
     // String preferences

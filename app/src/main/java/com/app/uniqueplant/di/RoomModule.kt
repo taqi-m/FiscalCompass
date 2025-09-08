@@ -2,12 +2,12 @@ package com.app.uniqueplant.di
 
 import android.content.Context
 import androidx.room.Room
-import com.app.uniqueplant.data.datasource.local.AppDatabase
-import com.app.uniqueplant.data.datasource.local.dao.CategoryDao
-import com.app.uniqueplant.data.datasource.local.dao.ExpenseDao
-import com.app.uniqueplant.data.datasource.local.dao.IncomeDao
-import com.app.uniqueplant.data.datasource.local.dao.PersonDao
-import com.app.uniqueplant.data.datasource.local.dao.UserDao
+import com.app.uniqueplant.data.sources.local.AppDatabase
+import com.app.uniqueplant.data.sources.local.dao.CategoryDao
+import com.app.uniqueplant.data.sources.local.dao.ExpenseDao
+import com.app.uniqueplant.data.sources.local.dao.IncomeDao
+import com.app.uniqueplant.data.sources.local.dao.PersonDao
+import com.app.uniqueplant.data.sources.local.dao.UserDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

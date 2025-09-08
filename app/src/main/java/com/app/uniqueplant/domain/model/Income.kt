@@ -14,6 +14,6 @@ data class Income(
     val isRecurring: Boolean = false,
     val recurringFrequency: String? = null,
     val isTaxable: Boolean = true,
-    val createdAt: Date = Date(),
-    val updatedAt: Date = Date()
+    val createdAt: Date = Date(System.currentTimeMillis()),
+    val updatedAt: Date = Date(System.currentTimeMillis())
 )

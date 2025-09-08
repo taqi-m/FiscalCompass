@@ -15,6 +15,6 @@ data class Expense(
     val receipt: String? = null, // URL to receipt image
     val isRecurring: Boolean = false,
     val recurringFrequency: String? = null, // daily, weekly, monthly, yearly
-    val createdAt: Date = Date(),
-    val updatedAt: Date = Date()
+    val createdAt: Date = Date(System.currentTimeMillis()),
+    val updatedAt: Date = Date(System.currentTimeMillis())
 )

@@ -1,7 +1,7 @@
 package com.app.uniqueplant.domain.usecase.person
 
-import com.app.uniqueplant.data.datasource.local.dao.PersonDao
 import com.app.uniqueplant.data.mapper.toDomain
+import com.app.uniqueplant.data.sources.local.dao.PersonDao
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 

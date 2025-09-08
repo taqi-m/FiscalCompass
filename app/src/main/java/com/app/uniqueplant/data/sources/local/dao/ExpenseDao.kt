@@ -1,4 +1,4 @@
-package com.app.uniqueplant.data.datasource.local.dao
+package com.app.uniqueplant.data.sources.local.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -12,18 +12,17 @@ import com.app.uniqueplant.data.model.ExpenseEntity
 import com.app.uniqueplant.data.model.ExpenseFullDbo
 import com.app.uniqueplant.data.model.ExpenseWithCategoryDbo
 import kotlinx.coroutines.flow.Flow
-import java.util.Date
 
 @Dao
 interface ExpenseDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertExpense(expenseEntity: ExpenseEntity): Long
+    suspend fun insert(expenseEntity: ExpenseEntity): Long
     
     @Update
-    suspend fun updateExpense(expenseEntity: ExpenseEntity)
+    suspend fun update(expenseEntity: ExpenseEntity)
     
     @Delete
-    suspend fun deleteExpense(expenseEntity: ExpenseEntity)
+    suspend fun delete(expenseEntity: ExpenseEntity)
 
     @Query("SELECT * FROM expenses")
     fun getAllExpenses(): Flow<List<ExpenseEntity>>
@@ -61,10 +60,10 @@ interface ExpenseDao {
     ): List<ExpenseEntity>
     
     @Query("SELECT * FROM expenses WHERE userId = :userId AND date BETWEEN :startDate AND :endDate ORDER BY date DESC")
-    fun getExpensesByDateRange(userId: String, startDate: Date, endDate: Date): Flow<List<ExpenseEntity>>
+    fun getExpensesByDateRange(userId: String, startDate: Long, endDate: Long): Flow<List<ExpenseEntity>>
 
     @Query("SELECT * FROM expenses WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
-    fun getExpensesByDateRangeForAllUsers(startDate: Date, endDate: Date): Flow<List<ExpenseEntity>>
+    fun getExpensesByDateRangeForAllUsers(startDate: Long, endDate: Long): Flow<List<ExpenseEntity>>
     
     @Query("SELECT * FROM expenses WHERE userId = :userId AND categoryId = :categoryId ORDER BY date DESC")
     fun getExpensesByCategory(userId: String, categoryId: Long): Flow<List<ExpenseEntity>>
@@ -73,7 +72,7 @@ interface ExpenseDao {
     fun getTotalExpensesByUser(userId: String): Flow<Double?>
     
     @Query("SELECT SUM(amount) FROM expenses WHERE userId = :userId AND date BETWEEN :startDate AND :endDate")
-    fun getExpenseSumByDateRange(userId: String, startDate: Date, endDate: Date): Flow<Double?>
+    fun getExpenseSumByDateRange(userId: String, startDate: Long, endDate: Long): Flow<Double?>
     
     @Query("SELECT categoryId, SUM(amount) as total FROM expenses WHERE userId = :userId GROUP BY categoryId ORDER BY total DESC")
     fun getExpenseSumByCategory(userId: String): Flow<Map<@MapColumn("categoryId") Long?, @MapColumn("total") Double>>
@@ -81,5 +80,40 @@ interface ExpenseDao {
     @Query("SELECT COUNT(*) FROM expenses WHERE userId = :userId")
     suspend fun getExpenseCount(userId: String): Int
     @Query("SELECT SUM(amount) FROM expenses WHERE date BETWEEN :startDate AND :endDate")
-    fun getExpenseSumByMonth(startDate: Date, endDate: Date): Flow<Double>
+    fun getExpenseSumByMonth(startDate: Long, endDate: Long): Flow<Double>
+
+    /**
+     * Queries related to synchronization with remote server
+     */
+    @Query("SELECT * FROM expenses WHERE userId = :userId AND needsSync = 1")
+    suspend fun getUnsyncedExpenses(userId: String): List<ExpenseEntity>
+
+    @Query("SELECT * FROM expenses WHERE localId = :localId")
+    suspend fun getExpenseByLocalId(localId: String): ExpenseEntity?
+
+    @Query("SELECT * FROM expenses WHERE firestoreId = :firestoreId")
+    suspend fun getExpenseByFirestoreId(firestoreId: String): ExpenseEntity?
+
+    @Query("""
+        UPDATE expenses 
+        SET firestoreId = :firestoreId, isSynced = :isSynced, 
+            needsSync = 0, lastSyncedAt = :lastSyncedAt 
+        WHERE expenseId = :expenseId
+    """)
+    suspend fun updateSyncStatus(
+        expenseId: Long,
+        firestoreId: String,
+        isSynced: Boolean,
+        lastSyncedAt: Long
+    )
+
+    @Query("UPDATE expenses SET needsSync = 1 WHERE expenseId = :expenseId")
+    suspend fun markForSync(expenseId: Long)
+
+    @Query("SELECT COUNT(*) FROM expenses WHERE needsSync = 1")
+    fun getUnsyncedExpenseCount(): Flow<Int>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM expenses WHERE needsSync = 1)")
+    suspend fun hasUnsyncedData(): Boolean
+
 }

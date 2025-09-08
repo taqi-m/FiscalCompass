@@ -3,6 +3,7 @@ package com.app.uniqueplant.data.mapper
 import com.app.uniqueplant.data.model.IncomeEntity
 import com.app.uniqueplant.domain.model.Income
 import com.app.uniqueplant.domain.model.Transaction
+import java.util.Date
 
 
 /**
@@ -14,7 +15,7 @@ fun IncomeEntity.toDomain(): Income {
         incomeId = this.incomeId,
         amount = this.amount,
         description = this.description,
-        date = this.date,
+        date = Date(this.date),
         categoryId = this.categoryId,
         userId = this.userId,
         personId = this.personId,
@@ -22,8 +23,8 @@ fun IncomeEntity.toDomain(): Income {
         isRecurring = this.isRecurring,
         recurringFrequency = this.recurringFrequency,
         isTaxable = this.isTaxable,
-        createdAt = this.createdAt,
-        updatedAt = this.updatedAt
+        createdAt = Date(this.createdAt),
+        updatedAt = Date(this.updatedAt)
     )
 }
 
@@ -45,7 +46,7 @@ fun Income.toIncomeEntity(): IncomeEntity {
         incomeId = this.incomeId,
         amount = this.amount,
         description = this.description,
-        date = this.date,
+        date = this.date.time,
         categoryId = this.categoryId,
         userId = this.userId,
         personId = this.personId,
@@ -53,7 +54,7 @@ fun Income.toIncomeEntity(): IncomeEntity {
         isRecurring = this.isRecurring,
         recurringFrequency = this.recurringFrequency,
         isTaxable = this.isTaxable,
-        createdAt = this.createdAt,
-        updatedAt = this.updatedAt
+        createdAt = this.createdAt.time,
+        updatedAt = this.updatedAt.time
     )
 }

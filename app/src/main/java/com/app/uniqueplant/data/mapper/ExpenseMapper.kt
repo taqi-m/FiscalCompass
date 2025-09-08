@@ -3,6 +3,8 @@ package com.app.uniqueplant.data.mapper
 import com.app.uniqueplant.data.model.ExpenseEntity
 import com.app.uniqueplant.domain.model.Expense
 import com.app.uniqueplant.domain.model.Transaction
+import com.google.firebase.Timestamp
+import java.util.Date
 
 /**
  * Mapper functions to convert between [ExpenseEntity] and [Expense].
@@ -13,7 +15,7 @@ fun ExpenseEntity.toDomain(): Expense {
         expenseId = this.expenseId,
         amount = this.amount,
         description = this.description,
-        date = this.date,
+        date = Date(this.date),
         categoryId = this.categoryId,
         userId = this.userId,
         personId = this.personId,
@@ -22,8 +24,27 @@ fun ExpenseEntity.toDomain(): Expense {
         receipt = this.receipt,
         isRecurring = this.isRecurring,
         recurringFrequency = this.recurringFrequency,
-        createdAt = this.createdAt,
-        updatedAt = this.updatedAt
+        createdAt = Date(this.createdAt),
+        updatedAt = Date(this.updatedAt)
+    )
+}
+
+fun ExpenseEntity.toRemote(): Map<String, Any?> {
+    return mapOf(
+        "expenseId" to this.expenseId,
+        "amount" to this.amount,
+        "description" to this.description,
+        "date" to Timestamp(Date(this.date)),
+        "categoryId" to this.categoryId,
+        "userId" to this.userId,
+        "personId" to this.personId,
+        "paymentMethod" to this.paymentMethod,
+        "location" to this.location,
+        "receipt" to this.receipt,
+        "isRecurring" to this.isRecurring,
+        "recurringFrequency" to this.recurringFrequency,
+        "createdAt" to Timestamp(Date(this.createdAt)),
+        "updatedAt" to Timestamp(Date(this.updatedAt))
     )
 }
 
@@ -40,12 +61,12 @@ fun Expense.toTransaction(): Transaction {
     )
 }
 
-fun Expense.toExpenseEntity(): ExpenseEntity {
+fun Expense.toEntity(): ExpenseEntity {
     return ExpenseEntity(
         expenseId = this.expenseId,
         amount = this.amount,
         description = this.description,
-        date = this.date,
+        date = this.date.time,
         categoryId = this.categoryId,
         userId = this.userId,
         personId = this.personId,
@@ -54,7 +75,7 @@ fun Expense.toExpenseEntity(): ExpenseEntity {
         receipt = this.receipt,
         isRecurring = this.isRecurring,
         recurringFrequency = this.recurringFrequency,
-        createdAt = this.createdAt,
-        updatedAt = this.updatedAt
+        createdAt = this.createdAt.time,
+        updatedAt = this.updatedAt.time
     )
 }

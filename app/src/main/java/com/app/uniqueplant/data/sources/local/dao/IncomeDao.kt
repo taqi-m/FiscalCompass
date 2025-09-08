@@ -1,4 +1,4 @@
-package com.app.uniqueplant.data.datasource.local.dao
+package com.app.uniqueplant.data.sources.local.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -12,7 +12,6 @@ import com.app.uniqueplant.data.model.IncomeEntity
 import com.app.uniqueplant.data.model.IncomeFullDbo
 import com.app.uniqueplant.data.model.IncomeWithCategoryDbo
 import kotlinx.coroutines.flow.Flow
-import java.util.Date
 
 @Dao
 interface IncomeDao {
@@ -29,7 +28,7 @@ interface IncomeDao {
     fun getAllIncomes(): Flow<List<IncomeEntity>>
 
     @Query("SELECT SUM(amount) FROM incomes WHERE date BETWEEN :startDate AND :endDate")
-    fun getIncomeSumByMonth(startDate: Date, endDate: Date): Flow<Double>
+    fun getIncomeSumByMonth(startDate: Long, endDate: Long): Flow<Double>
 
     @Query("SELECT * FROM incomes WHERE userId = :userId ORDER BY date DESC")
     fun getAllIncomesByUser(userId: String): Flow<List<IncomeEntity>>
@@ -64,10 +63,10 @@ interface IncomeDao {
     ): List<IncomeEntity>
     
     @Query("SELECT * FROM incomes WHERE userId = :userId AND date BETWEEN :startDate AND :endDate ORDER BY date DESC")
-    fun getIncomesByDateRange(userId: String, startDate: Date, endDate: Date): Flow<List<IncomeEntity>>
+    fun getIncomesByDateRange(userId: String, startDate: Long, endDate: Long): Flow<List<IncomeEntity>>
 
     @Query("SELECT * FROM incomes WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
-    fun getIncomesByDateRangeForAllUsers(startDate: Date, endDate: Date): Flow<List<IncomeEntity>>
+    fun getIncomesByDateRangeForAllUsers(startDate: Long, endDate: Long): Flow<List<IncomeEntity>>
     
     @Query("SELECT * FROM incomes WHERE userId = :userId AND categoryId = :categoryId ORDER BY date DESC")
     fun getIncomesByCategory(userId: String, categoryId: Long): Flow<List<IncomeEntity>>
@@ -76,11 +75,36 @@ interface IncomeDao {
     fun getTotalIncomeByUser(userId: String): Flow<Double?>
     
     @Query("SELECT SUM(amount) FROM incomes WHERE userId = :userId AND date BETWEEN :startDate AND :endDate")
-    fun getIncomeSumByDateRange(userId: String, startDate: Date, endDate: Date): Flow<Double?>
+    fun getIncomeSumByDateRange(userId: String, startDate: Long, endDate: Long): Flow<Double?>
     
     @Query("SELECT categoryId, SUM(amount) as total FROM incomes WHERE userId = :userId GROUP BY categoryId ORDER BY total DESC")
     fun getIncomeSumByCategory(userId: String): Flow<Map<@MapColumn("categoryId") Long?, @MapColumn("total") Double>>
     
     @Query("SELECT COUNT(*) FROM incomes WHERE userId = :userId")
     suspend fun getIncomeCount(userId: String): Int
+
+    @Query("SELECT COUNT(*) FROM incomes WHERE needsSync = 1")
+    fun getUnsyncedIncomeCount(): Flow<Int>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM incomes WHERE needsSync = 1)")
+    suspend fun hasUnsyncedData(): Boolean
+
+    @Query("SELECT * FROM incomes WHERE userId = :userId AND needsSync = 1")
+    suspend fun getUnsyncedIncomes(userId: String): List<IncomeEntity>
+
+    @Query(
+        """
+        UPDATE incomes 
+        SET firestoreId = :firestoreId, isSynced = :isSynced, 
+            needsSync = 0, lastSyncedAt = :lastSyncedAt 
+        WHERE incomeId = :incomeId
+    """
+    )
+    suspend fun updateSyncStatus(
+        incomeId: Long,
+        firestoreId: String,
+        isSynced: Boolean,
+        lastSyncedAt: Long
+    )
+
 }

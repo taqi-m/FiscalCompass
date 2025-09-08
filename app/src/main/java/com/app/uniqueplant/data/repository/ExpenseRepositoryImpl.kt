@@ -1,8 +1,13 @@
 package com.app.uniqueplant.data.repository
 
-import com.app.uniqueplant.data.datasource.local.dao.ExpenseDao
+import com.app.uniqueplant.data.manager.AutoSyncManager
+import com.app.uniqueplant.data.manager.NetworkManager
+import com.app.uniqueplant.data.manager.SyncType
 import com.app.uniqueplant.data.mapper.toDomain
-import com.app.uniqueplant.data.mapper.toExpenseEntity
+import com.app.uniqueplant.data.mapper.toEntity
+import com.app.uniqueplant.data.sources.local.dao.CategoryDao
+import com.app.uniqueplant.data.sources.local.dao.ExpenseDao
+import com.app.uniqueplant.data.sources.remote.sync.EnhancedSyncManager
 import com.app.uniqueplant.domain.model.Expense
 import com.app.uniqueplant.domain.model.ExpenseFull
 import com.app.uniqueplant.domain.model.ExpenseWithCategory
@@ -13,25 +18,37 @@ import java.util.Calendar
 import javax.inject.Inject
 
 class ExpenseRepositoryImpl @Inject constructor(
-    private val expenseDao: ExpenseDao
+    private val expenseDao: ExpenseDao,
+    private val categoryDao: CategoryDao,
+    private val syncManager: EnhancedSyncManager,
+    private val networkManager: NetworkManager,
+    private val autoSyncManager: AutoSyncManager,
+//    private val coroutineScope: CoroutineScope
 ) : ExpenseRepository {
 
     override suspend fun addExpense(expense: Expense): Long {
-        return expenseDao.insertExpense(expense.toExpenseEntity())
+        val expenseEntity = expense.toEntity()
+
+        val dbResult = expenseDao.insert(expenseEntity)
+
+        autoSyncManager.triggerSync(SyncType.EXPENSES)
+
+        return dbResult
     }
 
     override suspend fun updateExpense(expense: Expense) {
-        expenseDao.updateExpense(expense.toExpenseEntity())
+        val expenseEntity = expense.toEntity()
+        expenseDao.update(expenseEntity)
     }
 
     override suspend fun deleteExpense(expense: Expense) {
-        expenseDao.deleteExpense(expense.toExpenseEntity())
+        expenseDao.delete(expense.toEntity())
     }
 
     override suspend fun deleteExpenseById(id: Long) {
         val expense = expenseDao.getExpenseById(id)
             ?: throw IllegalArgumentException("Expense with id $id not found")
-        expenseDao.deleteExpense(expense)
+        expenseDao.delete(expense)
     }
 
     override suspend fun getExpenseById(id: Long): Expense? {
@@ -54,12 +71,12 @@ class ExpenseRepositoryImpl @Inject constructor(
                 set(Calendar.MONTH, month)
                 set(Calendar.YEAR, year)
                 set(Calendar.DAY_OF_MONTH, 1)
-            }.time,
+            }.time.time,
             endDate = Calendar.getInstance().apply {
                 set(Calendar.MONTH, month)
                 set(Calendar.YEAR, year)
                 set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
-            }.time
+            }.time.time
         ).map {
             it.map { expenseEntity ->
                 expenseEntity.toDomain()
@@ -129,12 +146,12 @@ class ExpenseRepositoryImpl @Inject constructor(
                 set(Calendar.MONTH, month)
                 set(Calendar.YEAR, year)
                 set(Calendar.DAY_OF_MONTH, 1)
-            }.time,
+            }.time.time,
             endDate = Calendar.getInstance().apply {
                 set(Calendar.MONTH, month)
                 set(Calendar.YEAR, year)
                 set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
-            }.time
+            }.time.time
         )
     }
 }

@@ -1,4 +1,4 @@
-package com.app.uniqueplant.data.datasource.local.dao
+package com.app.uniqueplant.data.sources.local.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -12,24 +12,22 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CategoryDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertCategory(categoryEntity: CategoryEntity): Long
+    suspend fun insert(categoryEntity: CategoryEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertAll(defaultEntities: List<CategoryEntity>)
     
     @Update
-    suspend fun updateCategory(categoryEntity: CategoryEntity): Int
+    suspend fun update(categoryEntity: CategoryEntity): Int
     
     @Delete
-    suspend fun deleteCategory(categoryEntity: CategoryEntity): Int
+    suspend fun delete(categoryEntity: CategoryEntity): Int
 
     @Query("SELECT * FROM categories ORDER BY name ASC")
     suspend fun getAllCategories(): List<CategoryEntity>
 
     @Query("SELECT * FROM categories ORDER BY name ASC")
     fun getAllCategoriesFlow(): Flow<List<CategoryEntity>>
-
-
     
     @Query("SELECT * FROM categories WHERE categoryId = :id")
     suspend fun getCategoryById(id: Long): CategoryEntity?
@@ -54,5 +52,22 @@ interface CategoryDao {
 
     @Query("SELECT * FROM categories WHERE isExpenseCategory = 1 ORDER BY name ASC")
     fun getExpenseCategories(): List<CategoryEntity>
+
+    @Query("SELECT * FROM categories WHERE firestoreId = :id LIMIT 1")
+    suspend fun getCategoryByFirestoreId(id: String) : CategoryEntity?
+
+    suspend fun getCategoryLocalId(categoryId: Long): String? {
+        return runCatching {
+            val category = getCategoryById(categoryId)
+            category?.firestoreId
+        }.getOrNull()
+    }
+
+    suspend fun getCategoryFirestoreId(categoryId: Long): String? {
+        return runCatching {
+            val category = getCategoryById(categoryId)
+            category?.firestoreId
+        }.getOrNull()
+    }
 
 }

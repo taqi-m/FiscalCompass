@@ -1,4 +1,4 @@
-package com.app.uniqueplant.data.datasource.preferences
+package com.app.uniqueplant.data.sources.preferences
 
 import android.content.Context
 import android.content.SharedPreferences

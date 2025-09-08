@@ -1,4 +1,4 @@
-package com.app.uniqueplant.data.datasource.local.dao
+package com.app.uniqueplant.data.sources.local.dao
 
 import androidx.room.Dao
 import androidx.room.Delete

@@ -1,4 +1,4 @@
-package com.app.uniqueplant.data.datasource.local
+package com.app.uniqueplant.data.sources.local
 
 import androidx.room.TypeConverter
 import java.util.Date

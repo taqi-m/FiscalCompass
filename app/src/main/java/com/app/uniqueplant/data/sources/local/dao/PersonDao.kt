@@ -1,4 +1,4 @@
-package com.app.uniqueplant.data.datasource.local.dao
+package com.app.uniqueplant.data.sources.local.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -25,7 +25,7 @@ interface PersonDao {
     fun getAllWithFlow(): Flow<List<PersonEntity>>
 
     @Query("SELECT * FROM persons WHERE personId = :id")
-    suspend fun getById(id: String): PersonEntity?
+    suspend fun getById(id: Long): PersonEntity?
 
     @Query("SELECT * FROM persons WHERE personType = :type")
     suspend fun getByPersonType(type: String): List<PersonEntity>
@@ -40,4 +40,20 @@ interface PersonDao {
 
     @Query("DELETE FROM persons")
     suspend fun deleteAll()
+
+    suspend fun getPersonLocalId(personId: Long?): String? {
+        if (personId == null) return null
+        return runCatching {
+            val person = getById(personId)
+            person?.localId
+        }.getOrNull()
+    }
+
+    suspend fun getPersonFirestoreId(personId: Long?): String? {
+        if (personId == null) return null
+        return runCatching {
+            val person = getById(personId)
+            person?.firestoreId
+        }.getOrNull()
+    }
 }

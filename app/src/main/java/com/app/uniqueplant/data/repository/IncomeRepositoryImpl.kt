@@ -1,9 +1,14 @@
 package com.app.uniqueplant.data.repository
 
-import com.app.uniqueplant.data.datasource.local.dao.IncomeDao
+import com.app.uniqueplant.data.manager.AutoSyncManager
+import com.app.uniqueplant.data.manager.NetworkManager
+import com.app.uniqueplant.data.manager.SyncType
 import com.app.uniqueplant.data.mapper.toDomain
 import com.app.uniqueplant.data.mapper.toIncomeEntity
 import com.app.uniqueplant.data.mapper.toIncomeWithCategory
+import com.app.uniqueplant.data.sources.local.dao.CategoryDao
+import com.app.uniqueplant.data.sources.local.dao.IncomeDao
+import com.app.uniqueplant.data.sources.remote.sync.EnhancedSyncManager
 import com.app.uniqueplant.domain.model.Income
 import com.app.uniqueplant.domain.model.IncomeFull
 import com.app.uniqueplant.domain.model.IncomeWithCategory
@@ -14,11 +19,19 @@ import java.util.Calendar
 import javax.inject.Inject
 
 class IncomeRepositoryImpl @Inject constructor(
-    private val incomeDao: IncomeDao
+    private val incomeDao: IncomeDao,
+    private val categoryDao: CategoryDao,
+    private val syncManager: EnhancedSyncManager,
+    private val networkManager: NetworkManager,
+    private val autoSyncManager: AutoSyncManager,
+//    private val coroutineScope: CoroutineScope
 ) : IncomeRepository {
 
     override suspend fun addIncome(income: Income): Long {
-        return incomeDao.insertIncome(income.toIncomeEntity())
+        val incomeEntity = income.toIncomeEntity()
+        val dbResult = incomeDao.insertIncome(incomeEntity)
+        autoSyncManager.triggerSync(SyncType.INCOMES)
+        return dbResult
     }
 
     override suspend fun updateIncome(income: Income) {
@@ -95,12 +108,12 @@ class IncomeRepositoryImpl @Inject constructor(
                 set(Calendar.MONTH, month)
                 set(Calendar.YEAR, year)
                 set(Calendar.DAY_OF_MONTH, 1)
-            }.time,
+            }.time.time,
             endDate = Calendar.getInstance().apply {
                 set(Calendar.MONTH, month)
                 set(Calendar.YEAR, year)
                 set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
-            }.time
+            }.time.time
         ).map {
             it.map { incomeEntity ->
                 incomeEntity.toDomain()
@@ -114,12 +127,12 @@ class IncomeRepositoryImpl @Inject constructor(
                 set(Calendar.MONTH, month)
                 set(Calendar.YEAR, year)
                 set(Calendar.DAY_OF_MONTH, 1)
-            }.time,
+            }.time.time,
             endDate = Calendar.getInstance().apply {
                 set(Calendar.MONTH, month)
                 set(Calendar.YEAR, year)
                 set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
-            }.time
+            }.time.time
         )
     }
 

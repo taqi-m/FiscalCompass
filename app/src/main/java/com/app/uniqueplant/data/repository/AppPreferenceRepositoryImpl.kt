@@ -1,6 +1,6 @@
 package com.app.uniqueplant.data.repository
 
-import com.app.uniqueplant.data.datasource.preferences.PreferenceManager
+import com.app.uniqueplant.data.sources.preferences.PreferenceManager
 import com.app.uniqueplant.domain.repository.AppPreferenceRepository
 import javax.inject.Inject
 import javax.inject.Singleton

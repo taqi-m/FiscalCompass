@@ -1,8 +1,8 @@
 package com.app.uniqueplant.data.repository
 
-import com.app.uniqueplant.data.datasource.local.dao.UserDao
-import com.app.uniqueplant.data.datasource.preferences.PreferenceManager
 import com.app.uniqueplant.data.model.UserEntity
+import com.app.uniqueplant.data.sources.local.dao.UserDao
+import com.app.uniqueplant.data.sources.preferences.PreferenceManager
 import com.app.uniqueplant.domain.repository.UserRepository
 import javax.inject.Inject
 

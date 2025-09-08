@@ -3,6 +3,7 @@ package com.app.uniqueplant.data.mapper
 import com.app.uniqueplant.data.model.CategoryEntity
 import com.app.uniqueplant.domain.model.Category
 import com.app.uniqueplant.domain.model.CategoryTree
+import java.util.Date
 
 /**
  * Mapper functions to convert between [CategoryEntity] and [Category].
@@ -18,8 +19,8 @@ fun CategoryEntity.toDomain(): Category {
         icon = this.icon,
         description = this.description,
         expectedPersonType = this.expectedPersonType,
-        createdAt = this.createdAt,
-        updatedAt = this.updatedAt
+        createdAt = Date(this.createdAt),
+        updatedAt = Date(this.updatedAt)
     )
 }
 
@@ -31,17 +32,18 @@ fun CategoryEntity.toDomain(): Category {
 fun Category.toCategoryEntity(parentId: Long? = null): CategoryEntity {
     return CategoryEntity(
         categoryId = this.categoryId,
-        parentCategoryId = parentId ?: this.parentCategoryId,
         name = this.name,
         color = this.color,
         isExpenseCategory = this.isExpenseCategory,
         icon = this.icon,
         description = this.description,
         expectedPersonType = this.expectedPersonType,
-        createdAt = this.createdAt,
-        updatedAt = this.updatedAt
+        parentCategoryId = parentId ?: this.parentCategoryId,
+        createdAt = this.createdAt.time,
+        updatedAt = this.updatedAt.time,
     )
 }
+
 
 /**
  * Converts a list of [CategoryEntity] to a [CategoryTree].

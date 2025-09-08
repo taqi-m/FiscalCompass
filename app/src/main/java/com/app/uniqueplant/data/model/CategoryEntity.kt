@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import java.util.Date
+import java.util.UUID
 
 @Keep
 @Entity(
@@ -25,6 +25,10 @@ data class CategoryEntity(
     @PrimaryKey(autoGenerate = true)
     val categoryId: Long = 0,
 
+    val firestoreId: String? = null,
+
+    val localId: String = UUID.randomUUID().toString(),
+
     val name: String,
 
     val color: Int = 0xFF000000.toInt(),
@@ -39,7 +43,14 @@ data class CategoryEntity(
 
     val parentCategoryId: Long? = null,
 
-    val createdAt: Date = Date(),
+    val parentCategoryFirestoreId: String? = null,
 
-    val updatedAt: Date = Date()
+    val createdAt: Long,
+
+    val updatedAt: Long,
+
+    // Sync tracking
+    val isSynced: Boolean = false,
+    val needsSync: Boolean = true,
+    val lastSyncedAt: Long? = null
 )

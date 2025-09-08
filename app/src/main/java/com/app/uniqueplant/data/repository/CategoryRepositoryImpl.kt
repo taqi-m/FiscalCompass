@@ -1,10 +1,10 @@
 package com.app.uniqueplant.data.repository
 
-import com.app.uniqueplant.data.datasource.local.dao.CategoryDao
 import com.app.uniqueplant.data.mapper.toCategoryEntity
 import com.app.uniqueplant.data.mapper.toCategoryTree
 import com.app.uniqueplant.data.mapper.toDomain
 import com.app.uniqueplant.data.mapper.toEntityList
+import com.app.uniqueplant.data.sources.local.dao.CategoryDao
 import com.app.uniqueplant.domain.model.Category
 import com.app.uniqueplant.domain.model.CategoryTree
 import com.app.uniqueplant.domain.repository.CategoryRepository
@@ -20,18 +20,18 @@ class CategoryRepositoryImpl @Inject constructor(
         val categoryEntity = category.toCategoryEntity()
         val existingCategory = categoryDao.getCategoryByName(categoryEntity.name)
         if (existingCategory == null) {
-            categoryDao.insertCategory(categoryEntity)
+            categoryDao.insert(categoryEntity)
             return category.categoryId
         }
         return -1
     }
 
     override suspend fun updateCategory(category: Category): Int {
-        return categoryDao.updateCategory(category.toCategoryEntity())
+        return categoryDao.update(category.toCategoryEntity())
     }
 
     override suspend fun deleteCategory(category: Category): Int {
-        return categoryDao.deleteCategory(category.toCategoryEntity())
+        return categoryDao.delete(category.toCategoryEntity())
     }
 
     override suspend fun getAllCategories(): List<Category> {

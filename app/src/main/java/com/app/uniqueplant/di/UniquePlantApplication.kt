@@ -1,6 +1,7 @@
 package com.app.uniqueplant.di
 
 import android.app.Application
+import com.app.uniqueplant.data.manager.AutoSyncManager
 import com.app.uniqueplant.ui.util.DataStoreManager
 import com.app.uniqueplant.ui.util.PreferenceUtil
 import com.google.firebase.FirebaseApp
@@ -15,6 +16,8 @@ class UniquePlantApplication : Application() {
 
     @Inject
     lateinit var dataStoreManager: DataStoreManager
+    @Inject
+    lateinit var autoSyncManager: AutoSyncManager
 
     // Companion object to hold the application scope
     companion object {
@@ -27,5 +30,7 @@ class UniquePlantApplication : Application() {
         FirebaseApp.initializeApp(this)
         // Initialize PreferenceUtil with the injected DataStoreManager and the applicationScope
         PreferenceUtil.initialize(dataStoreManager, applicationScope)
+
+        autoSyncManager.initialize(scope = applicationScope)
     }
 }

@@ -5,7 +5,8 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import java.util.Date
+import java.util.UUID
+
 @Keep
 @Entity(
     tableName = "expenses",
@@ -35,9 +36,11 @@ import java.util.Date
 data class ExpenseEntity(
     @PrimaryKey(autoGenerate = true)
     val expenseId: Long = 0,
+    val firestoreId: String? = null,  // Firestore document ID
+    val localId: String = UUID.randomUUID().toString(), // Unique local identifier
     val amount: Double,
     val description: String,
-    val date: Date,
+    val date: Long,
     val categoryId: Long,
     val userId: String,
     val personId: Long? = null, // Nullable if not associated with a person
@@ -46,6 +49,10 @@ data class ExpenseEntity(
     val receipt: String? = null, // URL to receipt image
     val isRecurring: Boolean = false,
     val recurringFrequency: String? = null, // daily, weekly, monthly, yearly
-    val createdAt: Date = Date(),
-    val updatedAt: Date = Date()
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis(),
+    // Sync tracking
+    val isSynced: Boolean = false,
+    val needsSync: Boolean = true,
+    val lastSyncedAt: Long? = null
 )
