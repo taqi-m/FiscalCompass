@@ -33,12 +33,17 @@ class AuthRepositoryImpl @Inject constructor(
             return@flow
         }
         val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
-        val userType = firebaseFirestore.collection("users")
+        val userInfo = firebaseFirestore.collection("users")
             .document(result.user?.uid ?: "")
-            .get().await().getString("userType")
+            .get().await()
+        val userType = userInfo.getString("userType")
         if (userType != null) {
             appPreferences.setUserLoggedIn(true)
             appPreferences.setUserType(userType)
+            appPreferences.setUserInfo(
+                name = userInfo.getString("name") ?: "User",
+                email = userInfo.getString("email") ?: ""
+            )
             userRepository.addUserToDatabase(
                 userId = result.user?.uid ?: "",
                 username = result.user?.displayName ?: "",
@@ -122,6 +127,12 @@ class AuthRepositoryImpl @Inject constructor(
         val uid = firebaseAuth.currentUser?.uid ?: ""
         if (uid.isEmpty()) {
             emit(Resource.Error("User not logged in"))
+            return@flow
+        }
+
+        val cachedInfo = appPreferences.getUserInfo()
+        if (cachedInfo.first != "User" || cachedInfo.second.isNotEmpty()) {
+            emit(Resource.Success(UserInfo(userName = cachedInfo.first, userEmail = cachedInfo.second)))
             return@flow
         }
 

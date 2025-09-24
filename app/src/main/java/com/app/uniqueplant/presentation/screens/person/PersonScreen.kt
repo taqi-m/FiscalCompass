@@ -216,13 +216,10 @@ fun PersonList(
                         },
                         chips = state.persons.filter { it.personType == personType },
                         onChipClick = { person ->
-                            onEvent(
-                                PersonEvent.OnPersonDialogToggle(
-                                    PersonDialogToggle.Edit(
-                                        person
-                                    )
-                                )
-                            )
+                            onEvent(PersonEvent.OnPersonDialogToggle(PersonDialogToggle.Edit(person)))
+                        },
+                        onChipLongClick = { person ->
+                            onEvent(PersonEvent.OnPersonDialogToggle(PersonDialogToggle.Delete(person)))
                         },
                         initiallyExpanded = false,
                         chipToLabel = { it.name }

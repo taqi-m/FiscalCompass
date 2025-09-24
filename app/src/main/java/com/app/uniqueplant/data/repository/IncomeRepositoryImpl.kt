@@ -29,23 +29,23 @@ class IncomeRepositoryImpl @Inject constructor(
 
     override suspend fun addIncome(income: Income): Long {
         val incomeEntity = income.toIncomeEntity()
-        val dbResult = incomeDao.insertIncome(incomeEntity)
+        val dbResult = incomeDao.insert(incomeEntity)
         autoSyncManager.triggerSync(SyncType.INCOMES)
         return dbResult
     }
 
     override suspend fun updateIncome(income: Income) {
-        incomeDao.updateIncome(income.toIncomeEntity())
+        incomeDao.update(income.toIncomeEntity())
     }
 
     override suspend fun deleteIncome(income: Income) {
-        incomeDao.deleteIncome(income.toIncomeEntity())
+        incomeDao.delete(income.toIncomeEntity())
     }
 
     override suspend fun deleteIncomeById(id: Long) {
         val income = incomeDao.getIncomeById(id)
             ?: throw IllegalArgumentException("Income with id $id not found")
-        incomeDao.deleteIncome(income)
+        incomeDao.delete(income)
     }
 
     override suspend fun getIncomeById(id: Long): Income? {

@@ -9,10 +9,10 @@ interface UserRepository {
 
     suspend fun isLoggedIn(): Boolean
 
-    suspend fun login(username: String, password: String): Result<Unit>
+    suspend fun markAsLoggedIn(userId: String)
 
-    suspend fun register(username: String, email: String, password: String): Result<Unit>
+    suspend fun register(username: String, email: String, password: String)
 
-    suspend fun logout(): Result<Unit>
+    suspend fun logout()
     suspend fun addUserToDatabase(userId: String, username: String, email: String, userType: String)
 }

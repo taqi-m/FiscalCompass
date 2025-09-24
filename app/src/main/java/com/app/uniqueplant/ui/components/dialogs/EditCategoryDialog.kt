@@ -49,7 +49,6 @@ fun EditCategoryDialog(
                     label = { Text(text = "Name") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
                         imeAction = ImeAction.Next
                     )
                 )
@@ -59,7 +58,6 @@ fun EditCategoryDialog(
                     label = { Text(text = "Description") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
                         imeAction = ImeAction.Done
                     )
                 )

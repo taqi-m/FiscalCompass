@@ -27,9 +27,9 @@ class ExpenseRepositoryImpl @Inject constructor(
 ) : ExpenseRepository {
 
     override suspend fun addExpense(expense: Expense): Long {
-        val expenseEntity = expense.toEntity()
+        val newExpense = expense.toEntity()
 
-        val dbResult = expenseDao.insert(expenseEntity)
+        val dbResult = expenseDao.insert(newExpense)
 
         autoSyncManager.triggerSync(SyncType.EXPENSES)
 
@@ -37,12 +37,20 @@ class ExpenseRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateExpense(expense: Expense) {
-        val expenseEntity = expense.toEntity()
-        expenseDao.update(expenseEntity)
+        val updatedExpense = expense.toEntity().copy(
+            updatedAt = System.currentTimeMillis(),
+            needsSync = true
+        )
+
+        expenseDao.update(updatedExpense)
+
+        autoSyncManager.triggerSync(SyncType.EXPENSES)
     }
 
     override suspend fun deleteExpense(expense: Expense) {
-        expenseDao.delete(expense.toEntity())
+        expenseDao.markAsDeleted(expense.expenseId, System.currentTimeMillis())
+//        expenseDao.delete(expense.toEntity())
+        autoSyncManager.triggerSync(SyncType.EXPENSES)
     }
 
     override suspend fun deleteExpenseById(id: Long) {

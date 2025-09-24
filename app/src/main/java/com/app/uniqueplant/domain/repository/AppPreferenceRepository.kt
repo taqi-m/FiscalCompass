@@ -8,6 +8,8 @@ interface AppPreferenceRepository {
     fun setUserLoggedIn(loggedIn: Boolean)
     fun setUserType(userType: String)
     fun getUserType(): String?
+    fun setUserInfo(name: String, email: String)
+    fun getUserInfo(): Pair<String, String>
     fun removeUserType()
     fun setDarkMode(darkMode: Boolean)
     fun isDefaultPersonTypesAdded(): Boolean

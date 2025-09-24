@@ -1,5 +1,10 @@
 package com.app.uniqueplant.ui.components.cards
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -19,13 +24,21 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Wallpapers
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun <T> ExpandableChipCard(
@@ -34,6 +47,7 @@ fun <T> ExpandableChipCard(
     trailingIcon: @Composable () -> Unit = {},
     chips: List<T>,
     onChipClick: (T) -> Unit,
+    onChipLongClick: (T) -> Unit,
     initiallyExpanded: Boolean = false,
     chipToLabel: (T) -> String
 ) {
@@ -41,11 +55,12 @@ fun <T> ExpandableChipCard(
         modifier = modifier,
         title = title,
         trailingIcon = trailingIcon,
-        initiallyExpanded = initiallyExpanded
+        initiallyExpanded = initiallyExpanded,
     ) {
         ChipCardItemsContainer(
             chips = chips,
             onChipClick = onChipClick,
+            onChipLongClick = onChipLongClick,
             chipToLabel = chipToLabel
         )
     }
@@ -60,12 +75,12 @@ fun ChipCardItemsContainer(
     title: String,
     trailingIcon: @Composable (() -> Unit)? = null,
     initiallyExpanded: Boolean = false,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors().copy(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
             contentColor = MaterialTheme.colorScheme.onSurface
         )
     ) {
@@ -96,6 +111,7 @@ fun ChipCardItemsContainer(
 fun <T> ChipCardItemsContainer(
     chips: List<T>,
     onChipClick: (T) -> Unit,
+    onChipLongClick: (T) -> Unit,
     chipToLabel: (T) -> String
 ) {
     if (chips.isEmpty()){
@@ -115,6 +131,7 @@ fun <T> ChipCardItemsContainer(
             ChipCardItem (
                 option = chip,
                 onChipClick = onChipClick,
+                onChipLongClick = onChipLongClick,
                 modifier = Modifier
                     .padding(4.dp),
                 label = chipToLabel(chip)
@@ -135,6 +152,7 @@ fun <T> ChipCardItemsContainer(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun <T> ChipCardItem(
     modifier: Modifier = Modifier,
@@ -142,12 +160,43 @@ fun <T> ChipCardItem(
     label: String,
     icon: @Composable (() -> Unit)? = null,
     onChipClick: (T) -> Unit,
+    onChipLongClick: (T) -> Unit
 
 ){
+    val context = LocalContext.current
+
+    val interactionSource = remember { MutableInteractionSource() }
+
+    val viewConfiguration = LocalViewConfiguration.current
+
+
+    LaunchedEffect(interactionSource) {
+        var isLongClick = false
+
+        interactionSource.interactions.collectLatest { interaction ->
+            when (interaction) {
+                is PressInteraction.Press -> {
+                    isLongClick = false
+                    delay(viewConfiguration.longPressTimeoutMillis)
+                    isLongClick = true
+                    onChipLongClick(option)
+                }
+
+                is PressInteraction.Release -> {
+                    if (isLongClick.not()) {
+                        onChipClick(option)
+                    }
+
+                }
+
+            }
+        }
+    }
     FilterChip(
+        onClick = { /* This is overridden by combinedClickable */ },
         modifier = modifier,
+        interactionSource = interactionSource,
         selected = false,
-        onClick = { onChipClick(option) },
         leadingIcon = icon,
         label = {
             Text(
@@ -160,19 +209,7 @@ fun <T> ChipCardItem(
     )
 }
 
-
-@Preview
-@Composable
-fun FlowRowChipsPreview() {
-    val chips = listOf("Overtime", "Salary", "Transport", "Chip 4", "Chip 5")
-    ChipCardItemsContainer<String>(
-        chips = chips,
-        onChipClick = {},
-        chipToLabel = { it }
-    )
-}
-
-@Preview
+@Preview(wallpaper = Wallpapers.RED_DOMINATED_EXAMPLE, showBackground = true)
 @Composable
 fun ExpandableChipCardPreview() {
     val chips = listOf("Chip 1", "Chip 2", "Chip 3", "Chip 4", "Chip 5")
@@ -198,6 +235,9 @@ fun ExpandableChipCardPreview() {
             chips = chips,
             onChipClick = { chip ->
                 // Handle chip click
+            },
+            onChipLongClick = { chip ->
+                // Handle chip long click
             },
             initiallyExpanded = true,
             chipToLabel = { it }

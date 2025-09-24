@@ -86,10 +86,12 @@ fun AppNavigation (
         ) { backStackEntry ->
             val authViewModel: AuthViewModel = hiltViewModel(backStackEntry)
             val authState by authViewModel.state.collectAsState()
+            val initializationStatus by authViewModel.initializationStatus.collectAsState()
 
             AuthScreen(
                 appNavController = navController,
                 state = authState,
+                initializationStatus = initializationStatus,
                 onEvent = authViewModel::onEvent,
             )
         }

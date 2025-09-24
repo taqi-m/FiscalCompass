@@ -5,7 +5,7 @@ import androidx.navigation.NavHostController
 
 data class UserInfo(
     val name: String = "John Doe",
-    val balance: Double = 45028.0,
+    val balance: Double = 0.0,
     val profilePictureUrl: String? = null,
 )
 

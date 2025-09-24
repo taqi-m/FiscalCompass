@@ -11,4 +11,8 @@ sealed class AuthEvent {
     object LoginClicked : AuthEvent()
     object SignUpClicked : AuthEvent()
     object SwitchState : AuthEvent()
+
+    object RetryInitialization : AuthEvent()
+    object SkipInitialization : AuthEvent()
+    data class CompleteInitialization(val appNavController: NavHostController) : AuthEvent()
 }

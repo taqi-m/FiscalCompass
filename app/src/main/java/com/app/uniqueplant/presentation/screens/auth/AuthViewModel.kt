@@ -3,6 +3,8 @@ package com.app.uniqueplant.presentation.screens.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import com.app.uniqueplant.data.manager.AppInitializationManager
+import com.app.uniqueplant.data.manager.SyncDependencyManager
 import com.app.uniqueplant.domain.model.Resource
 import com.app.uniqueplant.domain.usecase.auth.LoginUseCase
 import com.app.uniqueplant.domain.usecase.auth.SessionUseCase
@@ -20,11 +22,20 @@ import javax.inject.Inject
 class AuthViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val signUpUseCase: SignUpUseCase,
-    private val sessionUseCase: SessionUseCase
+    private val sessionUseCase: SessionUseCase,
+    private val initializationManager: AppInitializationManager,
+    private val dependencyManager: SyncDependencyManager
 ) : ViewModel() {
 
+    val initializationStatus = initializationManager.initializationStatus
     private val _state = MutableStateFlow(AuthScreenState())
+
     val state: StateFlow<AuthScreenState> = _state.asStateFlow()
+
+    init {
+        // Initialize the initialization manager
+        initializationManager.initialize(viewModelScope)
+    }
 
     fun resetFields() {
         _state.update {
@@ -61,17 +72,29 @@ class AuthViewModel @Inject constructor(
             }
 
             is AuthEvent.LoginSuccess -> {
-                navigateToHomeScreen(event.appNavController)
+                viewModelScope.launch { initializeApp(event.appNavController) }
+            }
+
+            is AuthEvent.CompleteInitialization -> {
+                navigateToHome(event.appNavController)
+            }
+
+            AuthEvent.RetryInitialization -> {
+                retryInitialization()
+            }
+
+            AuthEvent.SkipInitialization -> {
+                skipInitialization()
             }
         }
     }
 
-    private fun navigateToHomeScreen(appNavController: NavHostController) {
+
+    private fun navigateToHome(appNavController: NavHostController) {
         viewModelScope.launch {
             sessionUseCase.getUserType().collect { resource ->
                 when (resource) {
                     is Resource.Success -> {
-                        _state.update { it.copy(isLoading = false) }
                         var route: String = MainScreens.AdminHome.route
                         /*if (resource.data == "employee") {
                             route = MainScreens.EmployeeHome.route
@@ -87,13 +110,51 @@ class AuthViewModel @Inject constructor(
 
                     is Resource.Error -> {
                         // Handle error case, maybe show a message to the user
-                        _state.update { it.copy(error = resource.message ?: "Unknown error") }
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                error = resource.message ?: "Unknown error"
+                            )
+                        }
                     }
 
                     is Resource.Loading -> {
                         // Show loading state if needed
                     }
                 }
+            }
+        }
+    }
+
+
+    private suspend fun initializeApp(appNavController: NavHostController) {
+        _state.update { it.copy(isLoginSuccess = true) }
+        // Start initialization after successful login
+        val initSuccess = initializationManager.initializeApp()
+        if (initSuccess) {
+            _state.update { it.copy(isLoading = false) }
+            navigateToHome(appNavController)
+        } else {
+            _state.update {
+                it.copy(
+                    isLoading = false,
+                    error = initializationStatus.value.error ?: "Initialization failed"
+                )
+            }
+        }
+    }
+
+    // Add methods to handle initialization
+    fun retryInitialization() {
+        viewModelScope.launch {
+            initializationManager.retryInitialization()
+        }
+    }
+
+    fun skipInitialization() {
+        viewModelScope.launch {
+            sessionUseCase.getCurrentUser()?.uid?.let { userId ->
+                initializationManager.skipInitialization(userId)
             }
         }
     }
@@ -109,6 +170,7 @@ class AuthViewModel @Inject constructor(
                         is Resource.Success -> it.copy(
                             isLoading = false, isSuccess = true, error = ""
                         )
+
                         is Resource.Error -> it.copy(
                             isLoading = false, error = result.message ?: "Sign up failed"
                         )

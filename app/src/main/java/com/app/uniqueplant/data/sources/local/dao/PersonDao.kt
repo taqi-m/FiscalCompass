@@ -56,4 +56,49 @@ interface PersonDao {
             person?.firestoreId
         }.getOrNull()
     }
+
+    @Query("SELECT personId FROM persons WHERE localId = :localId LIMIT 1")
+    suspend fun getPersonIdByLocalId(localId: String?): Long?
+
+
+
+    /** Sync timestamp queries
+     *  These help in determining what data needs to be synced
+     *  between local database and remote server.
+     */
+    @Query(
+        """
+    SELECT MIN(createdAt)
+    FROM persons
+    WHERE needsSync = 1
+    """)
+    suspend fun getOldestUnsyncedPersonTimestamp(): Long?
+
+    @Query(
+        """
+    SELECT MAX(lastSyncedAt)
+    FROM persons
+    WHERE lastSyncedAt IS NOT NULL
+    """)
+    suspend fun getLatestSyncedPersonTimestamp(): Long?
+
+    @Query(
+        """
+    SELECT MAX(updatedAt)
+    FROM persons
+    """)
+    suspend fun getLatestLocalPersonUpdateTimestamp(): Long?
+
+    @Query(
+        """
+    SELECT COUNT(*)
+    FROM persons
+    WHERE updatedAt > :timestamp
+    """)
+    suspend fun getUpdatedPersonsSince(timestamp: Long): Int
+
+    @Query("SELECT * FROM persons WHERE firestoreId = :id LIMIT 1")
+    fun getPersonByFirestoreId(id: String): PersonEntity?
+
+
 }

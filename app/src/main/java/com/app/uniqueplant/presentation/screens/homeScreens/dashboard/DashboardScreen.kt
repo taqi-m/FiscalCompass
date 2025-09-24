@@ -288,7 +288,7 @@ private fun HeroActionButton(
         }
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.labelLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 4.dp)
         )

@@ -53,13 +53,17 @@ interface CategoryDao {
     @Query("SELECT * FROM categories WHERE isExpenseCategory = 1 ORDER BY name ASC")
     fun getExpenseCategories(): List<CategoryEntity>
 
+    /**
+     * Queries for sync
+     */
+
     @Query("SELECT * FROM categories WHERE firestoreId = :id LIMIT 1")
     suspend fun getCategoryByFirestoreId(id: String) : CategoryEntity?
 
     suspend fun getCategoryLocalId(categoryId: Long): String? {
         return runCatching {
             val category = getCategoryById(categoryId)
-            category?.firestoreId
+            category?.localId
         }.getOrNull()
     }
 
@@ -69,5 +73,12 @@ interface CategoryDao {
             category?.firestoreId
         }.getOrNull()
     }
+
+    @Query("SELECT categoryId FROM categories WHERE localId = :localId LIMIT 1")
+    suspend fun getCategoryIdByLocalId(localId: String): Long?
+
+
+    @Query("SELECT * FROM categories WHERE localId = :localId LIMIT 1")
+    suspend fun getCategoryByLocalId(localId: String): CategoryEntity?
 
 }

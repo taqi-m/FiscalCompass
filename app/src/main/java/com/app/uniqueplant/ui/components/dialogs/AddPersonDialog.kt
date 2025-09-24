@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.data.model.PersonType
 import com.app.uniqueplant.ui.components.input.GenericExposedDropDownMenu
@@ -55,7 +54,6 @@ fun AddPersonDialog(
                     label = { Text(text = "Name") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
                         imeAction = ImeAction.Next
                     )
                 )

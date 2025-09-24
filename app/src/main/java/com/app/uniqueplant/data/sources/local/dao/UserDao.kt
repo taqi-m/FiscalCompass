@@ -36,4 +36,7 @@ interface UserDao {
     
     @Query("SELECT * FROM users")
     fun getAllUsers(): Flow<List<UserEntity>>
+
+    @Query("UPDATE users SET lastLoginAt = :loginTime WHERE userId = :userId")
+    fun markUserAsLoggedIn(userId: String, loginTime: Long)
 }

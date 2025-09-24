@@ -110,10 +110,49 @@ interface ExpenseDao {
     @Query("UPDATE expenses SET needsSync = 1 WHERE expenseId = :expenseId")
     suspend fun markForSync(expenseId: Long)
 
+    @Query("UPDATE expenses SET isDeleted = 1, needsSync = 1, updatedAt = :timestamp WHERE expenseId = :expenseId")
+    suspend fun markAsDeleted(expenseId: Long, timestamp: Long = System.currentTimeMillis())
+
+
     @Query("SELECT COUNT(*) FROM expenses WHERE needsSync = 1")
     fun getUnsyncedExpenseCount(): Flow<Int>
 
     @Query("SELECT EXISTS(SELECT 1 FROM expenses WHERE needsSync = 1)")
     suspend fun hasUnsyncedData(): Boolean
+
+
+    /**
+     * Sync timestamp queries
+     * These help in determining what data needs to be synced
+     * between local database and remote server.
+     */
+
+    @Query("""
+        SELECT MIN(createdAt) 
+        FROM expenses 
+        WHERE userId = :userId AND needsSync = 1
+    """)
+    suspend fun getOldestUnsyncedExpenseTimestamp(userId: String): Long?
+
+    @Query("""
+        SELECT MAX(lastSyncedAt) 
+        FROM expenses 
+        WHERE userId = :userId AND lastSyncedAt IS NOT NULL
+    """)
+    suspend fun getLatestSyncedTimestamp(userId: String): Long?
+
+    @Query("""
+        SELECT MAX(updatedAt) 
+        FROM expenses 
+        WHERE userId = :userId
+    """)
+    suspend fun getLatestLocalUpdateTimestamp(userId: String): Long?
+
+    @Query("""
+        SELECT COUNT(*) 
+        FROM expenses 
+        WHERE userId = :userId AND updatedAt > :timestamp
+    """)
+    suspend fun getUpdatedExpensesSince(userId: String, timestamp: Long): Int
 
 }

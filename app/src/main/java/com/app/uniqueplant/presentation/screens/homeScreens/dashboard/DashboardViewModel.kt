@@ -33,7 +33,7 @@ class DashboardViewModel @Inject constructor(
                 loadUserInfo()
             }
             launch {
-                loadDefaultsUseCase.addDefaultCategories()
+//                loadDefaultsUseCase.addDefaultCategories()
             }
         }
     }

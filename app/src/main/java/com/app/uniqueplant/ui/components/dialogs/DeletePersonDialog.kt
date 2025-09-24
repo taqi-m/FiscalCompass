@@ -27,7 +27,7 @@ fun DeletePersonDialog(
         text = {
             Column {
                 Text(
-                    text = "Are you sure you want to delete the Person '$personName'? \n",
+                    text = "Are you sure to delete person: \n'$personName' \n",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.W500
 

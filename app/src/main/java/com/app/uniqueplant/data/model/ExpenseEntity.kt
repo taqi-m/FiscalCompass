@@ -52,6 +52,7 @@ data class ExpenseEntity(
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
     // Sync tracking
+    val isDeleted: Boolean = false,
     val isSynced: Boolean = false,
     val needsSync: Boolean = true,
     val lastSyncedAt: Long? = null

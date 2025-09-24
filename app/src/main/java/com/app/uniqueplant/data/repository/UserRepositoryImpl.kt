@@ -8,7 +8,6 @@ import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(
     private val userDao: UserDao,
-    private val prefRepository: PreferenceManager
 ): UserRepository {
     override suspend fun getUserId(): Long? {
         TODO("Not yet implemented")
@@ -26,39 +25,19 @@ class UserRepositoryImpl @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    override suspend fun login(
-        username: String,
-        password: String
-    ): Result<Unit> {
+    override suspend fun markAsLoggedIn(userId: String) {
+        userDao.markUserAsLoggedIn(userId, System.currentTimeMillis())
+    }
+
+    override suspend fun register(username: String, email: String, password: String) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun register(
-        username: String,
-        email: String,
-        password: String
-    ): Result<Unit> {
+    override suspend fun logout() {
         TODO("Not yet implemented")
     }
 
-    override suspend fun logout(): Result<Unit> {
-        TODO("Not yet implemented")
+    override suspend fun addUserToDatabase(userId: String, username: String, email: String, userType: String) {
+        userDao.insertUser(UserEntity(userId, username, email, userType))
     }
-
-    override suspend fun addUserToDatabase(
-        userId: String,
-        username: String,
-        email: String,
-        userType: String
-    ) {
-        userDao.insertUser(
-            UserEntity(
-                userId = userId,
-                username = username,
-                email = email,
-                userType = userType
-            )
-        )
-    }
-
 }

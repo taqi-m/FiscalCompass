@@ -16,13 +16,14 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface IncomeDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertIncome(incomeEntity: IncomeEntity): Long
-    
+    suspend fun insert(incomeEntity: IncomeEntity): Long
+
     @Update
-    suspend fun updateIncome(incomeEntity: IncomeEntity)
-    
+    suspend fun update(incomeEntity: IncomeEntity)
+
     @Delete
-    suspend fun deleteIncome(incomeEntity: IncomeEntity)
+    suspend fun delete(incomeEntity: IncomeEntity)
+
 
     @Query("SELECT * FROM incomes")
     fun getAllIncomes(): Flow<List<IncomeEntity>>
@@ -32,10 +33,10 @@ interface IncomeDao {
 
     @Query("SELECT * FROM incomes WHERE userId = :userId ORDER BY date DESC")
     fun getAllIncomesByUser(userId: String): Flow<List<IncomeEntity>>
-    
+
     @Query("SELECT * FROM incomes WHERE incomeId = :id")
     suspend fun getIncomeById(id: Long): IncomeEntity?
-    
+
     @Transaction
     @Query("SELECT * FROM incomes WHERE userId = :userId ORDER BY date DESC")
     fun getIncomesWithCategory(userId: String): Flow<List<IncomeWithCategoryDbo>>
@@ -44,7 +45,8 @@ interface IncomeDao {
     @Query("SELECT * FROM incomes WHERE incomeId = :id ORDER BY date DESC LIMIT 1")
     suspend fun getSingleFullIncome(id: Long): IncomeFullDbo
 
-    @Query("""
+    @Query(
+        """
         SELECT * FROM incomes
         WHERE (:personIds IS NULL OR personId IN (:personIds))
           AND (:categoryIds IS NULL OR categoryId IN (:categoryIds))
@@ -54,34 +56,48 @@ interface IncomeDao {
               OR (:startDate IS NULL AND :endDate IS NOT NULL AND date <= :endDate)
               OR (:startDate IS NOT NULL AND :endDate IS NOT NULL AND date BETWEEN :startDate AND :endDate)
           )
-    """)
+    """
+    )
     suspend fun getAllFullIncomesFiltered(
         personIds: List<Long>?,   // pass null to ignore
         categoryIds: List<Long>?, // pass null to ignore
         startDate: Long?,         // nullable → open start
         endDate: Long?            // nullable → open end
     ): List<IncomeEntity>
-    
+
     @Query("SELECT * FROM incomes WHERE userId = :userId AND date BETWEEN :startDate AND :endDate ORDER BY date DESC")
-    fun getIncomesByDateRange(userId: String, startDate: Long, endDate: Long): Flow<List<IncomeEntity>>
+    fun getIncomesByDateRange(
+        userId: String,
+        startDate: Long,
+        endDate: Long
+    ): Flow<List<IncomeEntity>>
 
     @Query("SELECT * FROM incomes WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
     fun getIncomesByDateRangeForAllUsers(startDate: Long, endDate: Long): Flow<List<IncomeEntity>>
-    
+
     @Query("SELECT * FROM incomes WHERE userId = :userId AND categoryId = :categoryId ORDER BY date DESC")
     fun getIncomesByCategory(userId: String, categoryId: Long): Flow<List<IncomeEntity>>
-    
+
     @Query("SELECT SUM(amount) FROM incomes WHERE userId = :userId")
     fun getTotalIncomeByUser(userId: String): Flow<Double?>
-    
+
     @Query("SELECT SUM(amount) FROM incomes WHERE userId = :userId AND date BETWEEN :startDate AND :endDate")
     fun getIncomeSumByDateRange(userId: String, startDate: Long, endDate: Long): Flow<Double?>
-    
+
     @Query("SELECT categoryId, SUM(amount) as total FROM incomes WHERE userId = :userId GROUP BY categoryId ORDER BY total DESC")
-    fun getIncomeSumByCategory(userId: String): Flow<Map<@MapColumn("categoryId") Long?, @MapColumn("total") Double>>
-    
+    fun getIncomeSumByCategory(userId: String): Flow<Map<@MapColumn("categoryId") Long?, @MapColumn(
+        "total"
+    ) Double>>
+
     @Query("SELECT COUNT(*) FROM incomes WHERE userId = :userId")
     suspend fun getIncomeCount(userId: String): Int
+
+    /**
+     * * Sync-related queries
+     */
+
+    @Query("UPDATE incomes SET isDeleted = 1, needsSync = 1, updatedAt = :timestamp WHERE incomeId = :incomeId")
+    suspend fun markAsDeleted(incomeId: Long, timestamp: Long = System.currentTimeMillis())
 
     @Query("SELECT COUNT(*) FROM incomes WHERE needsSync = 1")
     fun getUnsyncedIncomeCount(): Flow<Int>
@@ -91,6 +107,9 @@ interface IncomeDao {
 
     @Query("SELECT * FROM incomes WHERE userId = :userId AND needsSync = 1")
     suspend fun getUnsyncedIncomes(userId: String): List<IncomeEntity>
+
+    @Query("SELECT * FROM incomes WHERE localId = :localId")
+    suspend fun getIncomeByLocalId(localId: String): IncomeEntity?
 
     @Query(
         """
@@ -106,5 +125,41 @@ interface IncomeDao {
         isSynced: Boolean,
         lastSyncedAt: Long
     )
+
+    /** Sync timestamp queries
+     *  These help in determining what data needs to be synced
+     *  between local database and remote server.
+     */
+    @Query(
+        """
+    SELECT MIN(createdAt) 
+    FROM incomes 
+    WHERE userId = :userId AND needsSync = 1
+    """)
+    suspend fun getOldestUnsyncedIncomeTimestamp(userId: String): Long?
+
+    @Query(
+        """
+    SELECT MAX(lastSyncedAt) 
+    FROM incomes 
+    WHERE userId = :userId AND lastSyncedAt IS NOT NULL
+    """)
+    suspend fun getLatestSyncedTimestamp(userId: String): Long?
+
+    @Query(
+        """
+    SELECT MAX(updatedAt) 
+    FROM incomes 
+    WHERE userId = :userId
+    """)
+    suspend fun getLatestLocalUpdateTimestamp(userId: String): Long?
+
+    @Query(
+        """
+    SELECT COUNT(*) 
+    FROM incomes 
+    WHERE userId = :userId AND updatedAt > :timestamp
+    """)
+    suspend fun getUpdatedIncomesSince(userId: String, timestamp: Long): Int
 
 }

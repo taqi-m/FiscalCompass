@@ -17,7 +17,7 @@ data class UserEntity(
     val lastName: String? = null,
     val profilePictureUrl: String? = null,
     val currency: String = "USD",
-    val createdAt: Date = Date(),
-    val updatedAt: Date = Date(),
-    val lastLoginAt: Date? = null
+    val createdAt: Long = Date().time,
+    val updatedAt: Long = Date().time,
+    val lastLoginAt: Long? = null
 )

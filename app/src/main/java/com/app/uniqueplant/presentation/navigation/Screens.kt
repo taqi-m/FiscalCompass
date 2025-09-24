@@ -4,6 +4,7 @@ import com.app.uniqueplant.R
 
 sealed class MainScreens(val route: String) {
     object Auth : MainScreens("auth_screen")
+    object Initialization : MainScreens("initialization_screen")
     object Home : MainScreens("home_screen")
     object EmployeeHome : MainScreens("employee_screen")
     object AdminHome : MainScreens("admin_home_screen")

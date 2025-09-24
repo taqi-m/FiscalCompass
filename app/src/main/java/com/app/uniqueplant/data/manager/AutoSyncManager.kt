@@ -4,6 +4,7 @@ import android.util.Log
 import com.app.uniqueplant.data.sources.local.AppDatabase
 import com.app.uniqueplant.data.sources.preferences.PreferenceManager
 import com.app.uniqueplant.data.sources.remote.sync.EnhancedSyncManager
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -32,14 +33,15 @@ data class SyncStatus(
 @Singleton
 class AutoSyncManager @Inject constructor(
     private val syncManager: EnhancedSyncManager,
+    private val timestampManager: SyncTimestampManager,
+    private val dependencyManager: SyncDependencyManager,
     private val networkManager: NetworkManager,
     private val roomDatabase: AppDatabase,
-//    private val coroutineScope: CoroutineScope,
-    private val preferences: PreferenceManager
+    private val preferences: PreferenceManager,
+    private val auth: FirebaseAuth
 ) {
 
     private lateinit var coroutineScope: CoroutineScope
-
 
     private val _syncStatusFlow = MutableStateFlow(SyncStatus())
     val syncStatusFlow: StateFlow<SyncStatus> = _syncStatusFlow.asStateFlow()
@@ -56,26 +58,25 @@ class AutoSyncManager @Inject constructor(
     }
 
     fun triggerSync(syncType: SyncType) {
-        Log.d(
-            "AutoSyncManager",
-            "Triggering sync for type: $syncType"
-        )
+        Log.d("AutoSyncManager", "Triggering sync for type: $syncType")
         coroutineScope.launch {
+            val userId = auth.currentUser?.uid ?: return@launch
+
+            // Check if sync is allowed based on dependencies
+            if (!dependencyManager.canSync(syncType, userId)) {
+                Log.w("AutoSync", "Cannot sync $syncType: dependencies not satisfied")
+                return@launch
+            }
+
             syncChannel.send(syncType)
-            Log.d(
-                "AutoSyncManager",
-                "Sync request for $syncType sent to channel"
-            )
+            Log.d("AutoSyncManager", "Sync request for $syncType sent to channel")
         }
     }
 
     private fun startSyncProcessor() {
         coroutineScope.launch {
             for (syncType in syncChannel) {
-                Log.d(
-                    "AutoSyncManager",
-                    "Received sync request for type: $syncType"
-                )
+                Log.d("AutoSyncManager", "Received sync request for type: $syncType")
                 syncQueue.add(syncType)
                 processSyncQueue()
             }
@@ -83,61 +84,71 @@ class AutoSyncManager @Inject constructor(
     }
 
     private suspend fun processSyncQueue() {
-        Log.d(
-            "AutoSyncManager",
-            "Processing sync queue: $syncQueue | isSyncing=$isSyncing | isOnline=${networkManager.isOnline()}"
-        )
+        val userId = auth.currentUser?.uid ?: return
+
         if (syncQueue.isEmpty()) {
-            Log.d("AutoSyncManager", "Sync queue is empty, returning")
             return
         }
 
         if (!networkManager.isOnline()) {
-            Log.d("AutoSyncManager", "Network is offline, returning")
             return
         }
 
         if (isSyncing) {
-            Log.d("AutoSyncManager", "Already syncing, returning")
             return
         }
-        Log.d(
-            "AutoSyncManager",
-            "Starting sync process"
-        )
+
+        // Filter sync types based on dependencies
+        val allowedSyncTypes = syncQueue.filter { syncType ->
+            dependencyManager.canSync(syncType, userId)
+        }.toSet()
+
+        if (allowedSyncTypes.isEmpty()) {
+            Log.w("AutoSync", "No sync types allowed due to dependency constraints")
+            syncQueue.clear()
+            return
+        }
 
         isSyncing = true
         updateSyncStatus { copy(isSyncing = true) }
 
-        val typesToSync = syncQueue.toSet()
-
         try {
-            // Process all queued sync types
-            isSyncing = true
-            updateSyncStatus { copy(isSyncing = true) }
-
-            val typesToSync = syncQueue.toSet()
+            // Update queue with only allowed types and clear the original queue
             syncQueue.clear()
-            Log.d(
-                "AutoSyncManager",
-                "Starting sync for types: $typesToSync"
-            )
+            val typesToSync = allowedSyncTypes
+
+            Log.d("AutoSyncManager", "Starting sync for types: $typesToSync")
+
+            // Sort by priority (critical first)
+            val sortedTypes = typesToSync.sortedBy { type ->
+                when (type) {
+                    SyncType.CATEGORIES -> 0
+                    SyncType.PERSONS -> 1
+                    SyncType.EXPENSES -> 2
+                    SyncType.INCOMES -> 3
+                    SyncType.ALL -> 4
+                }
+            }
+
             when {
-                SyncType.ALL in typesToSync -> {
+                SyncType.ALL in sortedTypes -> {
                     syncManager.syncAllData()
+                    timestampManager.updateLastSyncTimestamp(SyncType.ALL)
                 }
                 else -> {
-                    typesToSync.forEach { type ->
+                    sortedTypes.forEach { type ->
                         when (type) {
-                            SyncType.EXPENSES -> syncManager.syncExpenses()
-                            SyncType.INCOMES -> syncManager.syncIncomes()
                             SyncType.CATEGORIES -> syncManager.syncCategories()
                             SyncType.PERSONS -> syncManager.syncPersons()
+                            SyncType.EXPENSES -> syncManager.syncExpenses()
+                            SyncType.INCOMES -> syncManager.syncIncomes()
                             SyncType.ALL -> { /* Already handled above */ }
                         }
                     }
                 }
             }
+
+            preferences.saveInt("sync_retry_count", 0)
 
             updateSyncStatus {
                 copy(
@@ -157,7 +168,7 @@ class AutoSyncManager @Inject constructor(
             }
 
             // Retry logic with exponential backoff
-            scheduleRetry(typesToSync)
+            scheduleRetry(allowedSyncTypes)
         } finally {
             isSyncing = false
         }
@@ -167,7 +178,7 @@ class AutoSyncManager @Inject constructor(
         coroutineScope.launch {
             delay(getRetryDelay())
             failedTypes.forEach { type ->
-                syncChannel.send(type)
+                triggerSync(type) // Use triggerSync to respect dependencies
             }
         }
     }
@@ -185,8 +196,11 @@ class AutoSyncManager @Inject constructor(
                 updateSyncStatus { copy(isOnline = isOnline) }
 
                 if (isOnline && hasUnsyncedData()) {
-                    // Auto-sync when network becomes available
-                    triggerSync(SyncType.ALL)
+                    // Auto-sync when network becomes available, but respect dependencies
+                    val userId = auth.currentUser?.uid
+                    if (userId != null && dependencyManager.isInitialized(SyncType.ALL, userId)) {
+                        triggerSync(SyncType.ALL)
+                    }
                 }
             }
         }
@@ -207,13 +221,19 @@ class AutoSyncManager @Inject constructor(
                 }
 
                 // Auto-trigger sync if there's unsynced data and we're online
+                val userId = auth.currentUser?.uid
                 if ((unsyncedExpenses > 0 || unsyncedIncomes > 0) &&
-                    networkManager.isOnline() && !isSyncing) {
+                    networkManager.isOnline() && !isSyncing && userId != null &&
+                    dependencyManager.isInitialized(SyncType.ALL, userId)) {
                     delay(2000) // Small delay to batch operations
                     triggerSync(SyncType.ALL)
                 }
             }.collect()
         }
+    }
+
+    fun getSyncInfo(): SyncInfo {
+        return timestampManager.getLastSyncInfo()
     }
 
     private fun updateSyncStatus(update: SyncStatus.() -> SyncStatus) {

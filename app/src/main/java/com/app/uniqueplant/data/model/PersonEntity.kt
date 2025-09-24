@@ -17,6 +17,8 @@ data class PersonEntity(
     val name: String,
     val personType: PersonType,
     val contact: String? = null,
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis(),
     // Sync tracking
     val isSynced: Boolean = false,
     val needsSync: Boolean = true,
