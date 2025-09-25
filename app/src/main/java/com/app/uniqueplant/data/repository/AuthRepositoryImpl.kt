@@ -1,5 +1,6 @@
 package com.app.uniqueplant.data.repository
 
+import com.app.uniqueplant.data.rbac.Role
 import com.app.uniqueplant.domain.model.Resource
 import com.app.uniqueplant.domain.repository.AppPreferenceRepository
 import com.app.uniqueplant.domain.repository.AuthRepository
@@ -119,6 +120,11 @@ class AuthRepositoryImpl @Inject constructor(
         } ?: emit(Resource.Error("User type not found"))
     }.catch { e ->
         emit(Resource.Error(e.message ?: "An error occurred while fetching user type"))
+    }
+
+    override fun getUserRole(): Role? {
+        val userType = appPreferences.getUserType() ?: return null
+        return Role.fromString(userType)
     }
 
     

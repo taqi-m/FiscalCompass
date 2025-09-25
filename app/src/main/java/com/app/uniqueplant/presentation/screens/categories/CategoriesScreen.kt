@@ -1,5 +1,6 @@
 package com.app.uniqueplant.presentation.screens.categories
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -38,8 +39,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.R
 import com.app.uniqueplant.presentation.mappers.toCategory
 import com.app.uniqueplant.presentation.model.CategoryUi
@@ -51,6 +54,7 @@ import com.app.uniqueplant.ui.components.dialogs.AddCategoryDialog
 import com.app.uniqueplant.ui.components.dialogs.DeleteCategoryDialog
 import com.app.uniqueplant.ui.components.dialogs.EditCategoryDialog
 import com.app.uniqueplant.ui.components.input.TransactionTypeSelector
+import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,7 +101,11 @@ fun CategoriesScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = it.calculateTopPadding(), start = it.calculateStartPadding(LocalLayoutDirection.current), end = it.calculateEndPadding(LocalLayoutDirection.current))
+                .padding(
+                    top = it.calculateTopPadding(),
+                    start = it.calculateStartPadding(LocalLayoutDirection.current),
+                    end = it.calculateEndPadding(LocalLayoutDirection.current)
+                )
                 .padding(horizontal = 8.dp),
             contentAlignment = Alignment.Center
         )
@@ -146,6 +154,42 @@ fun CategoriesScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = false, showSystemUi = false,
+    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL
+)
+@Composable
+fun CategoriesScreenPreview() {
+    val appNavController = rememberNavController()
+    val state = CategoriesScreenState(
+        uiState = UiState.Idle,
+        canAdd = true,
+        canEdit = true,
+        canDelete = true,
+        categories = CategoryUi.dummyGroup,
+        transactionType = TransactionType.EXPENSE,
+        currentDialog = CategoriesDialog.Hidden,
+        dialogState = CategoryDialogState.Idle
+    )
+    UniquePlantTheme { CategoriesScreen(appNavController = appNavController, state = state, onEvent = {}) }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL)
+@Composable
+fun CategoriesScreenNoAddPreview() {
+    val appNavController = rememberNavController()
+    val state = CategoriesScreenState(
+        uiState = UiState.Idle,
+        canAdd = false,
+        canEdit = true,
+        canDelete = true,
+        categories = CategoryUi.dummyGroup,
+        transactionType = TransactionType.EXPENSE,
+        currentDialog = CategoriesDialog.Hidden,
+        dialogState = CategoryDialogState.Idle
+    )
+    UniquePlantTheme { CategoriesScreen(appNavController = appNavController, state = state, onEvent = {}) }
+}
 
 @Composable
 fun CategoriesScreenContent(
@@ -156,27 +200,31 @@ fun CategoriesScreenContent(
         uiState = state.uiState,
         transactionType = state.transactionType,
         categoriesMap = state.categories,
-        onEditCategoryClicked = { category ->
-            onEvent(
-                CategoriesEvent.OnCategoryDialogToggle(
-                    CategoryDialogToggle.Edit(category)
+        onEditCategoryClicked = if (state.canEdit) {
+            { category ->
+                onEvent(CategoriesEvent.OnCategoryDialogToggle(CategoryDialogToggle.Edit(category)))
+            }
+        } else null,
+        onDeleteCategoryClicked = if (state.canDelete) {
+            { category ->
+                onEvent(
+                    CategoriesEvent.OnCategoryDialogToggle(
+                        CategoryDialogToggle.Delete(category)
+                    )
                 )
-            )
-        },
-        onDeleteCategoryClicked = { category ->
-            onEvent(
-                CategoriesEvent.OnCategoryDialogToggle(
-                    CategoryDialogToggle.Delete(category)
+            }
+        } else null,
+        onAddNewCategoryClicked = if (state.canAdd) {
+            { categoryGroup ->
+                onEvent(
+                    CategoriesEvent.OnCategoryDialogToggle(
+                        CategoryDialogToggle.Add(
+                            categoryGroup
+                        )
+                    )
                 )
-            )
-        },
-        onAddNewCategoryClicked = { categoryGroup ->
-            onEvent(
-                CategoriesEvent.OnCategoryDialogToggle(
-                    CategoryDialogToggle.Add(categoryGroup)
-                )
-            )
-        },
+            }
+        } else null,
         onTransactionTypeChange = { type ->
             onEvent(
                 CategoriesEvent.OnTransactionTypeChange(type)
@@ -191,9 +239,9 @@ fun CategoriesList(
     uiState: UiState,
     transactionType: TransactionType,
     categoriesMap: GroupedCategoryUi,
-    onEditCategoryClicked: (CategoryUi) -> Unit,
-    onDeleteCategoryClicked: (CategoryUi) -> Unit,
-    onAddNewCategoryClicked: (Long?) -> Unit,
+    onEditCategoryClicked: ((CategoryUi) -> Unit)? = null,
+    onDeleteCategoryClicked: ((CategoryUi) -> Unit)? = null,
+    onAddNewCategoryClicked: ((Long?) -> Unit)? = null,
     onTransactionTypeChange: (TransactionType) -> Unit,
 ) {
 
@@ -238,50 +286,50 @@ fun CategoriesList(
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp),
                             title = category.name,
-                            trailingIcon = {
-                                FilledTonalIconButton(
-                                    modifier = Modifier
-                                        .height(32.dp)
-                                        .width(32.dp),
-                                    shape = RoundedCornerShape(15),
-                                    onClick = {
-                                        onAddNewCategoryClicked(category.categoryId)
+                            trailingIcon = onAddNewCategoryClicked?.let {
+                                    {
+                                        FilledTonalIconButton(
+                                            modifier = Modifier
+                                                .height(32.dp)
+                                                .width(32.dp),
+                                            shape = RoundedCornerShape(15),
+                                            onClick = {
+                                                onAddNewCategoryClicked(category.categoryId)
+                                            }
+                                        ) {
+                                            Icon(
+                                                modifier = Modifier.height(24.dp),
+                                                imageVector = Icons.Default.Add,
+                                                contentDescription = "Filter"
+                                            )
+                                        }
                                     }
-                                ) {
-                                    Icon(
-                                        modifier = Modifier.height(24.dp),
-                                        imageVector = Icons.Default.Add,
-                                        contentDescription = "Filter"
-                                    )
-                                }
-                            },
+                                },
                             chips = categories,
-                            onChipClick = { category ->
-                                onEditCategoryClicked(category)
-                            },
-                            onChipLongClick = { category ->
-                                onDeleteCategoryClicked(category)
-                            },
+                            onChipClick = { category -> onEditCategoryClicked?.invoke(category) },
+                            onChipLongClick = { category -> onDeleteCategoryClicked?.invoke(category) },
                             initiallyExpanded = true,
                             chipToLabel = { it.name }
                         )
                     }
                 }
 
-                item {
-                    AddNewButton(
-                        modifier = Modifier
-                            .padding(vertical = 4.dp)
-                            .fillMaxWidth()
-                            .height(50.dp)
-                            .border(
-                                width = 2.dp,
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = RoundedCornerShape(4.dp)
-                            ), text = "Add New Category",
-                        onClick = {
-                            onAddNewCategoryClicked(null)
-                        })
+                onAddNewCategoryClicked?.let {
+                    item {
+                        AddNewButton(
+                            modifier = Modifier
+                                .padding(vertical = 4.dp)
+                                .fillMaxWidth()
+                                .height(50.dp)
+                                .border(
+                                    width = 2.dp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = RoundedCornerShape(4.dp)
+                                ), text = "Add New Category",
+                            onClick = {
+                                onAddNewCategoryClicked(null)
+                            })
+                    }
                 }
 
                 item {

@@ -31,6 +31,9 @@ sealed class CategoriesDialog {
 
 data class CategoriesScreenState(
     val uiState: UiState = UiState.Idle,
+    val canAdd: Boolean = false,
+    val canEdit: Boolean = false,
+    val canDelete: Boolean = false,
     val categories: GroupedCategoryUi = emptyMap(),
     val transactionType: TransactionType = TransactionType.EXPENSE,
     val currentDialog: CategoriesDialog = CategoriesDialog.Hidden,

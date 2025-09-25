@@ -1,8 +1,6 @@
 package com.app.uniqueplant.ui.components.cards
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
@@ -28,7 +26,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.text.font.FontWeight
@@ -44,10 +41,10 @@ import kotlinx.coroutines.flow.collectLatest
 fun <T> ExpandableChipCard(
     modifier: Modifier = Modifier,
     title: String,
-    trailingIcon: @Composable () -> Unit = {},
+    trailingIcon: (@Composable () -> Unit)? = null,
     chips: List<T>,
-    onChipClick: (T) -> Unit,
-    onChipLongClick: (T) -> Unit,
+    onChipClick: ((T) -> Unit)? = null,
+    onChipLongClick: ((T) -> Unit)? = null,
     initiallyExpanded: Boolean = false,
     chipToLabel: (T) -> String
 ) {
@@ -110,8 +107,8 @@ fun ChipCardItemsContainer(
 @Composable
 fun <T> ChipCardItemsContainer(
     chips: List<T>,
-    onChipClick: (T) -> Unit,
-    onChipLongClick: (T) -> Unit,
+    onChipClick: ((T) -> Unit)? = null,
+    onChipLongClick: ((T) -> Unit)? = null,
     chipToLabel: (T) -> String
 ) {
     if (chips.isEmpty()){
@@ -159,8 +156,8 @@ fun <T> ChipCardItem(
     option: T,
     label: String,
     icon: @Composable (() -> Unit)? = null,
-    onChipClick: (T) -> Unit,
-    onChipLongClick: (T) -> Unit
+    onChipClick: ((T) -> Unit)? = null,
+    onChipLongClick: ((T) -> Unit)? = null
 
 ){
     val context = LocalContext.current
@@ -179,12 +176,12 @@ fun <T> ChipCardItem(
                     isLongClick = false
                     delay(viewConfiguration.longPressTimeoutMillis)
                     isLongClick = true
-                    onChipLongClick(option)
+                    onChipLongClick?.invoke(option)
                 }
 
                 is PressInteraction.Release -> {
                     if (isLongClick.not()) {
-                        onChipClick(option)
+                        onChipClick?.invoke(option)
                     }
 
                 }
