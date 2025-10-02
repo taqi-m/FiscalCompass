@@ -1,18 +1,20 @@
 package com.app.uniqueplant.di
 
-import com.app.uniqueplant.data.repository.AppPreferenceRepositoryImpl
-import com.app.uniqueplant.data.repository.AuthRepositoryImpl
-import com.app.uniqueplant.data.repository.CategoryRepositoryImpl
-import com.app.uniqueplant.data.repository.ExpenseRepositoryImpl
-import com.app.uniqueplant.data.repository.IncomeRepositoryImpl
-import com.app.uniqueplant.data.repository.UserRepositoryImpl
-import com.app.uniqueplant.data.sources.preferences.PreferenceManager
-import com.app.uniqueplant.data.sources.preferences.PreferenceManagerImpl
+import com.app.uniqueplant.data.repositories.AppPreferenceRepositoryImpl
+import com.app.uniqueplant.data.repositories.AuthRepositoryImpl
+import com.app.uniqueplant.data.repositories.CategoryRepositoryImpl
+import com.app.uniqueplant.data.repositories.ExpenseRepositoryImpl
+import com.app.uniqueplant.data.repositories.IncomeRepositoryImpl
+import com.app.uniqueplant.data.repositories.UserRepositoryImpl
+import com.app.uniqueplant.data.local.preferences.PreferenceManager
+import com.app.uniqueplant.data.local.preferences.PreferenceManagerImpl
+import com.app.uniqueplant.data.repositories.PersonRepositoryImpl
 import com.app.uniqueplant.domain.repository.AppPreferenceRepository
 import com.app.uniqueplant.domain.repository.AuthRepository
 import com.app.uniqueplant.domain.repository.CategoryRepository
 import com.app.uniqueplant.domain.repository.ExpenseRepository
 import com.app.uniqueplant.domain.repository.IncomeRepository
+import com.app.uniqueplant.domain.repository.PersonRepository
 import com.app.uniqueplant.domain.repository.UserRepository
 import dagger.Binds
 import dagger.Module
@@ -52,6 +54,12 @@ abstract class RepositoryModule {
     abstract fun bindExpenseRepository(
         expenseRepositoryImpl: ExpenseRepositoryImpl
     ): ExpenseRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPersonRepository(
+        personRepositoryImpl: PersonRepositoryImpl
+    ): PersonRepository
 
     @Binds
     @Singleton

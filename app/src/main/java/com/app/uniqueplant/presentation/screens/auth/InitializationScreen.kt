@@ -25,7 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.R
-import com.app.uniqueplant.data.manager.InitializationStatus
+import com.app.uniqueplant.data.managers.InitializationStatus
 
 @Composable
 fun InitializationScreen(

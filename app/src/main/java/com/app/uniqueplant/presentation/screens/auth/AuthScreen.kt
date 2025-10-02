@@ -59,7 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.R
-import com.app.uniqueplant.data.manager.InitializationStatus
+import com.app.uniqueplant.data.managers.InitializationStatus
 import com.app.uniqueplant.ui.components.drawings.MountainSpikes
 import com.app.uniqueplant.ui.components.drawings.RelativeCircle
 import com.app.uniqueplant.ui.components.input.FormTextField

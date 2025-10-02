@@ -3,8 +3,8 @@ package com.app.uniqueplant.presentation.screens.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
-import com.app.uniqueplant.data.manager.AppInitializationManager
-import com.app.uniqueplant.data.manager.SyncDependencyManager
+import com.app.uniqueplant.data.managers.AppInitializationManager
+import com.app.uniqueplant.data.managers.SyncDependencyManager
 import com.app.uniqueplant.domain.model.Resource
 import com.app.uniqueplant.domain.usecase.auth.LoginUseCase
 import com.app.uniqueplant.domain.usecase.auth.SessionUseCase

@@ -1,6 +1,6 @@
 package com.app.uniqueplant.presentation.screens.person
 
-import com.app.uniqueplant.data.model.PersonType
+import com.app.uniqueplant.data.local.model.PersonType
 import com.app.uniqueplant.presentation.model.PersonUi
 import com.app.uniqueplant.presentation.screens.categories.UiState
 

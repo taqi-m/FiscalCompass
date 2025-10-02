@@ -60,6 +60,7 @@ dependencies {
     // Hilt dependencies
     implementation(libs.hilt.android)
     implementation(libs.androidx.material3.window.size.class1)
+    implementation(libs.androidx.compose.runtime)
     debugImplementation(libs.ui.tooling)
     ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)

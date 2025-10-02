@@ -1,8 +1,10 @@
 package com.app.uniqueplant.domain.usecase.person
 
-import com.app.uniqueplant.data.model.PersonEntity
-import com.app.uniqueplant.data.model.PersonType
-import com.app.uniqueplant.data.sources.local.dao.PersonDao
+import com.app.uniqueplant.data.local.model.PersonEntity
+import com.app.uniqueplant.data.local.model.PersonType
+import com.app.uniqueplant.data.local.dao.PersonDao
+import com.app.uniqueplant.domain.model.Person
+import com.app.uniqueplant.domain.repository.PersonRepository
 import com.app.uniqueplant.presentation.screens.categories.UiState
 import javax.inject.Inject
 
@@ -12,15 +14,16 @@ import javax.inject.Inject
 */
 
 class AddPersonUseCase @Inject constructor(
-    private val personDao: PersonDao
+    private val personRepository: PersonRepository
 ) {
     suspend operator fun invoke(name: String, personType: String): UiState {
         try{
-            val person = PersonEntity(
+            val person = Person(
+                personId = 0,
                 name = name,
-                personType = PersonType.fromString(personType)
+                personType = PersonType.valueOf(personType).name
             )
-            personDao.insert(person)
+            personRepository.addPerson(person)
             return UiState.Success("Person added successfully.")
         }catch (exception: Exception) {
             return UiState.Error(exception.message ?: "An error occurred while adding the person.")

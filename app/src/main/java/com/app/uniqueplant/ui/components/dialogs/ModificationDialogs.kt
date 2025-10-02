@@ -9,8 +9,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.app.uniqueplant.data.model.ExpenseEntity
-import com.app.uniqueplant.data.model.IncomeEntity
+import com.app.uniqueplant.data.local.model.ExpenseEntity
+import com.app.uniqueplant.data.local.model.IncomeEntity
 import com.app.uniqueplant.ui.components.input.DataEntryTextField
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import java.util.Date

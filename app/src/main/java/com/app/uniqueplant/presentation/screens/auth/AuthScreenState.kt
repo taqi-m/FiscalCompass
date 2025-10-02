@@ -1,6 +1,6 @@
 package com.app.uniqueplant.presentation.screens.auth
 
-import com.app.uniqueplant.data.manager.InitializationStatus
+import com.app.uniqueplant.data.managers.InitializationStatus
 
 data class AuthScreenState(
     val username: String = "",

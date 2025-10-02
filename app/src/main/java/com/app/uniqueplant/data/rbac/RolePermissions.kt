@@ -6,10 +6,14 @@ object RolePermissions {
             Permission.VIEW_CATEGORIES,
             Permission.ADD_CATEGORY,
             Permission.EDIT_CATEGORY,
-            Permission.DELETE_CATEGORY
+            Permission.DELETE_CATEGORY,
+            Permission.ADD_PERSON,
+            Permission.EDIT_PERSON,
+            Permission.DELETE_PERSON
         ),
         Role.EMPLOYEE to setOf(
-            Permission.VIEW_CATEGORIES
+            Permission.VIEW_CATEGORIES,
+            Permission.VIEW_PERSON
         )
     )
 

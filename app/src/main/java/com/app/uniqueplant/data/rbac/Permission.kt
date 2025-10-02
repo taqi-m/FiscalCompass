@@ -5,5 +5,9 @@ enum class Permission {
     ADD_CATEGORY,
     EDIT_CATEGORY,
     DELETE_CATEGORY,
+    VIEW_PERSON,
+    ADD_PERSON,
+    EDIT_PERSON,
+    DELETE_PERSON,
     // Add other permissions as needed
 }

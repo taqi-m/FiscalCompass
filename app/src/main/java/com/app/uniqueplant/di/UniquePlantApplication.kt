@@ -1,8 +1,8 @@
 package com.app.uniqueplant.di
 
 import android.app.Application
-import com.app.uniqueplant.data.manager.AppInitializationManager
-import com.app.uniqueplant.data.manager.AutoSyncManager
+import com.app.uniqueplant.data.managers.AppInitializationManager
+import com.app.uniqueplant.data.managers.AutoSyncManager
 import com.app.uniqueplant.ui.util.DataStoreManager
 import com.app.uniqueplant.ui.util.PreferenceUtil
 import com.google.firebase.FirebaseApp

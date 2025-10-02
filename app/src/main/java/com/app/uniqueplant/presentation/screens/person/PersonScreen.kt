@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.R
-import com.app.uniqueplant.data.model.PersonType
+import com.app.uniqueplant.data.local.model.PersonType
 import com.app.uniqueplant.presentation.screens.categories.UiState
 import com.app.uniqueplant.ui.components.LoadingProgress
 import com.app.uniqueplant.ui.components.cards.ExpandableChipCard

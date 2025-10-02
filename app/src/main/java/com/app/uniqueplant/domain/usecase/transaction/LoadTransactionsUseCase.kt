@@ -1,6 +1,6 @@
 package com.app.uniqueplant.domain.usecase.transaction
 
-import com.app.uniqueplant.data.mapper.toTransaction
+import com.app.uniqueplant.data.mappers.toTransaction
 import com.app.uniqueplant.domain.model.Transaction
 import com.app.uniqueplant.domain.repository.ExpenseRepository
 import com.app.uniqueplant.domain.repository.IncomeRepository

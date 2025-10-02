@@ -18,7 +18,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import com.app.uniqueplant.data.model.PersonType
+import com.app.uniqueplant.data.local.model.PersonType
 import com.app.uniqueplant.ui.components.input.GenericExposedDropDownMenu
 
 @Composable
