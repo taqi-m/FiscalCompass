@@ -42,8 +42,10 @@ data class ExpenseEntity(
     val description: String,
     val date: Long,
     val categoryId: Long,
+    val categoryFirestoreId: String? = null,
     val userId: String,
     val personId: Long? = null, // Nullable if not associated with a person
+    val personFirestoreId: String? = null,
     val paymentMethod: String? = null,
     val location: String? = null,
     val receipt: String? = null, // URL to receipt image
