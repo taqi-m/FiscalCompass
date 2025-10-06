@@ -183,23 +183,28 @@ class AuthViewModel @Inject constructor(
     fun signIn(email: String, password: String) {
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            loginUseCase(email, password).collect { result ->
-                _state.update {
-                    when (result) {
-                        is Resource.Loading -> it.copy(isLoading = true, error = "")
-                        is Resource.Success -> {
-                            it.copy(
-                                isSuccess = true,
-                                error = ""
-                            )
-                        }
+            val loginResult = loginUseCase(email, password)
+            handleResult(loginResult)
+        }
+    }
 
-                        is Resource.Error -> it.copy(
-                            isLoading = false,
-                            error = result.message ?: "Login failed"
-                        )
-                    }
-                }
+    private fun handleResult(result: Result<String>) {
+        if (result.isSuccess) {
+            _state.update {
+                it.copy(
+                    isLoading = false,
+                    isSuccess = true,
+                    isLoginSuccess = true,
+                    error = ""
+                )
+            }
+        } else {
+            _state.update {
+                it.copy(
+                    isLoading = false,
+                    isSuccess = false,
+                    error = result.exceptionOrNull()?.message ?: "Login failed"
+                )
             }
         }
     }

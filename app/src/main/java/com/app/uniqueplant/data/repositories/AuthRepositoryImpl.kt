@@ -26,39 +26,37 @@ class AuthRepositoryImpl @Inject constructor(
     private val appPreferences: AppPreferenceRepository
 ) : AuthRepository {
 
-    override fun loginUser(email: String, password: String): Flow<Resource<AuthResult>> = flow {
-        emit(Resource.Loading())
-        val isAlreadyLoggedIn = isUserLoggedIn()
-        if (isAlreadyLoggedIn) {
-            emit(Resource.Error("User is already logged in"))
-            return@flow
+    override suspend fun loginUser(email: String, password: String): Resource<AuthResult> {
+        try {
+            val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
+            val user = result.user
+            if (user == null) {
+                return Resource.Error("Authentication failed: User is null")
+            }
+            val userInfo = firebaseFirestore.collection("users")
+                .document(result.user?.uid ?: "")
+                .get().await()
+            val userType = userInfo.getString("userType")
+            if (userType != null) {
+                appPreferences.setUserLoggedIn(true)
+                appPreferences.setUserType(userType)
+                appPreferences.setUserInfo(
+                    name = userInfo.getString("name") ?: "User",
+                    email = userInfo.getString("email") ?: ""
+                )
+                userRepository.addUserToDatabase(
+                    userId = result.user?.uid ?: "",
+                    username = result.user?.displayName ?: "",
+                    email = email,
+                    userType = userType
+                )
+                return (Resource.Success(result))
+            } else {
+                return (Resource.Error("User type not found"))
+            }
+        } catch (e: Exception) {
+            return (Resource.Error(e.message ?: "An error occurred during login"))
         }
-        val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
-        val userInfo = firebaseFirestore.collection("users")
-            .document(result.user?.uid ?: "")
-            .get().await()
-        val userType = userInfo.getString("userType")
-        if (userType != null) {
-            appPreferences.setUserLoggedIn(true)
-            appPreferences.setUserType(userType)
-            appPreferences.setUserInfo(
-                name = userInfo.getString("name") ?: "User",
-                email = userInfo.getString("email") ?: ""
-            )
-            userRepository.addUserToDatabase(
-                userId = result.user?.uid ?: "",
-                username = result.user?.displayName ?: "",
-                email = email,
-                userType = userType
-            )
-            emit(Resource.Success(result))
-        } else {
-            emit(Resource.Error("User type not found"))
-            return@flow
-        }
-        emit(Resource.Success(result))
-    }.catch { e ->
-        emit(Resource.Error(e.message ?: "An error occurred during login"))
     }
 
     override fun signUpUser(
@@ -127,7 +125,7 @@ class AuthRepositoryImpl @Inject constructor(
         return Role.fromString(userType)
     }
 
-    
+
     override fun getUserInfo(): Flow<Resource<UserInfo>> = flow {
         emit(Resource.Loading())
         val uid = firebaseAuth.currentUser?.uid ?: ""

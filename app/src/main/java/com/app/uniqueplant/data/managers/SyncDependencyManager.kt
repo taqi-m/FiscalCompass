@@ -23,6 +23,8 @@ class SyncDependencyManager @Inject constructor(
     companion object {
         private const val PREF_CATEGORIES_INITIALIZED = "categories_initialized"
         private const val PREF_PERSONS_INITIALIZED = "persons_initialized"
+        private const val PREF_INCOMES_INITIALIZED = "incomes_initialized"
+        private const val PREF_EXPENSES_INITIALIZED = "expenses_initialized"
         private const val PREF_INITIAL_SYNC_COMPLETED = "initial_sync_completed"
     }
 
@@ -61,13 +63,19 @@ class SyncDependencyManager @Inject constructor(
             SyncType.CATEGORIES -> {
                 preferences.getBoolean(PREF_CATEGORIES_INITIALIZED, false)
             }
+
             SyncType.PERSONS -> {
                 preferences.getBoolean(PREF_PERSONS_INITIALIZED, false)
             }
-            SyncType.EXPENSES, SyncType.INCOMES -> {
-                isInitialized(SyncType.CATEGORIES, userId) &&
-                        isInitialized(SyncType.PERSONS, userId)
+
+            SyncType.EXPENSES -> {
+                preferences.getBoolean("${PREF_EXPENSES_INITIALIZED}_$userId", false)
             }
+
+            SyncType.INCOMES -> {
+                preferences.getBoolean("${PREF_INCOMES_INITIALIZED}_$userId", false)
+            }
+
             SyncType.ALL -> {
                 preferences.getBoolean("${PREF_INITIAL_SYNC_COMPLETED}_$userId", false)
             }
@@ -79,18 +87,24 @@ class SyncDependencyManager @Inject constructor(
             SyncType.CATEGORIES -> {
                 preferences.saveBoolean(PREF_CATEGORIES_INITIALIZED, true)
             }
+
             SyncType.PERSONS -> {
                 preferences.saveBoolean(PREF_PERSONS_INITIALIZED, true)
             }
+
+            SyncType.EXPENSES -> {
+                preferences.saveBoolean("${PREF_EXPENSES_INITIALIZED}_$userId", true)
+            }
+
+            SyncType.INCOMES -> {
+                preferences.saveBoolean("${PREF_INCOMES_INITIALIZED}_$userId", true)
+                if (isInitialized(SyncType.EXPENSES, userId)) {
+                    preferences.saveBoolean("${PREF_INITIAL_SYNC_COMPLETED}_$userId", true)
+                }
+            }
+
             SyncType.ALL -> {
                 preferences.saveBoolean("${PREF_INITIAL_SYNC_COMPLETED}_$userId", true)
-            }
-            else -> {
-                // For dependent types, check if all critical types are initialized
-                if (isInitialized(SyncType.CATEGORIES, userId) &&
-                    isInitialized(SyncType.PERSONS, userId)) {
-                    markAsInitialized(SyncType.ALL, userId)
-                }
             }
         }
     }
@@ -113,6 +127,8 @@ class SyncDependencyManager @Inject constructor(
     fun resetInitialization(userId: String) {
         preferences.remove(PREF_CATEGORIES_INITIALIZED)
         preferences.remove(PREF_PERSONS_INITIALIZED)
+        preferences.remove("${PREF_EXPENSES_INITIALIZED}_$userId")
+        preferences.remove("${PREF_INCOMES_INITIALIZED}_$userId")
         preferences.remove("${PREF_INITIAL_SYNC_COMPLETED}_$userId")
     }
 }
