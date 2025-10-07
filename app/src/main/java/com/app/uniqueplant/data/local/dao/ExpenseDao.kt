@@ -41,9 +41,11 @@ interface ExpenseDao {
     @Query("SELECT * FROM expenses WHERE expenseId = :id ORDER BY date DESC LIMIT 1")
     suspend fun getSingleFullExpense(id: Long): ExpenseFullDbo
 
-    @Query("""
+    @Query(
+        """
         SELECT * FROM expenses
-        WHERE (:personIds IS NULL OR personId IN (:personIds))
+        WHERE (:userIds IS NULL OR userId IN (:userIds))
+          AND (:personIds IS NULL OR personId IN (:personIds))
           AND (:categoryIds IS NULL OR categoryId IN (:categoryIds))
           AND (
               (:startDate IS NULL AND :endDate IS NULL)
@@ -51,13 +53,15 @@ interface ExpenseDao {
               OR (:startDate IS NULL AND :endDate IS NOT NULL AND date <= :endDate)
               OR (:startDate IS NOT NULL AND :endDate IS NOT NULL AND date BETWEEN :startDate AND :endDate)
           )
-    """)
-    suspend fun getAllFullExpensesFiltered(
-        personIds: List<Long>?,   // pass null to ignore
-        categoryIds: List<Long>?, // pass null to ignore
-        startDate: Long?,         // nullable → open start
-        endDate: Long?            // nullable → open end
-    ): List<ExpenseEntity>
+    """
+    )
+    fun getAllFullExpensesFiltered(
+        userIds: List<String>? = null,          // nullable to ignore
+        personIds: List<Long>? = null,   // pass null to ignore
+        categoryIds: List<Long>? = null, // pass null to ignore
+        startDate: Long? = null,         // nullable → open start
+        endDate: Long?  = null            // nullable → open end
+    ): Flow<List<ExpenseEntity>>
     
     @Query("SELECT * FROM expenses WHERE userId = :userId AND date BETWEEN :startDate AND :endDate ORDER BY date DESC")
     fun getExpensesByDateRange(userId: String, startDate: Long, endDate: Long): Flow<List<ExpenseEntity>>

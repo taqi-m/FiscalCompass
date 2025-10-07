@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.uniqueplant.domain.model.Transaction
-import com.app.uniqueplant.domain.usecase.LoadDefaultsUseCase
 import com.app.uniqueplant.domain.usecase.transaction.LoadTransactionsUseCase
 import com.app.uniqueplant.presentation.mappers.toUi
 import com.app.uniqueplant.presentation.screens.categories.UiState
@@ -19,7 +18,6 @@ import javax.inject.Inject
 @HiltViewModel
 class TransactionViewModel @Inject constructor(
     private val loadTransactionsUseCase: LoadTransactionsUseCase,
-    private val loadDefaultsUseCase: LoadDefaultsUseCase,
 ) : ViewModel() {
 
     private val _transactions = MutableStateFlow<List<Transaction>>(emptyList())

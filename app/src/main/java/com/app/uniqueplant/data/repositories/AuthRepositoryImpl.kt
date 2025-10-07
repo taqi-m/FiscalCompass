@@ -1,11 +1,13 @@
 package com.app.uniqueplant.data.repositories
 
+import com.app.uniqueplant.data.local.model.UserEntity
 import com.app.uniqueplant.data.rbac.Role
 import com.app.uniqueplant.domain.model.Resource
 import com.app.uniqueplant.domain.repository.AppPreferenceRepository
 import com.app.uniqueplant.domain.repository.AuthRepository
 import com.app.uniqueplant.domain.repository.UserRepository
 import com.app.uniqueplant.presentation.screens.settings.UserInfo
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -28,31 +30,35 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun loginUser(email: String, password: String): Resource<AuthResult> {
         try {
+            val currentTimestamp = Timestamp.now().toDate().time
             val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
             val user = result.user
             if (user == null) {
                 return Resource.Error("Authentication failed: User is null")
             }
+            val uuid = user.uid
             val userInfo = firebaseFirestore.collection("users")
-                .document(result.user?.uid ?: "")
+                .document(uuid)
                 .get().await()
             val userType = userInfo.getString("userType")
-            if (userType != null) {
+            val userName = userInfo.getString("name")
+            val userEmail = userInfo.getString("email")
+            if (userType != null && userName != null && userEmail != null) {
                 appPreferences.setUserLoggedIn(true)
                 appPreferences.setUserType(userType)
-                appPreferences.setUserInfo(
-                    name = userInfo.getString("name") ?: "User",
-                    email = userInfo.getString("email") ?: ""
-                )
-                userRepository.addUserToDatabase(
-                    userId = result.user?.uid ?: "",
-                    username = result.user?.displayName ?: "",
-                    email = email,
-                    userType = userType
+                appPreferences.setUserInfo(userName, userEmail)
+                userRepository.addUser(
+                    UserEntity(
+                        userId = uuid,
+                        username = userName,
+                        email = userEmail,
+                        userType = userType,
+                        lastLoginAt = currentTimestamp
+                    )
                 )
                 return (Resource.Success(result))
             } else {
-                return (Resource.Error("User type not found"))
+                return (Resource.Error("User data is incomplete"))
             }
         } catch (e: Exception) {
             return (Resource.Error(e.message ?: "An error occurred during login"))

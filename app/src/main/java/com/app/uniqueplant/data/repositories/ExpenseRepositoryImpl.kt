@@ -1,13 +1,10 @@
 package com.app.uniqueplant.data.repositories
 
 import com.app.uniqueplant.data.managers.AutoSyncManager
-import com.app.uniqueplant.data.managers.NetworkManager
 import com.app.uniqueplant.data.managers.SyncType
 import com.app.uniqueplant.data.mappers.toDomain
 import com.app.uniqueplant.data.mappers.toEntity
-import com.app.uniqueplant.data.local.dao.CategoryDao
 import com.app.uniqueplant.data.local.dao.ExpenseDao
-import com.app.uniqueplant.data.remote.sync.EnhancedSyncManager
 import com.app.uniqueplant.domain.model.Expense
 import com.app.uniqueplant.domain.model.ExpenseFull
 import com.app.uniqueplant.domain.model.ExpenseWithCategory
@@ -19,11 +16,7 @@ import javax.inject.Inject
 
 class ExpenseRepositoryImpl @Inject constructor(
     private val expenseDao: ExpenseDao,
-    private val categoryDao: CategoryDao,
-    private val syncManager: EnhancedSyncManager,
-    private val networkManager: NetworkManager,
     private val autoSyncManager: AutoSyncManager,
-//    private val coroutineScope: CoroutineScope
 ) : ExpenseRepository {
 
     override suspend fun addExpense(expense: Expense): Long {
@@ -116,21 +109,20 @@ class ExpenseRepositoryImpl @Inject constructor(
         return expenseDao.getSingleFullExpense(id).toDomain()
     }
 
-    override suspend fun getAllFullExpensesFiltered(
+    override suspend fun getAllFiltered(
+        userIds: List<String>?,
         personIds: List<Long>?,
         categoryIds: List<Long>?,
         startDate: Long?,
         endDate: Long?
-    ): List<Expense> {
+    ): Flow<List<Expense>> {
+        val userIds = userIds?.takeIf { it.isNotEmpty() }
         val personIds = personIds?.takeIf { it.isNotEmpty() }
         val categoryIds = categoryIds?.takeIf { it.isNotEmpty() }
-        return expenseDao.getAllFullExpensesFiltered(
-            personIds = personIds,
-            categoryIds = categoryIds,
-            startDate = startDate,
-            endDate = endDate
-        ).map {
-            it.toDomain()
+        return expenseDao.getAllFullExpensesFiltered(userIds, personIds, categoryIds, startDate, endDate).map {
+            it.map { expenseEntity ->
+                expenseEntity.toDomain()
+            }
         }
     }
 

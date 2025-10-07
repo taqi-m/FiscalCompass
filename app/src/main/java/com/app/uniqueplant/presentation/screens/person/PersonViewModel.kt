@@ -2,13 +2,16 @@ package com.app.uniqueplant.presentation.screens.person
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.uniqueplant.data.rbac.Permission
 import com.app.uniqueplant.domain.usecase.person.AddPersonUseCase
 import com.app.uniqueplant.domain.usecase.person.DeletePersonUseCase
 import com.app.uniqueplant.domain.usecase.person.GetAllPersonsUseCase
+import com.app.uniqueplant.domain.usecase.rbac.CheckPermissionUseCase
 import com.app.uniqueplant.presentation.mappers.toDomain
 import com.app.uniqueplant.presentation.mappers.toUi
 import com.app.uniqueplant.presentation.screens.categories.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,8 +22,13 @@ import javax.inject.Inject
 class PersonViewModel @Inject constructor(
     private val getAllPersonsUseCase: GetAllPersonsUseCase,
     private val addPersonUseCase: AddPersonUseCase,
-    private val deletePersonUseCase: DeletePersonUseCase
+    private val deletePersonUseCase: DeletePersonUseCase,
+    private val checkPermissionUseCase: CheckPermissionUseCase
 ) : ViewModel() {
+
+    private suspend fun checkPermission(permission: Permission): Boolean {
+        return checkPermissionUseCase(permission)
+    }
 
     private val _state = MutableStateFlow(PersonScreenState())
     val state: StateFlow<PersonScreenState> = _state.asStateFlow()
@@ -28,7 +36,13 @@ class PersonViewModel @Inject constructor(
     val coroutineScope = viewModelScope
 
     init {
-        coroutineScope.launch {
+        coroutineScope.launch(Dispatchers.IO) {
+            _state.value = _state.value.copy(
+                canAdd = checkPermission(Permission.ADD_PERSON),
+                canEdit = checkPermission(Permission.EDIT_PERSON),
+                canDelete = checkPermission(Permission.DELETE_PERSON),
+                uiState = UiState.Idle
+            )
             updatePeople()
         }
     }
@@ -38,7 +52,9 @@ class PersonViewModel @Inject constructor(
             is PersonEvent.OnUiReset -> {
                 updateState {
                     copy(
-                        uiState = UiState.Idle
+                        uiState = UiState.Idle,
+                        currentDialog = PersonDialog.Hidden,
+                        dialogState = PersonDialogState.Idle
                     )
                 }
             }
@@ -120,9 +136,7 @@ class PersonViewModel @Inject constructor(
                     )
                     updateState {
                         copy(
-                            uiState = updatedState,
-                            currentDialog = PersonDialog.Hidden,
-                            dialogState = PersonDialogState.Idle
+                            uiState = updatedState
                         )
                     }
                 }
@@ -145,9 +159,7 @@ class PersonViewModel @Inject constructor(
                     val updatedState = deletePersonUseCase.invoke(person)
                     updateState {
                         copy(
-                            uiState = updatedState,
-                            currentDialog = PersonDialog.Hidden,
-                            dialogState = PersonDialogState.Idle
+                            uiState = updatedState
                         )
                     }
                 }

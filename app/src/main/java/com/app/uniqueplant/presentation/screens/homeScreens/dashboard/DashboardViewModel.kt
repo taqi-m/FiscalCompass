@@ -3,7 +3,7 @@ package com.app.uniqueplant.presentation.screens.homeScreens.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.uniqueplant.domain.usecase.LoadDefaultsUseCase
-import com.app.uniqueplant.domain.usecase.LoadHomeUserInfo
+import com.app.uniqueplant.domain.usecase.analytics.LoadHomeUserInfoUC
 import com.app.uniqueplant.presentation.navigation.MainScreens
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     private val loadDefaultsUseCase: LoadDefaultsUseCase,
-    private val loadHomeUserInfo: LoadHomeUserInfo
+    private val loadHomeUserInfo: LoadHomeUserInfoUC
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DashboardScreenState())

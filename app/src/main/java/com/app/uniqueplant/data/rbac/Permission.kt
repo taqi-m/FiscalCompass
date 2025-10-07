@@ -10,4 +10,18 @@ enum class Permission {
     EDIT_PERSON,
     DELETE_PERSON,
     // Add other permissions as needed
+    VIEW_ALL_TRANSACTIONS,
+    VIEW_OWN_TRANSACTIONS,
+    ADD_TRANSACTION,
+    VIEW_EXPENSES,
+    ADD_EXPENSE,
+    EDIT_EXPENSE,
+    DELETE_EXPENSE,
+    VIEW_INCOMES,
+    ADD_INCOME,
+    EDIT_INCOME,
+    DELETE_INCOME,
+    VIEW_ALL_ANALYTICS,
+    VIEW_OWN_ANALYTICS,
+
 }

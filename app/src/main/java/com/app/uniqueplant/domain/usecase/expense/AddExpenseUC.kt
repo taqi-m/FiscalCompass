@@ -5,7 +5,7 @@ import com.app.uniqueplant.domain.repository.ExpenseRepository
 import com.app.uniqueplant.domain.usecase.auth.SessionUseCase
 import java.util.Date
 
-class AddExpenseUseCase(
+class AddExpenseUC(
     private val sessionUseCase: SessionUseCase,
     private val expenseRepository: ExpenseRepository
 ) {

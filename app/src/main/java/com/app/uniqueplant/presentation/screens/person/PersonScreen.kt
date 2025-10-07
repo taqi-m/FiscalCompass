@@ -1,5 +1,6 @@
 package com.app.uniqueplant.presentation.screens.person
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,11 +35,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.R
 import com.app.uniqueplant.data.local.model.PersonType
+import com.app.uniqueplant.presentation.model.PersonUi
 import com.app.uniqueplant.presentation.screens.categories.UiState
 import com.app.uniqueplant.ui.components.LoadingProgress
 import com.app.uniqueplant.ui.components.cards.ExpandableChipCard
 import com.app.uniqueplant.ui.components.dialogs.AddPersonDialog
 import com.app.uniqueplant.ui.components.dialogs.DeletePersonDialog
+import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -164,7 +167,23 @@ fun PersonScreenContent(
 ) {
     PersonList(
         state = state,
-        onEvent = onEvent
+        onEvent = onEvent,
+        onAddNewPersonClick = if (state.canAdd) {
+            { filterType ->
+                onEvent(PersonEvent.OnFilterTypeSelected(filterType))
+                onEvent(PersonEvent.OnPersonDialogToggle(PersonDialogToggle.Add))
+            }
+        } else null,
+        onEditPersonClick = if (state.canEdit) {
+            { person ->
+                onEvent(PersonEvent.OnPersonDialogToggle(PersonDialogToggle.Edit(person)))
+            }
+        } else null,
+        onDeletePersonClick = if (state.canDelete) {
+            { person ->
+                onEvent(PersonEvent.OnPersonDialogToggle(PersonDialogToggle.Delete(person)))
+            }
+        } else null,
     )
 
 }
@@ -174,6 +193,9 @@ fun PersonScreenContent(
 fun PersonList(
     state: PersonScreenState,
     onEvent: (PersonEvent) -> Unit,
+    onAddNewPersonClick: ((String) -> Unit)? = null,
+    onEditPersonClick: ((PersonUi) -> Unit)? = null,
+    onDeletePersonClick: ((PersonUi) -> Unit)? = null,
 ) {
     if (state.uiState is UiState.Loading) {
         LoadingProgress(
@@ -192,34 +214,31 @@ fun PersonList(
                         modifier = Modifier
                             .fillMaxWidth(),
                         title = personType,
-                        trailingIcon = {
-                            FilledTonalIconButton(
-                                modifier = Modifier
-                                    .height(32.dp)
-                                    .width(32.dp),
-                                shape = RoundedCornerShape(15),
-                                onClick = {
-                                    onEvent(PersonEvent.OnFilterTypeSelected(personType))
-                                    onEvent(
-                                        PersonEvent.OnPersonDialogToggle(
-                                            PersonDialogToggle.Add
-                                        )
+                        trailingIcon = onAddNewPersonClick?.let{
+                            {
+                                FilledTonalIconButton(
+                                    modifier = Modifier
+                                        .height(32.dp)
+                                        .width(32.dp),
+                                    shape = RoundedCornerShape(15),
+                                    onClick = {
+                                        onAddNewPersonClick(personType)
+                                    }
+                                ) {
+                                    Icon(
+                                        modifier = Modifier.height(24.dp),
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = "Filter"
                                     )
                                 }
-                            ) {
-                                Icon(
-                                    modifier = Modifier.height(24.dp),
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = "Filter"
-                                )
                             }
                         },
                         chips = state.persons.filter { it.personType == personType },
                         onChipClick = { person ->
-                            onEvent(PersonEvent.OnPersonDialogToggle(PersonDialogToggle.Edit(person)))
+                            onEditPersonClick?.invoke(person)
                         },
                         onChipLongClick = { person ->
-                            onEvent(PersonEvent.OnPersonDialogToggle(PersonDialogToggle.Delete(person)))
+                            onDeletePersonClick?.invoke(person)
                         },
                         initiallyExpanded = false,
                         chipToLabel = { it.name }
@@ -232,12 +251,16 @@ fun PersonList(
 }
 
 
-@Preview(showBackground = true)
+@Preview(showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL
+)
 @Composable
 fun PersonScreenPreview() {
-    PersonScreen(
-        appNavController = rememberNavController(),
-        state = PersonScreenState(),
-        onEvent = {},
-    )
+    UniquePlantTheme {
+        PersonScreen(
+            appNavController = rememberNavController(),
+            state = PersonScreenState(canAdd = true, persons = PersonUi.dummyList),
+            onEvent = {},
+        )
+    }
 }

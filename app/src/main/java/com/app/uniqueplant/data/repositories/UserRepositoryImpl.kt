@@ -8,7 +8,17 @@ import javax.inject.Inject
 class UserRepositoryImpl @Inject constructor(
     private val userDao: UserDao,
 ): UserRepository {
-    override suspend fun getUserId(): Long? {
+
+    override suspend fun addUser(user: UserEntity) {
+        userDao.insertUser(user)
+    }
+
+    override suspend fun getLoggedInUser(): UserEntity? {
+        val userId = userDao.getLoggedInUserId() ?: return null
+        return userDao.getUserById(userId)
+    }
+
+    override suspend fun getUserId(): String? {
         TODO("Not yet implemented")
     }
 

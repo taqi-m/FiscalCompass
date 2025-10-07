@@ -6,9 +6,6 @@ import androidx.room.Relation
 @Keep
 data class IncomeWithCategoryDbo(
     @Embedded val income: IncomeEntity,
-    @Relation(
-        parentColumn = "categoryId",
-        entityColumn = "categoryId"
-    )
+    @Relation(parentColumn = "categoryId", entityColumn = "categoryId")
     val category: CategoryEntity?
 )

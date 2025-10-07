@@ -11,6 +11,7 @@ import androidx.room.Update
 import com.app.uniqueplant.data.local.model.IncomeEntity
 import com.app.uniqueplant.data.local.model.IncomeFullDbo
 import com.app.uniqueplant.data.local.model.IncomeWithCategoryDbo
+import com.app.uniqueplant.data.local.model.IncomeWithPersonDbo
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -24,22 +25,43 @@ interface IncomeDao {
     @Delete
     suspend fun delete(incomeEntity: IncomeEntity)
 
-
     @Query("SELECT * FROM incomes")
-    fun getAllIncomes(): Flow<List<IncomeEntity>>
-
-    @Query("SELECT SUM(amount) FROM incomes WHERE date BETWEEN :startDate AND :endDate")
-    fun getIncomeSumByMonth(startDate: Long, endDate: Long): Flow<Double>
+    fun getAll(): Flow<List<IncomeEntity>>
 
     @Query("SELECT * FROM incomes WHERE userId = :userId ORDER BY date DESC")
-    fun getAllIncomesByUser(userId: String): Flow<List<IncomeEntity>>
+    fun getAllByUser(userId: String): Flow<List<IncomeEntity>>
+
+    @Query("SELECT * FROM incomes WHERE  categoryId = :categoryId ORDER BY date DESC")
+    fun getAllByCategory(categoryId: Long): Flow<List<IncomeEntity>>
+
+    @Query("SELECT * FROM incomes WHERE personId = :personId ORDER BY date DESC")
+    fun getAllByPerson(personId: Long): Flow<List<IncomeEntity>>
+
+    @Query("SELECT * FROM incomes WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
+    fun getAllByDateRange(startDate: Long, endDate: Long): Flow<List<IncomeEntity>>
 
     @Query("SELECT * FROM incomes WHERE incomeId = :id")
-    suspend fun getIncomeById(id: Long): IncomeEntity?
+    suspend fun getById(id: Long): IncomeEntity?
+
+    @Query("SELECT SUM(amount) FROM incomes WHERE userId = :userId")
+    fun getSumByUser(userId: String): Flow<Double?>
+
+    @Query("SELECT SUM(amount) FROM incomes WHERE date BETWEEN :startDate AND :endDate")
+    fun getSumByDateRange(startDate: Long, endDate: Long): Flow<Double>
+
+    @Query("SELECT categoryId, SUM(amount) as total FROM incomes WHERE userId = :userId GROUP BY categoryId ORDER BY total DESC")
+    fun getSumByCategory(userId: String): Flow<Map<@MapColumn("categoryId") Long?, @MapColumn("total") Double>>
+
+    @Query("SELECT SUM(amount) FROM incomes WHERE personId = :personId")
+    fun getSumByPerson(personId: Long): Flow<Double>
 
     @Transaction
     @Query("SELECT * FROM incomes WHERE userId = :userId ORDER BY date DESC")
     fun getIncomesWithCategory(userId: String): Flow<List<IncomeWithCategoryDbo>>
+
+    @Transaction
+    @Query("SELECT * FROM incomes WHERE personId = :personId ORDER BY date DESC")
+    fun getIncomesWithPerson(personId: String): Flow<List<IncomeWithPersonDbo>>
 
     @Transaction
     @Query("SELECT * FROM incomes WHERE incomeId = :id ORDER BY date DESC LIMIT 1")
@@ -48,7 +70,8 @@ interface IncomeDao {
     @Query(
         """
         SELECT * FROM incomes
-        WHERE (:personIds IS NULL OR personId IN (:personIds))
+        WHERE (:userIds IS NULL OR userId IN (:userIds))
+          AND (:personIds IS NULL OR personId IN (:personIds))
           AND (:categoryIds IS NULL OR categoryId IN (:categoryIds))
           AND (
               (:startDate IS NULL AND :endDate IS NULL)
@@ -58,36 +81,13 @@ interface IncomeDao {
           )
     """
     )
-    suspend fun getAllFullIncomesFiltered(
-        personIds: List<Long>?,   // pass null to ignore
-        categoryIds: List<Long>?, // pass null to ignore
-        startDate: Long?,         // nullable → open start
-        endDate: Long?            // nullable → open end
-    ): List<IncomeEntity>
-
-    @Query("SELECT * FROM incomes WHERE userId = :userId AND date BETWEEN :startDate AND :endDate ORDER BY date DESC")
-    fun getIncomesByDateRange(
-        userId: String,
-        startDate: Long,
-        endDate: Long
+    fun getAllFiltered(
+        userIds: List<String>? = null,          // nullable to ignore
+        personIds: List<Long>? = null,   // pass null to ignore
+        categoryIds: List<Long>? = null, // pass null to ignore
+        startDate: Long? = null,         // nullable → open start
+        endDate: Long?  = null            // nullable → open end
     ): Flow<List<IncomeEntity>>
-
-    @Query("SELECT * FROM incomes WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
-    fun getIncomesByDateRangeForAllUsers(startDate: Long, endDate: Long): Flow<List<IncomeEntity>>
-
-    @Query("SELECT * FROM incomes WHERE userId = :userId AND categoryId = :categoryId ORDER BY date DESC")
-    fun getIncomesByCategory(userId: String, categoryId: Long): Flow<List<IncomeEntity>>
-
-    @Query("SELECT SUM(amount) FROM incomes WHERE userId = :userId")
-    fun getTotalIncomeByUser(userId: String): Flow<Double?>
-
-    @Query("SELECT SUM(amount) FROM incomes WHERE userId = :userId AND date BETWEEN :startDate AND :endDate")
-    fun getIncomeSumByDateRange(userId: String, startDate: Long, endDate: Long): Flow<Double?>
-
-    @Query("SELECT categoryId, SUM(amount) as total FROM incomes WHERE userId = :userId GROUP BY categoryId ORDER BY total DESC")
-    fun getIncomeSumByCategory(userId: String): Flow<Map<@MapColumn("categoryId") Long?, @MapColumn(
-        "total"
-    ) Double>>
 
     @Query("SELECT COUNT(*) FROM incomes WHERE userId = :userId")
     suspend fun getIncomeCount(userId: String): Int
@@ -114,17 +114,11 @@ interface IncomeDao {
     @Query(
         """
         UPDATE incomes 
-        SET firestoreId = :firestoreId, isSynced = :isSynced, 
-            needsSync = 0, lastSyncedAt = :lastSyncedAt 
+        SET firestoreId = :firestoreId, isSynced = :isSynced, needsSync = 0, lastSyncedAt = :lastSyncedAt 
         WHERE incomeId = :incomeId
     """
     )
-    suspend fun updateSyncStatus(
-        incomeId: Long,
-        firestoreId: String,
-        isSynced: Boolean,
-        lastSyncedAt: Long
-    )
+    suspend fun updateSyncStatus(incomeId: Long, firestoreId: String, isSynced: Boolean, lastSyncedAt: Long)
 
     /** Sync timestamp queries
      *  These help in determining what data needs to be synced
@@ -135,7 +129,8 @@ interface IncomeDao {
     SELECT MIN(createdAt) 
     FROM incomes 
     WHERE userId = :userId AND needsSync = 1
-    """)
+    """
+    )
     suspend fun getOldestUnsyncedIncomeTimestamp(userId: String): Long?
 
     @Query(
@@ -143,7 +138,8 @@ interface IncomeDao {
     SELECT MAX(lastSyncedAt) 
     FROM incomes 
     WHERE userId = :userId AND lastSyncedAt IS NOT NULL
-    """)
+    """
+    )
     suspend fun getLatestSyncedTimestamp(userId: String): Long?
 
     @Query(
@@ -151,7 +147,8 @@ interface IncomeDao {
     SELECT MAX(updatedAt) 
     FROM incomes 
     WHERE userId = :userId
-    """)
+    """
+    )
     suspend fun getLatestLocalUpdateTimestamp(userId: String): Long?
 
     @Query(
@@ -159,7 +156,8 @@ interface IncomeDao {
     SELECT COUNT(*) 
     FROM incomes 
     WHERE userId = :userId AND updatedAt > :timestamp
-    """)
+    """
+    )
     suspend fun getUpdatedIncomesSince(userId: String, timestamp: Long): Int
 
 }

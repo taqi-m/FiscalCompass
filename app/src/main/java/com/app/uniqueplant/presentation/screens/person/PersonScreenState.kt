@@ -24,5 +24,8 @@ data class PersonScreenState(
     val selectedType: String = PersonType.CUSTOMER.name,
     val persons: List<PersonUi> = emptyList(),
     val currentDialog: PersonDialog = PersonDialog.Hidden,
-    val dialogState: PersonDialogState = PersonDialogState.Idle
+    val dialogState: PersonDialogState = PersonDialogState.Idle,
+    val canAdd: Boolean = false ,
+    val canEdit: Boolean = false,
+    val canDelete: Boolean = false
 )

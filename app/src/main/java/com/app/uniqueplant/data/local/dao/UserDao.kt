@@ -24,6 +24,8 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE userId = :id")
     suspend fun getUserById(id: String): UserEntity?
 
+    @Query("SELECT userId FROM users ORDER BY lastLoginAt DESC LIMIT 1")
+    suspend fun getLoggedInUserId(): String?
     
     @Query("SELECT * FROM users WHERE username = :username")
     suspend fun getUserByUsername(username: String): UserEntity?

@@ -36,25 +36,29 @@ class IncomeRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteIncomeById(id: Long) {
-        val income = incomeDao.getIncomeById(id)
+        val income = incomeDao.getById(id)
             ?: throw IllegalArgumentException("Income with id $id not found")
         incomeDao.delete(income)
     }
 
     override suspend fun getIncomeById(id: Long): Income? {
-        return incomeDao.getIncomeById(id)?.toDomain()
+        return incomeDao.getById(id)?.toDomain()
     }
 
     override suspend fun getAllIncomes(): Flow<List<Income>> {
-        return incomeDao.getAllIncomes().map {
+        return incomeDao.getAll().map {
             it.map { incomeEntity ->
                 incomeEntity.toDomain()
             }
         }
     }
 
-    override suspend fun getIncomesByUser(userId: Long): Flow<List<Income>> {
-        TODO("Not yet implemented")
+    override suspend fun getIncomesByUser(userId: String): Flow<List<Income>> {
+        return incomeDao.getAllByUser(userId).map {
+            it.map { incomeEntity ->
+                incomeEntity.toDomain()
+            }
+        }
     }
 
     override suspend fun getIncomesByCategory(categoryId: Long): List<Income> {
@@ -73,21 +77,14 @@ class IncomeRepositoryImpl @Inject constructor(
         return incomeDao.getSingleFullIncome(id).toDomain()
     }
 
-    override suspend fun getAllFullIncomesFiltered(
-        personIds: List<Long>?,
-        categoryIds: List<Long>?,
-        startDate: Long?,
-        endDate: Long?
-    ): List<Income> {
+    override suspend fun getAllFiltered(userIds: List<String>? ,personIds: List<Long>?, categoryIds: List<Long>?, startDate: Long?, endDate: Long?): Flow<List<Income>> {
+        val userIds = userIds?.takeIf { it.isNotEmpty() }
         val personIds = personIds?.takeIf { it.isNotEmpty() }
         val categoryIds = categoryIds?.takeIf { it.isNotEmpty() }
-        return incomeDao.getAllFullIncomesFiltered(
-            personIds = personIds,
-            categoryIds = categoryIds,
-            startDate = startDate,
-            endDate = endDate
-        ).map {
-            it.toDomain()
+        return incomeDao.getAllFiltered(userIds, personIds, categoryIds, startDate, endDate).map {
+            it.map { incomeEntity ->
+                incomeEntity.toDomain()
+            }
         }
     }
 
@@ -96,18 +93,19 @@ class IncomeRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getIncomesByMonth(month: Int, year: Int): Flow<List<Income>> {
-        return incomeDao.getIncomesByDateRangeForAllUsers(
-            startDate = Calendar.getInstance().apply {
-                set(Calendar.MONTH, month)
-                set(Calendar.YEAR, year)
-                set(Calendar.DAY_OF_MONTH, 1)
-            }.time.time,
-            endDate = Calendar.getInstance().apply {
-                set(Calendar.MONTH, month)
-                set(Calendar.YEAR, year)
-                set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
-            }.time.time
-        ).map {
+        val calendar = Calendar.getInstance()
+        val startDate = calendar.apply {
+            set(Calendar.MONTH, month)
+            set(Calendar.YEAR, year)
+            set(Calendar.DAY_OF_MONTH, 1)
+        }.time.time
+        val endDate = calendar.apply {
+            set(Calendar.MONTH, month)
+            set(Calendar.YEAR, year)
+            set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
+        }.time.time
+
+        return incomeDao.getAllByDateRange(startDate, endDate).map {
             it.map { incomeEntity ->
                 incomeEntity.toDomain()
             }
@@ -115,7 +113,7 @@ class IncomeRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getIncomeSumByMonth(month: Int, year: Int): Flow<Double> {
-        return incomeDao.getIncomeSumByMonth(
+        return incomeDao.getSumByDateRange(
             startDate = Calendar.getInstance().apply {
                 set(Calendar.MONTH, month)
                 set(Calendar.YEAR, year)
@@ -129,10 +127,11 @@ class IncomeRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun getIncomesByDateRange(
-        startDate: String,
-        endDate: String
-    ): List<Income> {
+    override suspend fun getIncomesByDateRange(startDate: String, endDate: String): List<Income> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getIncomesByDateRangeAndUser(startDate: String, endDate: String, userId: String): List<Income> {
         TODO("Not yet implemented")
     }
 }

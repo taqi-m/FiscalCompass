@@ -9,11 +9,19 @@ object RolePermissions {
             Permission.DELETE_CATEGORY,
             Permission.ADD_PERSON,
             Permission.EDIT_PERSON,
-            Permission.DELETE_PERSON
+            Permission.DELETE_PERSON,
+            Permission.VIEW_ALL_TRANSACTIONS,
+            Permission.VIEW_OWN_TRANSACTIONS,
+            Permission.ADD_TRANSACTION,
+            Permission.VIEW_ALL_ANALYTICS,
+            Permission.VIEW_OWN_ANALYTICS
         ),
         Role.EMPLOYEE to setOf(
             Permission.VIEW_CATEGORIES,
-            Permission.VIEW_PERSON
+            Permission.VIEW_PERSON,
+            Permission.VIEW_OWN_TRANSACTIONS,
+            Permission.ADD_TRANSACTION,
+            Permission.VIEW_OWN_ANALYTICS
         )
     )
 

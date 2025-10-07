@@ -1,7 +1,14 @@
 package com.app.uniqueplant.domain.repository
 
+import com.app.uniqueplant.data.local.model.UserEntity
+
 interface UserRepository {
-    suspend fun getUserId(): Long?
+
+    suspend fun addUser(user: UserEntity)
+
+    suspend fun getLoggedInUser(): UserEntity?
+
+    suspend fun getUserId(): String?
 
     suspend fun getUsername(): String?
 

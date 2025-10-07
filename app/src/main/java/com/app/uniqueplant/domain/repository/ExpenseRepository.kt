@@ -3,6 +3,7 @@ package com.app.uniqueplant.domain.repository
 import com.app.uniqueplant.domain.model.Expense
 import com.app.uniqueplant.domain.model.ExpenseFull
 import com.app.uniqueplant.domain.model.ExpenseWithCategory
+import com.app.uniqueplant.domain.model.Income
 import kotlinx.coroutines.flow.Flow
 
 interface ExpenseRepository {
@@ -28,12 +29,13 @@ interface ExpenseRepository {
 
     suspend fun getSingleFulExpenseById(id: Long): ExpenseFull
 
-    suspend fun getAllFullExpensesFiltered(
-        personIds: List<Long>?,   // pass null to ignore
-        categoryIds: List<Long>?, // pass null to ignore
-        startDate: Long?,       // nullable → open start
-        endDate: Long?          // nullable → open end
-    ): List<Expense>
+    suspend fun getAllFiltered(
+        userIds: List<String>? = emptyList() ,
+        personIds: List<Long>? = emptyList(),   // pass null to ignore
+        categoryIds: List<Long>? = emptyList(),  // pass null to ignore
+        startDate: Long? = null,       // nullable → open start
+        endDate: Long? = null          // nullable → open end
+    ): Flow<List<Expense>>
 
     suspend fun getTotalExpenses(): Double
 
