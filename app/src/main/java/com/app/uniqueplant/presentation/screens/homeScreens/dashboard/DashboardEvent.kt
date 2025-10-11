@@ -10,4 +10,7 @@ sealed class DashboardEvent {
     object OnCategoriesClicked : DashboardEvent()
     object OnPersonsClicked : DashboardEvent()
     object OnJobsClicked : DashboardEvent()
+    object OnSynClicked : DashboardEvent() {
+
+    }
 }

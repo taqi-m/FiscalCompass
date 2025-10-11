@@ -28,11 +28,17 @@ class IncomeRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateIncome(income: Income) {
-        incomeDao.update(income.toIncomeEntity())
+        val updatedIncome = income.toIncomeEntity().copy(
+            updatedAt = System.currentTimeMillis(),
+            needsSync = true
+        )
+        incomeDao.update(updatedIncome)
+        autoSyncManager.triggerSync(SyncType.INCOMES)
     }
 
     override suspend fun deleteIncome(income: Income) {
-        incomeDao.delete(income.toIncomeEntity())
+        incomeDao.markAsDeleted(income.incomeId, System.currentTimeMillis())
+        autoSyncManager.triggerSync(SyncType.INCOMES)
     }
 
     override suspend fun deleteIncomeById(id: Long) {

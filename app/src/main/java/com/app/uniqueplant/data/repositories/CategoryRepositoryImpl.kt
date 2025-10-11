@@ -53,7 +53,9 @@ class CategoryRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteCategory(category: Category): Int {
-        return categoryDao.delete(category.toCategoryEntity())
+        categoryDao.delete(category.toCategoryEntity())
+        autoSyncManager.triggerSync(SyncType.CATEGORIES)
+        return 1
     }
 
     override suspend fun getAllCategories(): List<Category> {

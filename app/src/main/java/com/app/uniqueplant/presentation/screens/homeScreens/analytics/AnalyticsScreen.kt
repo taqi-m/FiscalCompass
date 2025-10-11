@@ -23,7 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.app.uniqueplant.R
 import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
+import com.app.uniqueplant.ui.components.cards.CardWithIcon
 
 @Composable
 fun AnalyticsScreen(
@@ -39,6 +41,13 @@ fun AnalyticsScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
+        CardWithIcon(
+            modifier = Modifier.fillMaxWidth(),
+            icon = R.drawable.ic_calendar_month_56,
+            label = "General Report",
+            description = "View general report",
+            onClick = {}
+        )
         ListTable(
             rows = state.expenses,
             type = "Expenses",

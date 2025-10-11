@@ -31,6 +31,8 @@ import com.app.uniqueplant.presentation.screens.search.SearchScreen
 import com.app.uniqueplant.presentation.screens.search.SearchViewModel
 import com.app.uniqueplant.presentation.screens.settings.SettingsScreen
 import com.app.uniqueplant.presentation.screens.settings.SettingsViewModel
+import com.app.uniqueplant.presentation.screens.sync.SyncScreen
+import com.app.uniqueplant.presentation.screens.sync.SyncViewModel
 import com.app.uniqueplant.presentation.screens.transactionScreens.addTransaction.AddTransactionScreen
 import com.app.uniqueplant.presentation.screens.transactionScreens.addTransaction.AddTransactionViewModel
 import com.app.uniqueplant.presentation.screens.transactionScreens.transactionDetails.TransactionDetailsScreen
@@ -155,6 +157,20 @@ fun AppNavigation (
                         popUpTo(0) { inclusive = true }
                     }
                 },
+            )
+        }
+
+        composable(
+            MainScreens.Sync.route,
+            enterTransition = { enterFromUp },
+            exitTransition = { exitToDown },
+            popEnterTransition = { enterFromUp },
+            popExitTransition = { exitToDown }) { backStackEntry ->
+            val syncViewModel: SyncViewModel = hiltViewModel(backStackEntry)
+            val state by syncViewModel.state.collectAsState()
+            SyncScreen(
+                state = state,
+                onEvent = syncViewModel::onEvent
             )
         }
 

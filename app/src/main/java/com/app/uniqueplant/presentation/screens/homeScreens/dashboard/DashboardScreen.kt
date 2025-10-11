@@ -171,7 +171,7 @@ private fun HeroSection(
             icon = painterResource(id = R.drawable.ic_cloud_sync_24),
             label = "Sync",
             onClick = {
-                //onEvent(DashboardEvent.OnAddTransactionClick)
+                onEvent(DashboardEvent.OnSynClicked)
             }
         ),
         HomeHeroActionButton(

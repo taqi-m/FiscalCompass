@@ -58,8 +58,7 @@ fun TransactionsScreen(
         LazyColumn(
             state = rememberLazyListState(),
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 8.dp),
+                .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item {
@@ -73,7 +72,6 @@ fun TransactionsScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp)
                 )
             }
             item {

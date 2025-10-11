@@ -10,6 +10,7 @@ sealed class MainScreens(val route: String) {
     object AdminHome : MainScreens("admin_home_screen")
     object AddTransaction : MainScreens("add_transaction_screen")
     object Settings : MainScreens("settings_screen")
+    object Sync : MainScreens("sync_screen")
     object Categories : MainScreens("categories_screen")
     object Person : MainScreens("person_screen")
     object Jobs : MainScreens("jobs_screen")

@@ -66,6 +66,11 @@ class DashboardViewModel @Inject constructor(
                 appNavController?.navigate(MainScreens.AddTransaction.route)
             }
 
+            is DashboardEvent.OnSynClicked -> {
+                val appNavController = _state.value.appNavController
+                appNavController?.navigate(MainScreens.Sync.route)
+            }
+
             is DashboardEvent.OnCategoriesClicked -> {
                 val appNavController = _state.value.appNavController
                 appNavController?.navigate(MainScreens.Categories.route)

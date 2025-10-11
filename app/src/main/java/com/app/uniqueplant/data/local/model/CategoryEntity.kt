@@ -35,6 +35,7 @@ data class CategoryEntity(
     val createdAt: Long,
     val updatedAt: Long,
     // Sync tracking
+    val isDeleted: Boolean = false,
     val isSynced: Boolean = false,
     val needsSync: Boolean = true,
     val lastSyncedAt: Long? = null

@@ -21,11 +21,8 @@ class ExpenseRepositoryImpl @Inject constructor(
 
     override suspend fun addExpense(expense: Expense): Long {
         val newExpense = expense.toEntity()
-
         val dbResult = expenseDao.insert(newExpense)
-
         autoSyncManager.triggerSync(SyncType.EXPENSES)
-
         return dbResult
     }
 
@@ -34,9 +31,7 @@ class ExpenseRepositoryImpl @Inject constructor(
             updatedAt = System.currentTimeMillis(),
             needsSync = true
         )
-
         expenseDao.update(updatedExpense)
-
         autoSyncManager.triggerSync(SyncType.EXPENSES)
     }
 

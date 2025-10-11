@@ -36,12 +36,11 @@ fun MonthSelector(
     onNextMonth: () -> Unit,
     modifier: Modifier = Modifier,
     dateFormatter: SimpleDateFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault()),
-    textStyle: TextStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Medium)
+    textStyle: TextStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Black)
 ) {
     Row(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp),
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = onPreviousMonth) {
