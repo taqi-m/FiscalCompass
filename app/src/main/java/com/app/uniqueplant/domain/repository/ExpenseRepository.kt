@@ -1,9 +1,8 @@
 package com.app.uniqueplant.domain.repository
 
-import com.app.uniqueplant.domain.model.Expense
-import com.app.uniqueplant.domain.model.ExpenseFull
-import com.app.uniqueplant.domain.model.ExpenseWithCategory
-import com.app.uniqueplant.domain.model.Income
+import com.app.uniqueplant.domain.model.dataModels.Expense
+import com.app.uniqueplant.domain.model.dataModels.ExpenseFull
+import com.app.uniqueplant.domain.model.dataModels.ExpenseWithCategory
 import kotlinx.coroutines.flow.Flow
 
 interface ExpenseRepository {
@@ -40,5 +39,5 @@ interface ExpenseRepository {
     suspend fun getTotalExpenses(): Double
 
     suspend fun getExpensesByDateRange(startDate: String, endDate: String): List<Expense>
-    fun getExpenseSumByMonth(month: Int, year: Int): Flow<Double>
+    fun getSumByDateRange(userId: String? = null, startDate: Long, endDate: Long): Flow<Double>
 }

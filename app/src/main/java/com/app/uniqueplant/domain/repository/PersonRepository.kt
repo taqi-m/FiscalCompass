@@ -1,6 +1,6 @@
 package com.app.uniqueplant.domain.repository
 
-import com.app.uniqueplant.domain.model.Person
+import com.app.uniqueplant.domain.model.dataModels.Person
 
 interface PersonRepository {
     suspend fun getPersonId(id: Long): String

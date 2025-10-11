@@ -1,7 +1,7 @@
 package com.app.uniqueplant.domain.repository
 
-import com.app.uniqueplant.domain.model.Category
-import com.app.uniqueplant.domain.model.CategoryTree
+import com.app.uniqueplant.domain.model.dataModels.Category
+import com.app.uniqueplant.domain.model.dataModels.CategoryTree
 import kotlinx.coroutines.flow.Flow
 
 interface CategoryRepository {

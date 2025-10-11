@@ -1,6 +1,6 @@
 package com.app.uniqueplant.presentation.screens.transactionScreens.addTransaction
 
-import com.app.uniqueplant.domain.model.InputField
+import com.app.uniqueplant.domain.model.dataModels.InputField
 import com.app.uniqueplant.presentation.model.GroupedCategoryUi
 import com.app.uniqueplant.presentation.model.PersonUi
 import com.app.uniqueplant.presentation.model.TransactionType

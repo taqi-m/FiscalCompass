@@ -15,6 +15,8 @@ sealed class TransactionDialogSubmit {
 
 sealed class TransactionEvent {
     object OnUiReset : TransactionEvent()
+    object OnPreviousMonth : TransactionEvent()
+    object OnNextMonth : TransactionEvent()
     data class OnTransactionSelected(val transaction: TransactionUi) : TransactionEvent()
     data class OnTransactionDialogToggle(val event: TransactionDialogToggle) : TransactionEvent()
     data class OnTransactionDialogSubmit(val event: TransactionDialogSubmit) : TransactionEvent()

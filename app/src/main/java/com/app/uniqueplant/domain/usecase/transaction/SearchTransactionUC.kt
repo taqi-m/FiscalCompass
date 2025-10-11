@@ -1,9 +1,9 @@
 package com.app.uniqueplant.domain.usecase.transaction
 
 import com.app.uniqueplant.data.mappers.toTransaction
-import com.app.uniqueplant.domain.model.Expense
-import com.app.uniqueplant.domain.model.Income
-import com.app.uniqueplant.domain.model.Transaction
+import com.app.uniqueplant.domain.model.dataModels.Expense
+import com.app.uniqueplant.domain.model.dataModels.Income
+import com.app.uniqueplant.domain.model.dataModels.Transaction
 import com.app.uniqueplant.domain.repository.ExpenseRepository
 import com.app.uniqueplant.domain.repository.IncomeRepository
 import kotlinx.coroutines.flow.first
@@ -11,7 +11,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
-import kotlin.math.exp
 
 class SearchTransactionUC @Inject constructor(
     private val incomeRepository: IncomeRepository,

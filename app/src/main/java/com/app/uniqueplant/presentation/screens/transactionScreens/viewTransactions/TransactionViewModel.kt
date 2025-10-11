@@ -3,8 +3,7 @@ package com.app.uniqueplant.presentation.screens.transactionScreens.viewTransact
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.app.uniqueplant.domain.model.Transaction
-import com.app.uniqueplant.domain.usecase.transaction.LoadTransactionsUseCase
+import com.app.uniqueplant.domain.usecase.transaction.LoadTransactionsUC
 import com.app.uniqueplant.presentation.mappers.toUi
 import com.app.uniqueplant.presentation.screens.categories.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,78 +11,61 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
 class TransactionViewModel @Inject constructor(
-    private val loadTransactionsUseCase: LoadTransactionsUseCase,
+    private val loadTransactionsUC: LoadTransactionsUC,
 ) : ViewModel() {
-
-    private val _transactions = MutableStateFlow<List<Transaction>>(emptyList())
-    val transactions: StateFlow<List<Transaction>> = _transactions.asStateFlow()
 
     private val _state = MutableStateFlow(TransactionScreenState(
             uiState = UiState.Loading,
+            currentDate = Calendar.getInstance().apply { set(Calendar.DAY_OF_MONTH, 1) }.time,
         ))
     val state: StateFlow<TransactionScreenState> = _state.asStateFlow()
 
     init {
-        // Collect all transactions
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                loadTransactionsUseCase.loadCurrentMonthTransactions().collect { transactions ->
-                    updateState {
-                        copy(
-                            uiState = UiState.Idle,
-                            transactions = transactions.mapValues { entry ->
-                                entry.value.map { it.toUi() }
-                            },
-                            currentDialog = TransactionScreenDialog.Hidden,
-                            dialogState = TransactionDialogState.Idle
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("TransactionViewModel", "Error loading transactions: ${e.message}")
-            }
-        }
-
-        // Collect current month income
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                loadTransactionsUseCase.getCurrentMonthIncome().collect { income ->
-                    updateState {
-                        copy(
-                            incoming = income
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("TransactionViewModel", "Error loading income: ${e.message}")
-            }
-        }
-
-        // Collect current month expenses
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                loadTransactionsUseCase.getCurrentMonthExpense().collect { expense ->
-                    updateState {
-                        copy(
-                            outgoing = expense
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("TransactionViewModel", "Error loading expenses: ${e.message}")
-            }
-        }
+        loadTransactionsData()
     }
 
     fun onEvent(event: TransactionEvent) {
         when (event) {
             is TransactionEvent.OnTransactionDialogToggle -> {
                 onDialogToggle(event.event)
+            }
+
+            is TransactionEvent.OnPreviousMonth ->{
+                updateState {
+                    val calendar = Calendar.getInstance().apply {
+                        time = currentDate
+                        add(Calendar.MONTH, -1)
+                    }
+                    copy(
+                        currentDate = calendar.time,
+                        uiState = UiState.Loading,
+                        transactions = emptyMap(),
+                    )
+                }
+                loadTransactionsData()
+            }
+
+            is TransactionEvent.OnNextMonth ->{
+                updateState {
+                    val calendar = Calendar.getInstance().apply {
+                        time = currentDate
+                        add(Calendar.MONTH, 1)
+                    }
+                    copy(
+                        currentDate = calendar.time,
+                        uiState = UiState.Loading,
+                        transactions = emptyMap(),
+                    )
+                }
+                loadTransactionsData()
             }
 
             is TransactionEvent.OnTransactionSelected -> {
@@ -166,7 +148,7 @@ class TransactionViewModel @Inject constructor(
                 }
                 viewModelScope.launch(Dispatchers.IO) {
                     try {
-                        loadTransactionsUseCase.deleteTransaction(transaction.transactionId, transaction.isExpense)
+                        loadTransactionsUC.deleteTransaction(transaction.transactionId, transaction.isExpense)
                         updateState {
                             copy(uiState = UiState.Success("Transaction deleted successfully"), currentDialog = TransactionScreenDialog.Hidden, dialogState = TransactionDialogState.Idle)
                         }
@@ -180,6 +162,44 @@ class TransactionViewModel @Inject constructor(
 
     }
 
+
+    private fun loadTransactionsData() {
+        viewModelScope.launch(Dispatchers.IO) {
+            // Combine the three flows into a single flow that emits a Triple
+            val combinedFlow = combine(
+                loadTransactionsUC.currentMonthTransactions(_state.value.currentDate),
+                loadTransactionsUC.getCurrentMonthIncome(_state.value.currentDate),
+                loadTransactionsUC.getCurrentMonthExpense(_state.value.currentDate)
+            ) { transactions, income, expense ->
+                // This lambda is called when any of the flows emit a new value.
+                // It provides the latest value from each.
+                Triple(transactions, income, expense)
+            }
+
+            // Collect the combined results
+            combinedFlow
+                .catch { e ->
+                    // Handle exceptions from any of the upstream flows in one place
+                    Log.e("TransactionViewModel", "Error loading transaction data: ${e.message}")
+                    updateState { copy(uiState = UiState.Error("Error loading transaction data")) }
+                }
+                .collect { (transactions, income, expense) ->
+                    // Update the state once with all the new data
+                    updateState {
+                        copy(
+                            transactions = transactions.mapValues { entry ->
+                                entry.value.map { it.toUi() }
+                            },
+                            incoming = income,
+                            outgoing = expense,
+                            currentDialog = TransactionScreenDialog.Hidden,
+                            dialogState = TransactionDialogState.Idle,
+                            uiState = UiState.Idle // Set Idle state here
+                        )
+                    }
+                }
+        }
+    }
 
     private fun updateState(update: TransactionScreenState.() -> TransactionScreenState) {
         _state.value = _state.value.update()

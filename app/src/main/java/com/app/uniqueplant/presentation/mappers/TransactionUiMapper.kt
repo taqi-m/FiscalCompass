@@ -1,6 +1,6 @@
 package com.app.uniqueplant.presentation.mappers
 
-import com.app.uniqueplant.domain.model.Transaction
+import com.app.uniqueplant.domain.model.dataModels.Transaction
 import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
 import com.app.uniqueplant.presentation.model.TransactionUi
 import java.text.SimpleDateFormat

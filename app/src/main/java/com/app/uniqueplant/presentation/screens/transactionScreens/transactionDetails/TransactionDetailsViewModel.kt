@@ -3,8 +3,8 @@ package com.app.uniqueplant.presentation.screens.transactionScreens.transactionD
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.uniqueplant.data.mappers.toTransaction
-import com.app.uniqueplant.domain.model.ExpenseFull
-import com.app.uniqueplant.domain.model.IncomeFull
+import com.app.uniqueplant.domain.model.dataModels.ExpenseFull
+import com.app.uniqueplant.domain.model.dataModels.IncomeFull
 import com.app.uniqueplant.domain.usecase.expense.GetExpenseWithCategoryAndPerson
 import com.app.uniqueplant.domain.usecase.income.GetSingleFullIncomeById
 import com.app.uniqueplant.presentation.mappers.toUi

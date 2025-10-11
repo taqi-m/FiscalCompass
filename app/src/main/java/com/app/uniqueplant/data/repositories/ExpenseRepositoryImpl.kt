@@ -5,9 +5,9 @@ import com.app.uniqueplant.data.managers.SyncType
 import com.app.uniqueplant.data.mappers.toDomain
 import com.app.uniqueplant.data.mappers.toEntity
 import com.app.uniqueplant.data.local.dao.ExpenseDao
-import com.app.uniqueplant.domain.model.Expense
-import com.app.uniqueplant.domain.model.ExpenseFull
-import com.app.uniqueplant.domain.model.ExpenseWithCategory
+import com.app.uniqueplant.domain.model.dataModels.Expense
+import com.app.uniqueplant.domain.model.dataModels.ExpenseFull
+import com.app.uniqueplant.domain.model.dataModels.ExpenseWithCategory
 import com.app.uniqueplant.domain.repository.ExpenseRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -137,21 +137,12 @@ class ExpenseRepositoryImpl @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    override fun getExpenseSumByMonth(
-        month: Int,
-        year: Int
+    override fun getSumByDateRange(
+        userId: String?,
+        startDate: Long,
+        endDate: Long
     ): Flow<Double> {
-        return expenseDao.getExpenseSumByMonth(
-            startDate = Calendar.getInstance().apply {
-                set(Calendar.MONTH, month)
-                set(Calendar.YEAR, year)
-                set(Calendar.DAY_OF_MONTH, 1)
-            }.time.time,
-            endDate = Calendar.getInstance().apply {
-                set(Calendar.MONTH, month)
-                set(Calendar.YEAR, year)
-                set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
-            }.time.time
-        )
+        val userId = userId.takeIf { !it.isNullOrBlank() }
+        return expenseDao.getExpenseSumByDateRange(userId, startDate, endDate)
     }
 }

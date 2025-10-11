@@ -4,7 +4,7 @@ import com.app.uniqueplant.data.local.dao.PersonDao
 import com.app.uniqueplant.data.managers.AutoSyncManager
 import com.app.uniqueplant.data.managers.SyncType
 import com.app.uniqueplant.data.mappers.toEntity
-import com.app.uniqueplant.domain.model.Person
+import com.app.uniqueplant.domain.model.dataModels.Person
 import com.app.uniqueplant.domain.repository.PersonRepository
 import javax.inject.Inject
 

@@ -1,8 +1,8 @@
 package com.app.uniqueplant.domain.repository
 
-import com.app.uniqueplant.domain.model.Income
-import com.app.uniqueplant.domain.model.IncomeFull
-import com.app.uniqueplant.domain.model.IncomeWithCategory
+import com.app.uniqueplant.domain.model.dataModels.Income
+import com.app.uniqueplant.domain.model.dataModels.IncomeFull
+import com.app.uniqueplant.domain.model.dataModels.IncomeWithCategory
 import kotlinx.coroutines.flow.Flow
 
 interface IncomeRepository {
@@ -36,7 +36,7 @@ interface IncomeRepository {
 
     suspend fun getTotalIncomes(): Double
 
-    suspend fun getIncomeSumByMonth(month: Int, year: Int): Flow<Double>
+    suspend fun getSumByDateRange(userId:String? = null, startDate: Long, endDate: Long): Flow<Double>
 
     suspend fun getIncomesByDateRange(startDate: String, endDate: String): List<Income>
     suspend fun getIncomesByDateRangeAndUser(startDate: String, endDate: String, userId: String): List<Income>

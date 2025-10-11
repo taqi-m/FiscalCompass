@@ -1,7 +1,7 @@
 package com.app.uniqueplant.data.mappers
 
 import com.app.uniqueplant.data.local.model.ExpenseWithCategoryDbo
-import com.app.uniqueplant.domain.model.ExpenseWithCategory
+import com.app.uniqueplant.domain.model.dataModels.ExpenseWithCategory
 
 fun ExpenseWithCategoryDbo.toDomain() = ExpenseWithCategory(
     expense = this.expense.toDomain(),

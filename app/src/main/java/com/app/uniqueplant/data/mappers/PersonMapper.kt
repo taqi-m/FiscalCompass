@@ -3,7 +3,7 @@ package com.app.uniqueplant.data.mappers
 import com.app.uniqueplant.data.local.model.PersonEntity
 import com.app.uniqueplant.data.local.model.PersonType
 import com.app.uniqueplant.data.remote.model.PersonDto
-import com.app.uniqueplant.domain.model.Person
+import com.app.uniqueplant.domain.model.dataModels.Person
 import com.google.firebase.Timestamp
 import java.util.UUID
 

@@ -1,4 +1,4 @@
-package com.app.uniqueplant.domain.model
+package com.app.uniqueplant.domain.model.dataModels
 
 sealed class Resource<T>(
     val data: T? = null,

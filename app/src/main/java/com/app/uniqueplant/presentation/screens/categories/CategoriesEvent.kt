@@ -1,6 +1,6 @@
 package com.app.uniqueplant.presentation.screens.categories
 
-import com.app.uniqueplant.domain.model.Category
+import com.app.uniqueplant.domain.model.dataModels.Category
 import com.app.uniqueplant.presentation.model.CategoryUi
 import com.app.uniqueplant.presentation.model.TransactionType
 

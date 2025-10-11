@@ -1,9 +1,7 @@
 package com.app.uniqueplant.domain.usecase.person
 
-import com.app.uniqueplant.data.local.model.PersonEntity
 import com.app.uniqueplant.data.local.model.PersonType
-import com.app.uniqueplant.data.local.dao.PersonDao
-import com.app.uniqueplant.domain.model.Person
+import com.app.uniqueplant.domain.model.dataModels.Person
 import com.app.uniqueplant.domain.repository.PersonRepository
 import com.app.uniqueplant.presentation.screens.categories.UiState
 import javax.inject.Inject

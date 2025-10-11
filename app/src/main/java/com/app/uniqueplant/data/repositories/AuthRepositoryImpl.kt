@@ -2,11 +2,11 @@ package com.app.uniqueplant.data.repositories
 
 import com.app.uniqueplant.data.local.model.UserEntity
 import com.app.uniqueplant.data.rbac.Role
-import com.app.uniqueplant.domain.model.Resource
+import com.app.uniqueplant.domain.model.dataModels.Resource
+import com.app.uniqueplant.domain.model.dtos.UserInfo
 import com.app.uniqueplant.domain.repository.AppPreferenceRepository
 import com.app.uniqueplant.domain.repository.AuthRepository
 import com.app.uniqueplant.domain.repository.UserRepository
-import com.app.uniqueplant.presentation.screens.settings.UserInfo
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
@@ -132,35 +132,38 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
 
-    override fun getUserInfo(): Flow<Resource<UserInfo>> = flow {
-        emit(Resource.Loading())
-        val uid = firebaseAuth.currentUser?.uid ?: ""
-        if (uid.isEmpty()) {
-            emit(Resource.Error("User not logged in"))
-            return@flow
-        }
-
-        val cachedInfo = appPreferences.getUserInfo()
-        if (cachedInfo.first != "User" || cachedInfo.second.isNotEmpty()) {
-            emit(Resource.Success(UserInfo(userName = cachedInfo.first, userEmail = cachedInfo.second)))
-            return@flow
-        }
-
+    override suspend fun getUserInfo(): Resource<UserInfo> {
         try {
-            val document = firebaseFirestore.collection("users").document(uid).get().await()
+            // Get current user's UUID
+            val uuid = firebaseAuth.currentUser?.uid
+            if (uuid.isNullOrEmpty()) {
+                return Resource.Error("User not logged in")
+            }
+
+            // Attempt to get user info from cache
+            val cachedInfo = appPreferences.getUserInfo()
+            if (cachedInfo.first != "User" || cachedInfo.second.isNotEmpty()) {
+                return Resource.Success(
+                    UserInfo(
+                        userName = cachedInfo.first, email = cachedInfo.second, uuid = uuid,
+                    )
+                )
+            }
+
+            // If cache is empty, fetch from Firestore
+            val document = firebaseFirestore.collection("users").document(uuid).get().await()
             if (!document.exists()) {
-                emit(Resource.Error("User document does not exist"))
-                return@flow
+                return Resource.Error("User document does not exist")
             }
             val userInfo = UserInfo(
                 userName = document.getString("name") ?: "Unknown",
-                userEmail = document.getString("email") ?: "Unknown",
-                profilePictureUrl = document.getString("profilePictureUrl")
+                email = document.getString("email") ?: "Unknown",
+                profilePicUrl = document.getString("profilePictureUrl"),
+                uuid = uuid
             )
-
-            emit(Resource.Success(userInfo))
+            return Resource.Success(userInfo)
         } catch (e: Exception) {
-            emit(Resource.Error(e.message ?: "An error occurred while fetching user info"))
+            return Resource.Error(e.message ?: "An error occurred while fetching user info")
         }
     }
 

@@ -2,10 +2,12 @@ package com.app.uniqueplant.presentation.screens.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.app.uniqueplant.domain.model.Resource
+import com.app.uniqueplant.domain.model.dataModels.Resource
+import com.app.uniqueplant.domain.usecase.analytics.GetUserInfoUseCase
 import com.app.uniqueplant.domain.usecase.auth.SessionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,6 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
+    private val getUserInfoUseCase: GetUserInfoUseCase,
     private val sessionUseCase: SessionUseCase
 ) : ViewModel() {
 
@@ -25,25 +28,13 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             _state.value = _state.value.copy(isLoading = true)
             // Load initial data, such as user info
-            sessionUseCase.getUserInfo().collect { resource ->
-                when (resource) {
-                    is Resource.Success -> {
-                        _state.value = _state.value.copy(
-                            userInfo = resource.data,
-                            isLoading = false,
-                            error = null
-                        )
-                    }
-
-                    is Resource.Error -> {
-                        _state.value =
-                            _state.value.copy(error = resource.message, isLoading = false)
-                    }
-
-                    is Resource.Loading -> {
-                        _state.value = _state.value.copy(isLoading = true)
-                    }
-                }
+            getUserInfoUseCase().let { userInfo ->
+                val userInfo = UserInfo(
+                    userName = userInfo.userName,
+                    userEmail = userInfo.email,
+                    profilePictureUrl = userInfo.profilePicUrl
+                )
+                _state.value = _state.value.copy(userInfo = userInfo, isLoading = false)
             }
         }
     }
@@ -76,22 +67,9 @@ class SettingsViewModel @Inject constructor(
 
     fun onEvent(event: SettingsEvent) {
         when (event) {
-            // Handle events here
             is SettingsEvent.OnLogoutClicked -> {
                 logout()
             }
-            is SettingsEvent.OnThemeSwitchChanged -> {
-                // Handle theme switch change
-                updateState { copy(isLoading = true) }
-                // Here you would typically call a use case to change the theme
-                // For now, we just simulate a delay
-                viewModelScope.launch(Dispatchers.IO) {
-                    kotlinx.coroutines.delay(1000)
-                    updateState { copy(isLoading = false) }
-                }
-            }
-
-            is SettingsEvent.SampleEventWithParameter -> TODO()
         }
     }
 

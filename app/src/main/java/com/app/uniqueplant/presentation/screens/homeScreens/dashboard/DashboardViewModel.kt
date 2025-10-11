@@ -2,8 +2,8 @@ package com.app.uniqueplant.presentation.screens.homeScreens.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.app.uniqueplant.domain.usecase.LoadDefaultsUseCase
-import com.app.uniqueplant.domain.usecase.analytics.LoadHomeUserInfoUC
+import com.app.uniqueplant.domain.usecase.analytics.GetUserInfoUseCase
+import com.app.uniqueplant.domain.usecase.transaction.GetCurrentMonthBalanceUC
 import com.app.uniqueplant.presentation.navigation.MainScreens
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -13,12 +13,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
-    private val loadDefaultsUseCase: LoadDefaultsUseCase,
-    private val loadHomeUserInfo: LoadHomeUserInfoUC
+    private val getUserInfo: GetUserInfoUseCase,
+    private val currentMonthBalance: GetCurrentMonthBalanceUC
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DashboardScreenState())
@@ -32,17 +33,19 @@ class DashboardViewModel @Inject constructor(
             launch {
                 loadUserInfo()
             }
-            launch {
-//                loadDefaultsUseCase.addDefaultCategories()
-            }
         }
     }
 
     private fun loadUserInfo() {
         userCollectionJob?.cancel()
         userCollectionJob = coroutineScope.launch {
-            loadHomeUserInfo().collect { userInfo ->
-                _state.update { it.copy(userInfo = userInfo) }
+            val userInfo = runBlocking {
+                getUserInfo()
+            }
+            _state.update { it.copy(userInfo = it.userInfo.copy(name = userInfo.userName, profilePictureUrl = userInfo.profilePicUrl)) }
+
+            currentMonthBalance().collect { balance ->
+                _state.update { it.copy(userInfo = it.userInfo.copy(balance = balance)) }
             }
         }
     }

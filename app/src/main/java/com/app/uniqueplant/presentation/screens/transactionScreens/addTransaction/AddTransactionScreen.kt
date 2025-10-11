@@ -39,7 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.app.uniqueplant.R
-import com.app.uniqueplant.domain.model.InputField
+import com.app.uniqueplant.domain.model.dataModels.InputField
 import com.app.uniqueplant.presentation.model.CategoryUi
 import com.app.uniqueplant.presentation.model.PersonUi
 import com.app.uniqueplant.presentation.screens.categories.UiState

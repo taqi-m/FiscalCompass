@@ -29,7 +29,10 @@ import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
 import com.app.uniqueplant.presentation.model.TransactionUi
 import com.app.uniqueplant.presentation.screens.categories.UiState
+import com.app.uniqueplant.ui.components.ErrorContainer
+import com.app.uniqueplant.ui.components.LoadingContainer
 import com.app.uniqueplant.ui.components.cards.TransactionCard
+import com.app.uniqueplant.ui.components.input.MonthSelector
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -51,39 +54,54 @@ fun TransactionsScreen(
         contentAlignment = Alignment.Center
     ) {
 
-        if (uiState is UiState.Loading) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                CircularProgressIndicator()
-                Text(
-                    text = "Loading Transactions...",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(top = 8.dp),
-                    textAlign = TextAlign.Center
+
+        LazyColumn(
+            state = rememberLazyListState(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            item {
+                MonthSelector(
+                    currentDate = state.currentDate,
+                    onPreviousMonth = {
+                        onEvent(TransactionEvent.OnPreviousMonth)
+                    },
+                    onNextMonth = {
+                        onEvent(TransactionEvent.OnNextMonth)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
                 )
             }
-        } else {
-            LazyColumn(
-                state = rememberLazyListState(),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                item {
-                    TransactionHeading(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        currentBalance = CurrencyFormaterUseCase.formatCurrency(state.incoming - state.outgoing),
-                        incoming = CurrencyFormaterUseCase.formatCurrency(state.incoming),
-                        outgoing = CurrencyFormaterUseCase.formatCurrency(state.outgoing)
-                    )
-                }
+            item {
+                TransactionHeading(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    currentBalance = CurrencyFormaterUseCase.formatCurrency(state.incoming - state.outgoing),
+                    incoming = CurrencyFormaterUseCase.formatCurrency(state.incoming),
+                    outgoing = CurrencyFormaterUseCase.formatCurrency(state.outgoing)
+                )
+            }
 
+
+            if (state.uiState is UiState.Loading) {
+                item {
+                    LoadingContainer("Loading transactions...")
+                }
+            } else if (state.uiState is UiState.Error) {
+                item {
+                    ErrorContainer(
+                        message = state.uiState.message,
+                        actionLabel = "Retry",
+                        onAction = {
+                            onEvent(TransactionEvent.OnPreviousMonth)
+                        })
+                }
+            } else {
                 // Display transactions grouped by date
                 transactions.forEach { (date, transactionsForDate) ->
                     stickyHeader {
@@ -122,12 +140,14 @@ fun TransactionsScreen(
                         )
                     }
                 }
-                item {
-                    // Add some padding at the bottom to avoid content being hidden behind navigation bars
-                    Spacer(modifier = Modifier.padding(WindowInsets.navigationBars.asPaddingValues()))
-                }
+            }
+
+            // Add some padding at the bottom to avoid content being hidden behind navigation bars
+            item {
+                Spacer(modifier = Modifier.padding(WindowInsets.navigationBars.asPaddingValues()))
             }
         }
+
     }
 
     when (state.currentDialog) {
@@ -252,25 +272,6 @@ private fun BalanceView(
     }
 }
 
-@Preview(
-    showBackground = true,
-)
-@Composable
-fun TransactionHeadingPreview() {
-    UniquePlantTheme {
-        Box(
-            modifier = Modifier
-                .fillMaxSize(),
-        ) {
-            TransactionHeading(
-                modifier = Modifier.fillMaxWidth(),
-                currentBalance = CurrencyFormaterUseCase.formatCurrency(3000.00),
-                incoming = CurrencyFormaterUseCase.formatCurrency(5000.00), // Replace with actual incoming amount
-                outgoing = CurrencyFormaterUseCase.formatCurrency(2000.00) // Replace with actual outgoing amount
-            )
-        }
-    }
-}
 
 @Preview(showBackground = true, showSystemUi = false)
 @Composable
@@ -278,7 +279,11 @@ fun TransactionsScreenPreview() {
     UniquePlantTheme {
         TransactionsScreen(
             state = TransactionScreenState(
-                uiState = UiState.Idle,
+                uiState = UiState.Error("Failed to load transactions"),
+                transactions = mapOf(
+                    java.util.Date() to TransactionUi.dummyList,
+                    java.util.Date(System.currentTimeMillis() - 86400000L) to listOf(TransactionUi.dummy)
+                )
             ),
             onEvent = {},
         ) {}

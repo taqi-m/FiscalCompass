@@ -1,10 +1,9 @@
 package com.app.uniqueplant.data.mappers
 
-import android.util.Log
 import com.app.uniqueplant.data.local.model.CategoryEntity
 import com.app.uniqueplant.data.remote.model.CategoryDto
-import com.app.uniqueplant.domain.model.Category
-import com.app.uniqueplant.domain.model.CategoryTree
+import com.app.uniqueplant.domain.model.dataModels.Category
+import com.app.uniqueplant.domain.model.dataModels.CategoryTree
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 import java.util.Date

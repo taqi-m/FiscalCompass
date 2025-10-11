@@ -21,6 +21,7 @@ sealed class TransactionScreenDialog {
 
 data class TransactionScreenState (
     val uiState: UiState = UiState.Idle,
+    val currentDate: Date = Date(),
     val transactions: Map<Date, List<TransactionUi>> = emptyMap(),
     val incoming: Double = 0.0,
     val outgoing: Double = 0.0,

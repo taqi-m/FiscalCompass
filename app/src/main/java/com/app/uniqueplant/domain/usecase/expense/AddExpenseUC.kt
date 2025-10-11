@@ -1,6 +1,6 @@
 package com.app.uniqueplant.domain.usecase.expense
 
-import com.app.uniqueplant.domain.model.Expense
+import com.app.uniqueplant.domain.model.dataModels.Expense
 import com.app.uniqueplant.domain.repository.ExpenseRepository
 import com.app.uniqueplant.domain.usecase.auth.SessionUseCase
 import java.util.Date

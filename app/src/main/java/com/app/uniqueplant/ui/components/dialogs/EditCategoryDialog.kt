@@ -13,9 +13,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.app.uniqueplant.domain.model.Category
+import com.app.uniqueplant.domain.model.dataModels.Category
 
 @Composable
 fun EditCategoryDialog(

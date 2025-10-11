@@ -7,8 +7,8 @@ import com.app.uniqueplant.data.mappers.toCategoryTree
 import com.app.uniqueplant.data.mappers.toDomain
 import com.app.uniqueplant.data.mappers.toEntityList
 import com.app.uniqueplant.data.local.dao.CategoryDao
-import com.app.uniqueplant.domain.model.Category
-import com.app.uniqueplant.domain.model.CategoryTree
+import com.app.uniqueplant.domain.model.dataModels.Category
+import com.app.uniqueplant.domain.model.dataModels.CategoryTree
 import com.app.uniqueplant.domain.repository.CategoryRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

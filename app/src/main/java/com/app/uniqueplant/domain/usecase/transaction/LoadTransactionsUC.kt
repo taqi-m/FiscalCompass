@@ -2,11 +2,9 @@ package com.app.uniqueplant.domain.usecase.transaction
 
 import com.app.uniqueplant.data.mappers.toTransaction
 import com.app.uniqueplant.data.rbac.Permission
-import com.app.uniqueplant.domain.model.Expense
-import com.app.uniqueplant.domain.model.Income
-import com.app.uniqueplant.domain.model.Transaction
-import com.app.uniqueplant.domain.repository.AppPreferenceRepository
-import com.app.uniqueplant.domain.repository.AuthRepository
+import com.app.uniqueplant.domain.model.dataModels.Expense
+import com.app.uniqueplant.domain.model.dataModels.Income
+import com.app.uniqueplant.domain.model.dataModels.Transaction
 import com.app.uniqueplant.domain.repository.ExpenseRepository
 import com.app.uniqueplant.domain.repository.IncomeRepository
 import com.app.uniqueplant.domain.repository.UserRepository
@@ -19,33 +17,25 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
-class LoadTransactionsUseCase @Inject constructor(
+class LoadTransactionsUC @Inject constructor(
     private val incomeRepository: IncomeRepository,
     private val expenseRepository: ExpenseRepository,
     private val userRepository: UserRepository,
     private val checkPermissionUseCase: CheckPermissionUseCase
 ) {
-    suspend fun loadAllTransactions(): Flow<List<Transaction>> {
-        return combine(
-            expenseRepository.getAllExpenses(),
-            incomeRepository.getAllIncomes()
-        ) { expenses, incomes ->
-            val expenseTransactions = expenses.map { expense ->
-                expense.toTransaction()
-            }
-            val incomeTransactions = incomes.map { income ->
-                income.toTransaction()
-            }
-            expenseTransactions + incomeTransactions
+
+    private suspend fun getCurrentUserId(): String {
+        val userId = userRepository.getLoggedInUser()?.userId
+        if (userId != null ) {
+            if (checkPermissionUseCase(Permission.VIEW_ALL_TRANSACTIONS))
+            return ""
+            return userId
         }
+        return ""
     }
 
-    suspend fun loadCurrentMonthTransactions(): Flow<Map<Date, List<Transaction>>> {
-        val userId = userRepository.getLoggedInUser()?.userId
-        if (userId == null) {
-            throw IllegalStateException("User is not logged in")
-        }
-
+    suspend fun currentMonthTransactions(date: Date? = null): Flow<Map<Date, List<Transaction>>> {
+        val userId = getCurrentUserId()
         val userIds = mutableListOf(userId)
         val canViewAll = checkPermissionUseCase(Permission.VIEW_ALL_TRANSACTIONS)
         if (canViewAll){
@@ -53,6 +43,7 @@ class LoadTransactionsUseCase @Inject constructor(
         }
 
         val calendar = Calendar.getInstance()
+        date?.let { calendar.time = it }
         val month = calendar.get(Calendar.MONTH)
         val year = calendar.get(Calendar.YEAR)
         val startDate = calendar.apply {
@@ -91,17 +82,51 @@ class LoadTransactionsUseCase @Inject constructor(
             }
     }
 
-    suspend fun getCurrentMonthIncome(): Flow<Double> {
-        return incomeRepository.getIncomeSumByMonth(
-            month = Calendar.getInstance().get(Calendar.MONTH),
-            year = Calendar.getInstance().get(Calendar.YEAR)
+    suspend fun getCurrentMonthIncome(date: Date? = null): Flow<Double> {
+        val calendar = Calendar.getInstance()
+        date?.let { calendar.time = it }
+        val startDate = calendar.apply {
+            set(Calendar.DAY_OF_MONTH, 1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.time.time
+        val endDate = calendar.apply {
+            set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
+            set(Calendar.HOUR_OF_DAY, 23)
+            set(Calendar.MINUTE, 59)
+            set(Calendar.SECOND, 59)
+            set(Calendar.MILLISECOND, 999)
+        }.time.time
+        return incomeRepository.getSumByDateRange(
+            userId = getCurrentUserId(),
+            startDate = startDate,
+            endDate = endDate
         )
     }
 
-    suspend fun getCurrentMonthExpense(): Flow<Double> {
-        return expenseRepository.getExpenseSumByMonth(
-            month = Calendar.getInstance().get(Calendar.MONTH),
-            year = Calendar.getInstance().get(Calendar.YEAR)
+    suspend fun getCurrentMonthExpense(date: Date? = null): Flow<Double> {
+        val calendar = Calendar.getInstance()
+        date?.let { calendar.time = it }
+        val startDate = calendar.apply {
+            set(Calendar.DAY_OF_MONTH, 1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.time.time
+        val endDate = calendar.apply {
+            set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
+            set(Calendar.HOUR_OF_DAY, 23)
+            set(Calendar.MINUTE, 59)
+            set(Calendar.SECOND, 59)
+            set(Calendar.MILLISECOND, 999)
+        }.time.time
+        return expenseRepository.getSumByDateRange(
+            userId = getCurrentUserId(),
+            startDate = startDate,
+            endDate = endDate
         )
     }
 

@@ -46,8 +46,8 @@ interface IncomeDao {
     @Query("SELECT SUM(amount) FROM incomes WHERE userId = :userId")
     fun getSumByUser(userId: String): Flow<Double?>
 
-    @Query("SELECT SUM(amount) FROM incomes WHERE date BETWEEN :startDate AND :endDate")
-    fun getSumByDateRange(startDate: Long, endDate: Long): Flow<Double>
+    @Query("SELECT SUM(amount) FROM incomes WHERE (:userId IS NULL OR userId = :userId) AND date BETWEEN :startDate AND :endDate")
+    fun getSumByDateRange(userId:String?, startDate: Long, endDate: Long): Flow<Double>
 
     @Query("SELECT categoryId, SUM(amount) as total FROM incomes WHERE userId = :userId GROUP BY categoryId ORDER BY total DESC")
     fun getSumByCategory(userId: String): Flow<Map<@MapColumn("categoryId") Long?, @MapColumn("total") Double>>

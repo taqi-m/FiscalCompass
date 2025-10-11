@@ -6,9 +6,9 @@ import com.app.uniqueplant.data.mappers.toDomain
 import com.app.uniqueplant.data.mappers.toIncomeEntity
 import com.app.uniqueplant.data.mappers.toIncomeWithCategory
 import com.app.uniqueplant.data.local.dao.IncomeDao
-import com.app.uniqueplant.domain.model.Income
-import com.app.uniqueplant.domain.model.IncomeFull
-import com.app.uniqueplant.domain.model.IncomeWithCategory
+import com.app.uniqueplant.domain.model.dataModels.Income
+import com.app.uniqueplant.domain.model.dataModels.IncomeFull
+import com.app.uniqueplant.domain.model.dataModels.IncomeWithCategory
 import com.app.uniqueplant.domain.repository.IncomeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -112,19 +112,9 @@ class IncomeRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getIncomeSumByMonth(month: Int, year: Int): Flow<Double> {
-        return incomeDao.getSumByDateRange(
-            startDate = Calendar.getInstance().apply {
-                set(Calendar.MONTH, month)
-                set(Calendar.YEAR, year)
-                set(Calendar.DAY_OF_MONTH, 1)
-            }.time.time,
-            endDate = Calendar.getInstance().apply {
-                set(Calendar.MONTH, month)
-                set(Calendar.YEAR, year)
-                set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
-            }.time.time
-        )
+    override suspend fun getSumByDateRange(userId:String?, startDate: Long, endDate: Long): Flow<Double> {
+        val userId = userId.takeIf { !it.isNullOrBlank() }
+        return incomeDao.getSumByDateRange(userId, startDate, endDate)
     }
 
     override suspend fun getIncomesByDateRange(startDate: String, endDate: String): List<Income> {

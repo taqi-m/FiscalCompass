@@ -1,4 +1,4 @@
-package com.app.uniqueplant.domain.model
+package com.app.uniqueplant.domain.model.dataModels
 
 data class InputField(
     val value: String = "",

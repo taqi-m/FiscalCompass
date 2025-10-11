@@ -75,8 +75,8 @@ interface ExpenseDao {
     @Query("SELECT SUM(amount) FROM expenses WHERE userId = :userId")
     fun getTotalExpensesByUser(userId: String): Flow<Double?>
     
-    @Query("SELECT SUM(amount) FROM expenses WHERE userId = :userId AND date BETWEEN :startDate AND :endDate")
-    fun getExpenseSumByDateRange(userId: String, startDate: Long, endDate: Long): Flow<Double?>
+    @Query("SELECT SUM(amount) FROM expenses WHERE (:userId IS NULL OR userId = :userId) AND date BETWEEN :startDate AND :endDate")
+    fun getExpenseSumByDateRange(userId: String? = null, startDate: Long, endDate: Long): Flow<Double>
     
     @Query("SELECT categoryId, SUM(amount) as total FROM expenses WHERE userId = :userId GROUP BY categoryId ORDER BY total DESC")
     fun getExpenseSumByCategory(userId: String): Flow<Map<@MapColumn("categoryId") Long?, @MapColumn("total") Double>>

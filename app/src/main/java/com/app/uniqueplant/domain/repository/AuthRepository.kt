@@ -1,8 +1,8 @@
 package com.app.uniqueplant.domain.repository
 
 import com.app.uniqueplant.data.rbac.Role
-import com.app.uniqueplant.domain.model.Resource
-import com.app.uniqueplant.presentation.screens.settings.UserInfo
+import com.app.uniqueplant.domain.model.dataModels.Resource
+import com.app.uniqueplant.domain.model.dtos.UserInfo
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.Flow
@@ -18,7 +18,7 @@ interface AuthRepository {
 
     fun getUserRole() : Role?
 
-    fun getUserInfo(): Flow<Resource<UserInfo>>
+    suspend fun getUserInfo(): Resource<UserInfo>
 }
 
 

@@ -1,7 +1,7 @@
 package com.app.uniqueplant.domain.usecase.categories
 
-import com.app.uniqueplant.domain.model.Category
-import com.app.uniqueplant.domain.model.CategoryTree
+import com.app.uniqueplant.domain.model.dataModels.Category
+import com.app.uniqueplant.domain.model.dataModels.CategoryTree
 import com.app.uniqueplant.domain.repository.CategoryRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject

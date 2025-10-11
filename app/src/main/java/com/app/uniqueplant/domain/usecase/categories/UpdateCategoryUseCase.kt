@@ -1,6 +1,6 @@
 package com.app.uniqueplant.domain.usecase.categories
 
-import com.app.uniqueplant.domain.model.Category
+import com.app.uniqueplant.domain.model.dataModels.Category
 import com.app.uniqueplant.domain.repository.CategoryRepository
 import javax.inject.Inject
 
