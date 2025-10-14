@@ -2,10 +2,13 @@ package com.app.uniqueplant.presentation.screens.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.uniqueplant.domain.usecase.categories.GetCategoriesUseCase
+import com.app.uniqueplant.domain.usecase.person.GetAllPersonsUseCase
 import com.app.uniqueplant.domain.usecase.transaction.SearchTransactionUC
 import com.app.uniqueplant.presentation.mappers.toUi
 import com.app.uniqueplant.presentation.screens.categories.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +20,9 @@ import javax.inject.Inject
 @OptIn(FlowPreview::class)
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val searchTransactionUC: SearchTransactionUC
+    private val searchTransactionUC: SearchTransactionUC,
+    private val getCategoriesUseCase: GetCategoriesUseCase,
+    private val getAllPersonsUseCase: GetAllPersonsUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SearchScreenState())
@@ -26,6 +31,7 @@ class SearchViewModel @Inject constructor(
     private var searchJob: Job? = null
 
     init {
+        loadCategoriesAndPersons()
         fetchTransactions()
     }
 
@@ -37,9 +43,20 @@ class SearchViewModel @Inject constructor(
             SearchEvent.OnDismissFilterDialog -> {
                 updateState { copy(showFilterDialog = false) }
             }
+            SearchEvent.OnShowCategoryFilterDialog -> {
+                updateState { copy(showCategoryFilterDialog = true) }
+            }
+            SearchEvent.OnDismissCategoryFilterDialog -> {
+                updateState { copy(showCategoryFilterDialog = false) }
+            }
+            SearchEvent.OnShowPersonFilterDialog -> {
+                updateState { copy(showPersonFilterDialog = true) }
+            }
+            SearchEvent.OnDismissPersonFilterDialog -> {
+                updateState { copy(showPersonFilterDialog = false) }
+            }
             is SearchEvent.UpdateFilterType -> {
                 updateState { copy(filterType = event.type) }
-                fetchTransactions()
             }
             is SearchEvent.SubmitFilterCategory -> {
                 val currentCategories = state.value.filterCategories ?: mutableListOf()
@@ -50,6 +67,7 @@ class SearchViewModel @Inject constructor(
                 }
                 updateState { copy(filterCategories = currentCategories) }
             }
+
             is SearchEvent.SubmitFilterPerson -> {
                 val currentPersons = state.value.filterPersons ?: mutableListOf()
                 if (currentPersons.contains(event.personId)) {
@@ -64,7 +82,13 @@ class SearchViewModel @Inject constructor(
                 updateState { copy(filterStartDate = event.startDate, filterEndDate = event.endDate) }
             }
             SearchEvent.ApplyFilters -> {
-                updateState { copy(showFilterDialog = false) }
+                updateState {
+                    copy(
+                        showFilterDialog = false,
+                        showCategoryFilterDialog = false,
+                        showPersonFilterDialog = false
+                    )
+                }
                 fetchTransactions()
             }
             SearchEvent.ClearFilters -> {
@@ -84,7 +108,7 @@ class SearchViewModel @Inject constructor(
 
     private fun fetchTransactions() {
         searchJob?.cancel()
-        searchJob = viewModelScope.launch {
+        searchJob = viewModelScope.launch(Dispatchers.IO) {
             updateState { copy(uiState = UiState.Loading) }
             try {
                 val results = searchTransactionUC(
@@ -99,6 +123,18 @@ class SearchViewModel @Inject constructor(
                 updateState { copy(uiState = UiState.Idle, searchResults = results) }
             } catch (e: Exception) {
                 updateState { copy(uiState = UiState.Error(e.message ?: "An unexpected error occurred")) }
+            }
+        }
+    }
+
+    private fun loadCategoriesAndPersons() {
+        viewModelScope.launch {
+            try {
+                val categories = getCategoriesUseCase.getAllCategories()
+                val persons = getAllPersonsUseCase.getAllPersons()
+                updateState { copy(allCategories = categories, allPersons = persons) }
+            } catch (e: Exception) {
+                // Handle error if needed
             }
         }
     }

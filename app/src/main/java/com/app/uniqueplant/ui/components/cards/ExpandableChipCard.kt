@@ -1,6 +1,7 @@
 package com.app.uniqueplant.ui.components.cards
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
@@ -11,7 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
@@ -54,7 +57,7 @@ fun <T> ExpandableChipCard(
         trailingIcon = trailingIcon,
         initiallyExpanded = initiallyExpanded,
     ) {
-        ChipCardItemsContainer(
+        ChipFlow(
             chips = chips,
             onChipClick = onChipClick,
             onChipLongClick = onChipLongClick,
@@ -72,7 +75,7 @@ fun ChipCardItemsContainer(
     title: String,
     trailingIcon: @Composable (() -> Unit)? = null,
     initiallyExpanded: Boolean = false,
-    content: @Composable () -> Unit,
+    chipsFlow: @Composable () -> Unit,
 ) {
     Card(
         modifier = modifier,
@@ -84,8 +87,7 @@ fun ChipCardItemsContainer(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(horizontal =  16.dp, vertical = 8.dp),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -98,22 +100,25 @@ fun ChipCardItemsContainer(
                 )
                 trailingIcon?.let { it() }
             }
-            content()
+            chipsFlow()
         }
     }
 }
 
 
 @Composable
-fun <T> ChipCardItemsContainer(
+fun <T> ChipFlow(
+    placeholder: String = "No items available",
     chips: List<T>,
     onChipClick: ((T) -> Unit)? = null,
     onChipLongClick: ((T) -> Unit)? = null,
+    trailingIcon: (@Composable () -> Unit)? = null,
+    maxLines: Int = Int.MAX_VALUE,
     chipToLabel: (T) -> String
 ) {
     if (chips.isEmpty()){
         Text(
-            text = "No items available",
+            text = placeholder,
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.fillMaxWidth().padding(8.dp),
             textAlign = TextAlign.Center
@@ -121,9 +126,10 @@ fun <T> ChipCardItemsContainer(
         return
     }
     FlowRow(
-        modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start
-    )
-    {
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.Start,
+        maxLines = maxLines,
+    ) {
         chips.forEach { chip ->
             ChipCardItem (
                 option = chip,
@@ -134,18 +140,6 @@ fun <T> ChipCardItemsContainer(
                 label = chipToLabel(chip)
             )
         }
-        /*ChipCardItem(
-            // For "Add New", the option type might be tricky.
-            // We can cast it, but a more robust solution might involve a sealed class for chip types.
-            option = "Add New",
-            icon = {
-                 Icon(Icons.Default.Add, contentDescription = "Add New")
-            },
-            onChipClick = { onAddNewClicked() },
-            modifier = Modifier
-                .padding(4.dp),
-            label = "Add"
-        )*/
     }
 }
 

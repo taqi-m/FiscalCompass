@@ -38,7 +38,7 @@ class DashboardViewModel @Inject constructor(
 
     private fun loadUserInfo() {
         userCollectionJob?.cancel()
-        userCollectionJob = coroutineScope.launch {
+        userCollectionJob = coroutineScope.launch(Dispatchers.IO) {
             val userInfo = runBlocking {
                 getUserInfo()
             }
@@ -53,38 +53,34 @@ class DashboardViewModel @Inject constructor(
 
     fun onEvent(event: DashboardEvent) {
         when (event) {
-            is DashboardEvent.AddExpenseClicked -> {
-
-            }
-
             is DashboardEvent.OnScreenLoad -> {
                 _state.value = _state.value.copy(appNavController = event.appNavController)
             }
 
             is DashboardEvent.OnAddTransactionClicked -> {
-                val appNavController = _state.value.appNavController
-                appNavController?.navigate(MainScreens.AddTransaction.route)
+                navigateTo(MainScreens.AddTransaction)
             }
 
             is DashboardEvent.OnSynClicked -> {
-                val appNavController = _state.value.appNavController
-                appNavController?.navigate(MainScreens.Sync.route)
+                navigateTo(MainScreens.Sync)
             }
 
             is DashboardEvent.OnCategoriesClicked -> {
-                val appNavController = _state.value.appNavController
-                appNavController?.navigate(MainScreens.Categories.route)
+                navigateTo(MainScreens.Categories)
             }
 
             is DashboardEvent.OnPersonsClicked -> {
-                val appNavController = _state.value.appNavController
-                appNavController?.navigate(MainScreens.Person.route)
+                navigateTo(MainScreens.Person)
             }
 
             is DashboardEvent.OnJobsClicked -> {
-                val appNavController = _state.value.appNavController
-                appNavController?.navigate(MainScreens.Jobs.route)
+                navigateTo(MainScreens.Jobs)
             }
         }
+    }
+
+    private fun navigateTo(screen: MainScreens) {
+        val appNavController = _state.value.appNavController
+        appNavController?.navigate(screen.route)
     }
 }

@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun ErrorContainer(
+    modifier: Modifier = Modifier,
     message: String = "An error occurred.",
     onAction: (() -> Unit)? = null,
     actionLabel: String? = null,
@@ -21,13 +22,12 @@ fun ErrorContainer(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = modifier
     ) {
         Text(
             text = message,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.error,
             modifier = Modifier
                 .padding(top = 8.dp)
         )

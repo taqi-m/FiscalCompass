@@ -3,6 +3,10 @@ package com.app.uniqueplant.presentation.screens.search
 sealed class SearchEvent {
     object OnFilterIconClicked : SearchEvent()
     object OnDismissFilterDialog : SearchEvent()
+    object OnShowCategoryFilterDialog : SearchEvent()
+    object OnDismissCategoryFilterDialog : SearchEvent()
+    object OnShowPersonFilterDialog : SearchEvent()
+    object OnDismissPersonFilterDialog : SearchEvent()
     data class UpdateFilterType(val type: String?) : SearchEvent()
     data class SubmitFilterCategory(val categoryId: Long) : SearchEvent()
     data class SubmitFilterPerson(val personId: Long) : SearchEvent()

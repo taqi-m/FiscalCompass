@@ -77,8 +77,7 @@ fun TransactionsScreen(
             item {
                 TransactionHeading(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
+                        .fillMaxWidth(),
                     currentBalance = CurrencyFormaterUseCase.formatCurrency(state.incoming - state.outgoing),
                     incoming = CurrencyFormaterUseCase.formatCurrency(state.incoming),
                     outgoing = CurrencyFormaterUseCase.formatCurrency(state.outgoing)
@@ -86,56 +85,65 @@ fun TransactionsScreen(
             }
 
 
-            if (state.uiState is UiState.Loading) {
-                item {
-                    LoadingContainer("Loading transactions...")
+            when (state.uiState) {
+                is UiState.Loading -> {
+                    item {
+                        LoadingContainer("Loading transactions...")
+                    }
                 }
-            } else if (state.uiState is UiState.Error) {
-                item {
-                    ErrorContainer(
-                        message = state.uiState.message,
-                        actionLabel = "Retry",
-                        onAction = {
-                            onEvent(TransactionEvent.OnPreviousMonth)
-                        })
-                }
-            } else {
-                // Display transactions grouped by date
-                transactions.forEach { (date, transactionsForDate) ->
-                    stickyHeader {
-                        // Convert date to string if it's a Date object
-                        val formattedDate =
-                            SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(date)
-                        DateHeader(
+
+                is UiState.Error -> {
+                    item {
+                        ErrorContainer(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.background)
-                                .padding(vertical = 8.dp),
-                            date = formattedDate
-                        )
+                                .padding(top = 32.dp),
+                            message = state.uiState.message,
+                            actionLabel = "Retry",
+                            onAction = {
+                                onEvent(TransactionEvent.OnPreviousMonth)
+                            })
                     }
+                }
 
-                    items(transactionsForDate.size) { index ->
-                        TransactionCard(
-                            transaction = transactionsForDate[index],
-                            onClicked = {
-                                onNavigateClicked(transactionsForDate[index])
-                            },
-                            onEditClicked = {
-                                onEvent(
-                                    TransactionEvent.OnTransactionDialogToggle(
-                                        TransactionDialogToggle.Edit(transactionsForDate[index])
+                else -> {
+                    // Display transactions grouped by date
+                    transactions.forEach { (date, transactionsForDate) ->
+                        stickyHeader {
+                            // Convert date to string if it's a Date object
+                            val formattedDate =
+                                SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(date)
+                            DateHeader(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.background)
+                                    .padding(vertical = 8.dp),
+                                date = formattedDate
+                            )
+                        }
+
+                        items(transactionsForDate.size) { index ->
+                            TransactionCard(
+                                transaction = transactionsForDate[index],
+                                onClicked = {
+                                    onNavigateClicked(transactionsForDate[index])
+                                },
+                                onEditClicked = {
+                                    onEvent(
+                                        TransactionEvent.OnTransactionDialogToggle(
+                                            TransactionDialogToggle.Edit(transactionsForDate[index])
+                                        )
                                     )
-                                )
-                            },
-                            onDeleteClicked = {
-                                onEvent(
-                                    TransactionEvent.OnTransactionDialogToggle(
-                                        TransactionDialogToggle.Delete(transactionsForDate[index])
+                                },
+                                onDeleteClicked = {
+                                    onEvent(
+                                        TransactionEvent.OnTransactionDialogToggle(
+                                            TransactionDialogToggle.Delete(transactionsForDate[index])
+                                        )
                                     )
-                                )
-                            },
-                        )
+                                },
+                            )
+                        }
                     }
                 }
             }
