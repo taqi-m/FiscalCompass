@@ -52,7 +52,7 @@ import com.app.uniqueplant.ui.components.input.TransactionTypeSelector
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import java.util.Calendar
 
-enum class AddTransactionScreen {
+private enum class AddTransactionScreen {
     FORM,
     CALCULATOR
 }
