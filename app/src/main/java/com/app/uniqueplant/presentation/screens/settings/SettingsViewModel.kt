@@ -2,12 +2,11 @@ package com.app.uniqueplant.presentation.screens.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.app.uniqueplant.domain.model.dataModels.Resource
+import com.app.uniqueplant.domain.model.Resource
 import com.app.uniqueplant.domain.usecase.analytics.GetUserInfoUseCase
 import com.app.uniqueplant.domain.usecase.auth.SessionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

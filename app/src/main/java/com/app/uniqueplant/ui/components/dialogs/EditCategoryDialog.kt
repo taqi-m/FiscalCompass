@@ -14,7 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import com.app.uniqueplant.domain.model.dataModels.Category
+import com.app.uniqueplant.domain.model.base.Category
 
 @Composable
 fun EditCategoryDialog(

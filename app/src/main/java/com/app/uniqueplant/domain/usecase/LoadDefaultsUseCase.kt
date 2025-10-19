@@ -1,7 +1,7 @@
 package com.app.uniqueplant.domain.usecase
 
 import android.util.Log
-import com.app.uniqueplant.domain.model.dataModels.Category
+import com.app.uniqueplant.domain.model.base.Category
 import com.app.uniqueplant.domain.repository.AppPreferenceRepository
 import com.app.uniqueplant.domain.repository.CategoryRepository
 import javax.inject.Inject

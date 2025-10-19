@@ -2,8 +2,8 @@ package com.app.uniqueplant.data.repositories
 
 import com.app.uniqueplant.data.local.model.UserEntity
 import com.app.uniqueplant.data.rbac.Role
-import com.app.uniqueplant.domain.model.dataModels.Resource
-import com.app.uniqueplant.domain.model.dtos.UserInfo
+import com.app.uniqueplant.domain.model.Resource
+import com.app.uniqueplant.domain.model.dto.UserInfo
 import com.app.uniqueplant.domain.repository.AppPreferenceRepository
 import com.app.uniqueplant.domain.repository.AuthRepository
 import com.app.uniqueplant.domain.repository.UserRepository

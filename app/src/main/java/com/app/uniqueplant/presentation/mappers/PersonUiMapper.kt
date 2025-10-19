@@ -1,6 +1,6 @@
 package com.app.uniqueplant.presentation.mappers
 
-import com.app.uniqueplant.domain.model.dataModels.Person
+import com.app.uniqueplant.domain.model.base.Person
 import com.app.uniqueplant.presentation.model.PersonUi
 
 fun Person.toUi(): PersonUi {

@@ -34,13 +34,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.R
-import com.app.uniqueplant.data.local.model.PersonType
-import com.app.uniqueplant.presentation.model.PersonUi
-import com.app.uniqueplant.presentation.screens.categories.UiState
+import com.app.uniqueplant.domain.model.PersonType
+import com.app.uniqueplant.domain.model.base.Person
+import com.app.uniqueplant.presentation.screens.category.UiState
 import com.app.uniqueplant.ui.components.LoadingProgress
 import com.app.uniqueplant.ui.components.cards.ExpandableChipCard
 import com.app.uniqueplant.ui.components.dialogs.AddPersonDialog
 import com.app.uniqueplant.ui.components.dialogs.DeletePersonDialog
+import com.app.uniqueplant.ui.components.dialogs.EditPersonDialog
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -121,19 +122,25 @@ fun PersonScreen(
                         onDismiss = {
                             onEvent(PersonEvent.OnPersonDialogToggle(PersonDialogToggle.Hidden))
                         },
-                        onAddNewPerson = { name, personType ->
+                        onAddNewPerson = { name, contact, personType ->
                             onEvent(
-                                PersonEvent.OnPersonDialogSubmit(
-                                    PersonDialogSubmit.Add(name, personType)
-                                )
+                                PersonEvent.OnPersonDialogSubmit(PersonDialogSubmit.Add(name,contact, personType))
                             )
                         }
                     )
                 }
 
                 PersonDialog.EditPerson -> {
-                    TODO(
-                        "Handle EditPerson dialog in PersonScreen.kt"
+                    EditPersonDialog(
+                        person = state.dialogState.person,
+                        onDismiss = {
+                            onEvent(PersonEvent.OnPersonDialogToggle(PersonDialogToggle.Hidden))
+                        },
+                        onEditPerson = { editedPerson ->
+                            onEvent(
+                                PersonEvent.OnPersonDialogSubmit(PersonDialogSubmit.Edit(editedPerson))
+                            )
+                        }
                     )
                 }
 
@@ -145,9 +152,7 @@ fun PersonScreen(
                         },
                         onDeleteConfirm = {
                             onEvent(
-                                PersonEvent.OnPersonDialogSubmit(
-                                    PersonDialogSubmit.Delete
-                                )
+                                PersonEvent.OnPersonDialogSubmit(PersonDialogSubmit.Delete)
                             )
                         }
                     )
@@ -194,8 +199,8 @@ fun PersonList(
     state: PersonScreenState,
     onEvent: (PersonEvent) -> Unit,
     onAddNewPersonClick: ((String) -> Unit)? = null,
-    onEditPersonClick: ((PersonUi) -> Unit)? = null,
-    onDeletePersonClick: ((PersonUi) -> Unit)? = null,
+    onEditPersonClick: ((Person) -> Unit)? = null,
+    onDeletePersonClick: ((Person) -> Unit)? = null,
 ) {
     if (state.uiState is UiState.Loading) {
         LoadingProgress(
@@ -259,7 +264,7 @@ fun PersonScreenPreview() {
     UniquePlantTheme {
         PersonScreen(
             appNavController = rememberNavController(),
-            state = PersonScreenState(canAdd = true, persons = PersonUi.dummyList),
+            state = PersonScreenState(canAdd = true, persons = Person.dummyList),
             onEvent = {},
         )
     }

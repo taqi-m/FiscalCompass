@@ -3,6 +3,7 @@ package com.app.uniqueplant.data.local.preferences
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.app.uniqueplant.domain.repository.PreferenceManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton

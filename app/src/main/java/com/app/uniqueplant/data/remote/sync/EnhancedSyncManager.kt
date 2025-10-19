@@ -1,7 +1,7 @@
 package com.app.uniqueplant.data.remote.sync
 
 import android.util.Log
-import com.app.uniqueplant.data.managers.SyncDependencyManager
+import com.app.uniqueplant.domain.sync.SyncDependencyManager
 import com.app.uniqueplant.data.managers.SyncTimestampManager
 import com.app.uniqueplant.data.managers.SyncType
 import com.app.uniqueplant.data.rbac.Permission

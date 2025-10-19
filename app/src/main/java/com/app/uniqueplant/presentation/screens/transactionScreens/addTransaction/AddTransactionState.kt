@@ -1,10 +1,10 @@
 package com.app.uniqueplant.presentation.screens.transactionScreens.addTransaction
 
-import com.app.uniqueplant.domain.model.dataModels.InputField
+import com.app.uniqueplant.presentation.model.InputField
 import com.app.uniqueplant.presentation.model.GroupedCategoryUi
 import com.app.uniqueplant.presentation.model.PersonUi
 import com.app.uniqueplant.presentation.model.TransactionType
-import com.app.uniqueplant.presentation.screens.categories.UiState
+import com.app.uniqueplant.presentation.screens.category.UiState
 
 data class GenericInputField <T> (
     val value: T,

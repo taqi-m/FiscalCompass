@@ -2,6 +2,7 @@ package com.app.uniqueplant.data.managers
 
 import android.util.Log
 import com.app.uniqueplant.data.remote.sync.EnhancedSyncManager
+import com.app.uniqueplant.domain.sync.SyncDependencyManager
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow

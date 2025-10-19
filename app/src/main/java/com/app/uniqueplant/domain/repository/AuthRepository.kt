@@ -1,8 +1,8 @@
 package com.app.uniqueplant.domain.repository
 
 import com.app.uniqueplant.data.rbac.Role
-import com.app.uniqueplant.domain.model.dataModels.Resource
-import com.app.uniqueplant.domain.model.dtos.UserInfo
+import com.app.uniqueplant.domain.model.Resource
+import com.app.uniqueplant.domain.model.dto.UserInfo
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.Flow

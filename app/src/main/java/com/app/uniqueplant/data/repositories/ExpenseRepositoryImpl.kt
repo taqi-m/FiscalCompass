@@ -5,9 +5,9 @@ import com.app.uniqueplant.data.managers.SyncType
 import com.app.uniqueplant.data.mappers.toDomain
 import com.app.uniqueplant.data.mappers.toEntity
 import com.app.uniqueplant.data.local.dao.ExpenseDao
-import com.app.uniqueplant.domain.model.dataModels.Expense
-import com.app.uniqueplant.domain.model.dataModels.ExpenseFull
-import com.app.uniqueplant.domain.model.dataModels.ExpenseWithCategory
+import com.app.uniqueplant.domain.model.base.Expense
+import com.app.uniqueplant.domain.model.ExpenseFull
+import com.app.uniqueplant.domain.model.ExpenseWithCategory
 import com.app.uniqueplant.domain.repository.ExpenseRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -22,7 +22,7 @@ class ExpenseRepositoryImpl @Inject constructor(
     override suspend fun addExpense(expense: Expense): Long {
         val newExpense = expense.toEntity()
         val dbResult = expenseDao.insert(newExpense)
-        autoSyncManager.triggerSync(SyncType.EXPENSES)
+//        autoSyncManager.triggerSync(SyncType.EXPENSES)
         return dbResult
     }
 
@@ -32,13 +32,13 @@ class ExpenseRepositoryImpl @Inject constructor(
             needsSync = true
         )
         expenseDao.update(updatedExpense)
-        autoSyncManager.triggerSync(SyncType.EXPENSES)
+//        autoSyncManager.triggerSync(SyncType.EXPENSES)
     }
 
     override suspend fun deleteExpense(expense: Expense) {
         expenseDao.markAsDeleted(expense.expenseId, System.currentTimeMillis())
 //        expenseDao.delete(expense.toEntity())
-        autoSyncManager.triggerSync(SyncType.EXPENSES)
+//        autoSyncManager.triggerSync(SyncType.EXPENSES)
     }
 
     override suspend fun deleteExpenseById(id: Long) {

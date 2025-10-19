@@ -40,7 +40,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.R
 import com.app.uniqueplant.presentation.model.TransactionUi
-import com.app.uniqueplant.presentation.screens.categories.UiState
+import com.app.uniqueplant.presentation.screens.category.UiState
 import com.app.uniqueplant.presentation.screens.transactionScreens.viewTransactions.DateHeader
 import com.app.uniqueplant.ui.components.cards.ChipFlow
 import com.app.uniqueplant.ui.components.cards.TransactionCard
@@ -448,7 +448,7 @@ fun SearchScreenPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun FilterDialogPreview() {
+fun FilterScreenPreview() {
     UniquePlantTheme {
         Surface {
             FilterScreen(

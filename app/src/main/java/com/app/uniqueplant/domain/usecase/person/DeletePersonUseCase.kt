@@ -2,8 +2,8 @@ package com.app.uniqueplant.domain.usecase.person
 
 import com.app.uniqueplant.data.mappers.toEntity
 import com.app.uniqueplant.data.local.dao.PersonDao
-import com.app.uniqueplant.domain.model.dataModels.Person
-import com.app.uniqueplant.presentation.screens.categories.UiState
+import com.app.uniqueplant.domain.model.base.Person
+import com.app.uniqueplant.presentation.screens.category.UiState
 import javax.inject.Inject
 
 class DeletePersonUseCase @Inject constructor(

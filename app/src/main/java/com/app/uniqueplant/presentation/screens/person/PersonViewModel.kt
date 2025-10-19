@@ -5,11 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.app.uniqueplant.data.rbac.Permission
 import com.app.uniqueplant.domain.usecase.person.AddPersonUseCase
 import com.app.uniqueplant.domain.usecase.person.DeletePersonUseCase
+import com.app.uniqueplant.domain.usecase.person.EditPersonUC
 import com.app.uniqueplant.domain.usecase.person.GetAllPersonsUseCase
 import com.app.uniqueplant.domain.usecase.rbac.CheckPermissionUseCase
 import com.app.uniqueplant.presentation.mappers.toDomain
 import com.app.uniqueplant.presentation.mappers.toUi
-import com.app.uniqueplant.presentation.screens.categories.UiState
+import com.app.uniqueplant.presentation.screens.category.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +24,7 @@ class PersonViewModel @Inject constructor(
     private val getAllPersonsUseCase: GetAllPersonsUseCase,
     private val addPersonUseCase: AddPersonUseCase,
     private val deletePersonUseCase: DeletePersonUseCase,
+    private val editPersonUseCase: EditPersonUC,
     private val checkPermissionUseCase: CheckPermissionUseCase
 ) : ViewModel() {
 
@@ -80,7 +82,7 @@ class PersonViewModel @Inject constructor(
     private fun updatePeople() {
         coroutineScope.launch {
             getAllPersonsUseCase.getAllPersonsWithFlow().collect { personList ->
-                updateState { copy(persons = personList.map { it.toUi() }) }
+                updateState { copy(persons = personList) }
             }
         }
     }
@@ -132,22 +134,34 @@ class PersonViewModel @Inject constructor(
                 viewModelScope.launch {
                     val updatedState = addPersonUseCase.invoke(
                         name = event.name,
+                        contact = event.contact,
                         personType = personType
                     )
                     updateState {
-                        copy(
-                            uiState = updatedState
-                        )
+                        copy(uiState = updatedState)
                     }
                 }
             }
 
             is PersonDialogSubmit.Edit -> {
-                // Handle edit person logic
+                val person = event.person
+                updateState { copy(uiState = UiState.Loading) }
+                viewModelScope.launch {
+                    try {
+                        editPersonUseCase.invoke(person.personId, person.name, person.contact ?: "", person.personType)
+                        updateState {
+                            copy(uiState = UiState.Success("Person edited successfully."))
+                        }
+                    } catch (e: Exception) {
+                        updateState {
+                            copy(uiState = UiState.Error("Failed to edit person: ${e.message}"))
+                        }
+                    }
+                }
             }
 
             is PersonDialogSubmit.Delete -> {
-                val person = _state.value.dialogState.person?.toDomain()
+                val person = _state.value.dialogState.person
                 if (person == null) {
                     updateState {
                         copy(uiState = UiState.Error("No person selected for deletion."))

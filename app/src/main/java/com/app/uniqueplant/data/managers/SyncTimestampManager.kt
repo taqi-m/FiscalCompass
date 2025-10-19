@@ -1,7 +1,7 @@
 package com.app.uniqueplant.data.managers
 
 import com.app.uniqueplant.data.local.AppDatabase
-import com.app.uniqueplant.data.local.preferences.PreferenceManager
+import com.app.uniqueplant.domain.repository.PreferenceManager
 import javax.inject.Inject
 
 class SyncTimestampManager @Inject constructor(

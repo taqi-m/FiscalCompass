@@ -23,6 +23,9 @@ interface CategoryDao {
     @Delete
     suspend fun delete(categoryEntity: CategoryEntity): Int
 
+    @Query("UPDATE categories SET isDeleted = 1, needsSync = 1 WHERE categoryId = :categoryId")
+    suspend fun markAsDeleted(categoryId: Long): Int
+
     @Query("SELECT * FROM categories ORDER BY name ASC")
     suspend fun getAllCategories(): List<CategoryEntity>
 

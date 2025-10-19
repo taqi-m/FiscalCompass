@@ -2,8 +2,8 @@ package com.app.uniqueplant.data.mappers
 
 import com.app.uniqueplant.data.local.model.IncomeEntity
 import com.app.uniqueplant.data.remote.model.IncomeDto
-import com.app.uniqueplant.domain.model.dataModels.Income
-import com.app.uniqueplant.domain.model.dataModels.Transaction
+import com.app.uniqueplant.domain.model.base.Income
+import com.app.uniqueplant.domain.model.Transaction
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 import java.util.Date

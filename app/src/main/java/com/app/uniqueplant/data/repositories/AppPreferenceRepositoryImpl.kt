@@ -1,17 +1,17 @@
 package com.app.uniqueplant.data.repositories
 
-import com.app.uniqueplant.data.local.preferences.PreferenceManager
+import com.app.uniqueplant.domain.repository.PreferenceManager
 import com.app.uniqueplant.domain.repository.AppPreferenceRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 
-const val DEFAULT_CATEGORIES_ADDED = "default_categories_added"
-const val DEFAULT_PERSON_TYPES_ADDED = "default_person_types_added"
-const val USER_LOGGED_IN = "user_logged_in"
-const val USER_TYPE = "user_type"
-const val USER_NAME = "user_name"
-const val USER_EMAIL = "user_email"
-const val DARK_MODE = "dark_mode"
+const val DEFAULT_CATEGORIES_ADDED = "DEFAULT_CATEGORIES_ADDED"
+const val DEFAULT_PERSON_TYPES_ADDED = "DEFAULT_PERSON_TYPES_ADDED"
+const val USER_LOGGED_IN = "USER_LOGGED_IN"
+const val USER_TYPE = "USER_TYPE"
+const val USER_NAME = "USER_NAME"
+const val USER_EMAIL = "USER_EMAIL"
+const val DARK_MODE = "DARK_MODE"
 
 /**
  * Implementation of [AppPreferenceRepository] using [PreferenceManager] for data storage.

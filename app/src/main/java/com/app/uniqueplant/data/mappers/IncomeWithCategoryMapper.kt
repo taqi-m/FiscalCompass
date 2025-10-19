@@ -1,7 +1,7 @@
 package com.app.uniqueplant.data.mappers
 
 import com.app.uniqueplant.data.local.model.IncomeWithCategoryDbo
-import com.app.uniqueplant.domain.model.dataModels.IncomeWithCategory
+import com.app.uniqueplant.domain.model.IncomeWithCategory
 
 fun IncomeWithCategoryDbo.toIncomeWithCategory() = IncomeWithCategory(
     income = this.income.toDomain(),

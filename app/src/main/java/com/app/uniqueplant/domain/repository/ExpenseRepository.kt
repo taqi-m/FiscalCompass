@@ -1,8 +1,8 @@
 package com.app.uniqueplant.domain.repository
 
-import com.app.uniqueplant.domain.model.dataModels.Expense
-import com.app.uniqueplant.domain.model.dataModels.ExpenseFull
-import com.app.uniqueplant.domain.model.dataModels.ExpenseWithCategory
+import com.app.uniqueplant.domain.model.base.Expense
+import com.app.uniqueplant.domain.model.ExpenseFull
+import com.app.uniqueplant.domain.model.ExpenseWithCategory
 import kotlinx.coroutines.flow.Flow
 
 interface ExpenseRepository {

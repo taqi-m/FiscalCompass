@@ -4,7 +4,7 @@ import android.util.Log
 import com.app.uniqueplant.data.local.dao.CategoryDao
 import com.app.uniqueplant.data.local.model.CategoryEntity
 import com.app.uniqueplant.data.local.model.PersonEntity
-import com.app.uniqueplant.data.local.model.PersonType
+import com.app.uniqueplant.domain.model.PersonType
 import com.app.uniqueplant.data.managers.SyncTimestampManager
 import com.app.uniqueplant.data.managers.SyncType
 import com.app.uniqueplant.data.mappers.toCategoryEntity

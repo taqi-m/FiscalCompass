@@ -1,8 +1,8 @@
 package com.app.uniqueplant.domain.usecase.analytics
 
 import android.util.Log
-import com.app.uniqueplant.domain.model.dataModels.Resource
-import com.app.uniqueplant.domain.model.dtos.UserInfo
+import com.app.uniqueplant.domain.model.Resource
+import com.app.uniqueplant.domain.model.dto.UserInfo
 import com.app.uniqueplant.domain.repository.AuthRepository
 import javax.inject.Inject
 

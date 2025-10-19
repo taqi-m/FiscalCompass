@@ -1,6 +1,6 @@
 package com.app.uniqueplant.domain.usecase.income
 
-import com.app.uniqueplant.domain.model.dataModels.Income
+import com.app.uniqueplant.domain.model.base.Income
 import com.app.uniqueplant.domain.repository.IncomeRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject

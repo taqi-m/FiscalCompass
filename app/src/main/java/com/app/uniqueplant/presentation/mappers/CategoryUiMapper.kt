@@ -1,7 +1,7 @@
 package com.app.uniqueplant.presentation.mappers
 
-import com.app.uniqueplant.domain.model.dataModels.Category
-import com.app.uniqueplant.domain.model.dataModels.CategoryTree
+import com.app.uniqueplant.domain.model.base.Category
+import com.app.uniqueplant.domain.model.base.CategoryTree
 import com.app.uniqueplant.presentation.model.CategoryUi
 import com.app.uniqueplant.presentation.model.GroupedCategoryUi
 

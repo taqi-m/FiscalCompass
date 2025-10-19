@@ -2,9 +2,9 @@ package com.app.uniqueplant.domain.usecase.transaction
 
 import com.app.uniqueplant.data.mappers.toTransaction
 import com.app.uniqueplant.data.rbac.Permission
-import com.app.uniqueplant.domain.model.dataModels.Expense
-import com.app.uniqueplant.domain.model.dataModels.Income
-import com.app.uniqueplant.domain.model.dataModels.Transaction
+import com.app.uniqueplant.domain.model.base.Expense
+import com.app.uniqueplant.domain.model.base.Income
+import com.app.uniqueplant.domain.model.Transaction
 import com.app.uniqueplant.domain.repository.ExpenseRepository
 import com.app.uniqueplant.domain.repository.IncomeRepository
 import com.app.uniqueplant.domain.repository.UserRepository

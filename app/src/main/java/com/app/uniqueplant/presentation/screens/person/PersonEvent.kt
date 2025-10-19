@@ -1,17 +1,17 @@
 package com.app.uniqueplant.presentation.screens.person
 
-import com.app.uniqueplant.presentation.model.PersonUi
+import com.app.uniqueplant.domain.model.base.Person
 
 
 sealed class PersonDialogToggle {
     object Add : PersonDialogToggle()
-    data class Edit(val person: PersonUi) : PersonDialogToggle()
-    data class Delete(val person: PersonUi) : PersonDialogToggle()
+    data class Edit(val person: Person) : PersonDialogToggle()
+    data class Delete(val person: Person) : PersonDialogToggle()
     object Hidden : PersonDialogToggle()
 }
 sealed class PersonDialogSubmit {
-    data class Add(val name: String, val personType: String) : PersonDialogSubmit()
-    data class Edit(val person: PersonUi) : PersonDialogSubmit()
+    data class Add(val name: String,val contact: String, val personType: String) : PersonDialogSubmit()
+    data class Edit(val person: Person) : PersonDialogSubmit()
     object Delete : PersonDialogSubmit()
 }
 

@@ -8,6 +8,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.res.painterResource
@@ -167,10 +169,14 @@ private fun AuthContent(
             verticalArrangement = Arrangement.Center
         ) {
             Image(
-                painter = painterResource(R.drawable.sample_logo),
+                painter = painterResource(R.mipmap.ic_launcher_foreground),
                 contentDescription = stringResource(R.string.app_name),
                 modifier = Modifier
                     .padding(bottom = 16.dp)
+                    .background(
+                        Color.White,
+                        shape = CircleShape
+                    )
                     .clip(CircleShape)
                     .size(96.dp)
             )

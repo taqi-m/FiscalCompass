@@ -6,7 +6,7 @@ import com.app.uniqueplant.data.repositories.CategoryRepositoryImpl
 import com.app.uniqueplant.data.repositories.ExpenseRepositoryImpl
 import com.app.uniqueplant.data.repositories.IncomeRepositoryImpl
 import com.app.uniqueplant.data.repositories.UserRepositoryImpl
-import com.app.uniqueplant.data.local.preferences.PreferenceManager
+import com.app.uniqueplant.domain.repository.PreferenceManager
 import com.app.uniqueplant.data.local.preferences.PreferenceManagerImpl
 import com.app.uniqueplant.data.repositories.PersonRepositoryImpl
 import com.app.uniqueplant.domain.repository.AppPreferenceRepository

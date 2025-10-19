@@ -7,8 +7,8 @@ import com.app.uniqueplant.data.mappers.toCategoryTree
 import com.app.uniqueplant.data.mappers.toDomain
 import com.app.uniqueplant.data.mappers.toEntityList
 import com.app.uniqueplant.data.local.dao.CategoryDao
-import com.app.uniqueplant.domain.model.dataModels.Category
-import com.app.uniqueplant.domain.model.dataModels.CategoryTree
+import com.app.uniqueplant.domain.model.base.Category
+import com.app.uniqueplant.domain.model.base.CategoryTree
 import com.app.uniqueplant.domain.repository.CategoryRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -29,7 +29,7 @@ class CategoryRepositoryImpl @Inject constructor(
             lastSyncedAt = null
         )
         val dbResult = categoryDao.insert(categoryEntity)
-        autoSyncManager.triggerSync(SyncType.CATEGORIES)
+//        autoSyncManager.triggerSync(SyncType.CATEGORIES)
         return dbResult
     }
 
@@ -48,13 +48,13 @@ class CategoryRepositoryImpl @Inject constructor(
         )
 
         val dbResult = categoryDao.update(categoryEntity)
-        autoSyncManager.triggerSync(SyncType.CATEGORIES)
+//        autoSyncManager.triggerSync(SyncType.CATEGORIES)
         return dbResult
     }
 
     override suspend fun deleteCategory(category: Category): Int {
-        categoryDao.delete(category.toCategoryEntity())
-        autoSyncManager.triggerSync(SyncType.CATEGORIES)
+        categoryDao.markAsDeleted(category.categoryId)
+//        autoSyncManager.triggerSync(SyncType.CATEGORIES)
         return 1
     }
 

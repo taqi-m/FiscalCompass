@@ -34,6 +34,9 @@ data class CategoryDto(
     @get:PropertyName("name") @set:PropertyName("name")
     var name: String = "",
 
+    @get:PropertyName("isDeleted") @set:PropertyName("isDeleted")
+    var isDeleted: Boolean = false,
+
     @get:PropertyName("needsSync") @set:PropertyName("needsSync")
     var needsSync: Boolean = false,
 

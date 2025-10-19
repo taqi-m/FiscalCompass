@@ -9,10 +9,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.app.uniqueplant.presentation.screens.homeScreens.analytics.AnalyticsScreen
-import com.app.uniqueplant.presentation.screens.homeScreens.analytics.AnalyticsViewModel
-import com.app.uniqueplant.presentation.screens.homeScreens.dashboard.DashboardScreen
-import com.app.uniqueplant.presentation.screens.homeScreens.dashboard.DashboardViewModel
+import com.app.uniqueplant.presentation.screens.home.analytics.AnalyticsScreen
+import com.app.uniqueplant.presentation.screens.home.analytics.AnalyticsViewModel
+import com.app.uniqueplant.presentation.screens.home.dashboard.DashboardScreen
+import com.app.uniqueplant.presentation.screens.home.dashboard.DashboardViewModel
 import com.app.uniqueplant.presentation.screens.transactionScreens.viewTransactions.TransactionViewModel
 import com.app.uniqueplant.presentation.screens.transactionScreens.viewTransactions.TransactionsScreen
 import com.google.gson.Gson

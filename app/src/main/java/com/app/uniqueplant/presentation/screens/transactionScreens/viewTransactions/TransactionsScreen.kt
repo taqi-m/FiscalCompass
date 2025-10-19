@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,7 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
 import com.app.uniqueplant.presentation.model.TransactionUi
-import com.app.uniqueplant.presentation.screens.categories.UiState
+import com.app.uniqueplant.presentation.screens.category.UiState
 import com.app.uniqueplant.ui.components.ErrorContainer
 import com.app.uniqueplant.ui.components.LoadingContainer
 import com.app.uniqueplant.ui.components.cards.TransactionCard

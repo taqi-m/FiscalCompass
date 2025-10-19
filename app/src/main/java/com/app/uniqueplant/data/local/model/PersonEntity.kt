@@ -3,6 +3,7 @@ package com.app.uniqueplant.data.local.model
 import androidx.annotation.Keep
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.app.uniqueplant.domain.model.PersonType
 import java.util.UUID
 
 @Keep
@@ -26,18 +27,3 @@ data class PersonEntity(
     val lastSyncedAt: Long? = null
 )
 
-enum class PersonType {
-    CUSTOMER,
-    DEALER,
-    EMPLOYEE;
-
-    companion object {
-        fun getDefaultTypes(): List<String> {
-            return entries.map { it.name }
-        }
-        fun fromString(type: String): PersonType {
-            return entries.firstOrNull { it.name.equals(type, ignoreCase = true) }
-                ?: throw IllegalArgumentException("Unknown person type: $type")
-        }
-    }
-}

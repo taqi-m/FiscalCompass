@@ -1,7 +1,7 @@
 package com.app.uniqueplant.presentation.mappers
 
-import com.app.uniqueplant.domain.model.dataModels.Income
-import com.app.uniqueplant.domain.model.dataModels.IncomeFull
+import com.app.uniqueplant.domain.model.base.Income
+import com.app.uniqueplant.domain.model.IncomeFull
 import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
 import com.app.uniqueplant.presentation.model.IncomeUi
 import com.app.uniqueplant.presentation.model.IncomeWithCategoryAndPersonUi

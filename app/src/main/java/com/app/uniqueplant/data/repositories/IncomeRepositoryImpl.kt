@@ -6,9 +6,9 @@ import com.app.uniqueplant.data.mappers.toDomain
 import com.app.uniqueplant.data.mappers.toIncomeEntity
 import com.app.uniqueplant.data.mappers.toIncomeWithCategory
 import com.app.uniqueplant.data.local.dao.IncomeDao
-import com.app.uniqueplant.domain.model.dataModels.Income
-import com.app.uniqueplant.domain.model.dataModels.IncomeFull
-import com.app.uniqueplant.domain.model.dataModels.IncomeWithCategory
+import com.app.uniqueplant.domain.model.base.Income
+import com.app.uniqueplant.domain.model.IncomeFull
+import com.app.uniqueplant.domain.model.IncomeWithCategory
 import com.app.uniqueplant.domain.repository.IncomeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -23,7 +23,7 @@ class IncomeRepositoryImpl @Inject constructor(
     override suspend fun addIncome(income: Income): Long {
         val incomeEntity = income.toIncomeEntity()
         val dbResult = incomeDao.insert(incomeEntity)
-        autoSyncManager.triggerSync(SyncType.INCOMES)
+//        autoSyncManager.triggerSync(SyncType.INCOMES)
         return dbResult
     }
 
@@ -33,12 +33,12 @@ class IncomeRepositoryImpl @Inject constructor(
             needsSync = true
         )
         incomeDao.update(updatedIncome)
-        autoSyncManager.triggerSync(SyncType.INCOMES)
+//        autoSyncManager.triggerSync(SyncType.INCOMES)
     }
 
     override suspend fun deleteIncome(income: Income) {
         incomeDao.markAsDeleted(income.incomeId, System.currentTimeMillis())
-        autoSyncManager.triggerSync(SyncType.INCOMES)
+//        autoSyncManager.triggerSync(SyncType.INCOMES)
     }
 
     override suspend fun deleteIncomeById(id: Long) {

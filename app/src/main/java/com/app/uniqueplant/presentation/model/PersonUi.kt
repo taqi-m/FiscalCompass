@@ -1,6 +1,6 @@
 package com.app.uniqueplant.presentation.model
 
-import com.app.uniqueplant.data.local.model.PersonType
+import com.app.uniqueplant.domain.model.PersonType
 
 data class PersonUi(
     val personId: Long = 0,

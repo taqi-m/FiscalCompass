@@ -3,7 +3,7 @@ package com.app.uniqueplant.presentation.screens.transactionScreens.transactionD
 import com.app.uniqueplant.presentation.model.CategoryUi
 import com.app.uniqueplant.presentation.model.PersonUi
 import com.app.uniqueplant.presentation.model.TransactionUi
-import com.app.uniqueplant.presentation.screens.categories.UiState
+import com.app.uniqueplant.presentation.screens.category.UiState
 
 data class TransactionDetailsScreenState(
     val uiState: UiState = UiState.Idle,

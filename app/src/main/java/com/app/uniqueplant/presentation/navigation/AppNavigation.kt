@@ -19,10 +19,10 @@ import com.app.uniqueplant.domain.repository.AppPreferenceRepository
 import com.app.uniqueplant.presentation.model.TransactionUi
 import com.app.uniqueplant.presentation.screens.auth.AuthScreen
 import com.app.uniqueplant.presentation.screens.auth.AuthViewModel
-import com.app.uniqueplant.presentation.screens.categories.CategoriesScreen
-import com.app.uniqueplant.presentation.screens.categories.CategoriesViewModel
-import com.app.uniqueplant.presentation.screens.homeScreens.home.HomeScreen
-import com.app.uniqueplant.presentation.screens.homeScreens.home.HomeViewModel
+import com.app.uniqueplant.presentation.screens.category.CategoriesScreen
+import com.app.uniqueplant.presentation.screens.category.CategoriesViewModel
+import com.app.uniqueplant.presentation.screens.home.home.HomeScreen
+import com.app.uniqueplant.presentation.screens.home.home.HomeViewModel
 import com.app.uniqueplant.presentation.screens.jobs.JobsScreen
 import com.app.uniqueplant.presentation.screens.jobs.JobsViewModel
 import com.app.uniqueplant.presentation.screens.person.PersonScreen

@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.presentation.model.CategoryUi
 import com.app.uniqueplant.presentation.model.PersonUi
 import com.app.uniqueplant.presentation.model.TransactionUi
-import com.app.uniqueplant.presentation.screens.categories.UiState
+import com.app.uniqueplant.presentation.screens.category.UiState
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
 @Composable

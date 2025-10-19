@@ -2,8 +2,8 @@ package com.app.uniqueplant.data.mappers
 
 import com.app.uniqueplant.data.local.model.CategoryEntity
 import com.app.uniqueplant.data.remote.model.CategoryDto
-import com.app.uniqueplant.domain.model.dataModels.Category
-import com.app.uniqueplant.domain.model.dataModels.CategoryTree
+import com.app.uniqueplant.domain.model.base.Category
+import com.app.uniqueplant.domain.model.base.CategoryTree
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 import java.util.Date

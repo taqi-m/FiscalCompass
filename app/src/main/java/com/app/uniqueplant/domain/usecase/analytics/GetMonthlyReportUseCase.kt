@@ -1,7 +1,7 @@
 package com.app.uniqueplant.domain.usecase.analytics
 
 import com.app.uniqueplant.data.rbac.Permission
-import com.app.uniqueplant.domain.model.dataModels.MonthlyReport
+import com.app.uniqueplant.domain.model.MonthlyReport
 import com.app.uniqueplant.domain.repository.CategoryRepository
 import com.app.uniqueplant.domain.repository.ExpenseRepository
 import com.app.uniqueplant.domain.repository.IncomeRepository

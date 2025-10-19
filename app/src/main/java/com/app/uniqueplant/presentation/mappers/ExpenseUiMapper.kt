@@ -1,7 +1,7 @@
 package com.app.uniqueplant.presentation.mappers
 
-import com.app.uniqueplant.domain.model.dataModels.Expense
-import com.app.uniqueplant.domain.model.dataModels.ExpenseFull
+import com.app.uniqueplant.domain.model.base.Expense
+import com.app.uniqueplant.domain.model.ExpenseFull
 import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
 import com.app.uniqueplant.presentation.model.ExpenseUi
 import com.app.uniqueplant.presentation.model.ExpenseWithCategoryAndPersonUi

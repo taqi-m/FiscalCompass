@@ -1,11 +1,12 @@
 package com.app.uniqueplant.presentation.screens.person
 
-import com.app.uniqueplant.data.local.model.PersonType
+import com.app.uniqueplant.domain.model.PersonType
+import com.app.uniqueplant.domain.model.base.Person
 import com.app.uniqueplant.presentation.model.PersonUi
-import com.app.uniqueplant.presentation.screens.categories.UiState
+import com.app.uniqueplant.presentation.screens.category.UiState
 
 data class PersonDialogState(
-    val person: PersonUi? = null
+    val person: Person? = null
 ) {
     companion object {
         val Idle = PersonDialogState()
@@ -22,10 +23,10 @@ sealed class PersonDialog {
 data class PersonScreenState(
     val uiState: UiState = UiState.Idle,
     val selectedType: String = PersonType.CUSTOMER.name,
-    val persons: List<PersonUi> = emptyList(),
+    val persons: List<Person> = emptyList(),
     val currentDialog: PersonDialog = PersonDialog.Hidden,
     val dialogState: PersonDialogState = PersonDialogState.Idle,
-    val canAdd: Boolean = false ,
+    val canAdd: Boolean = false,
     val canEdit: Boolean = false,
     val canDelete: Boolean = false
 )

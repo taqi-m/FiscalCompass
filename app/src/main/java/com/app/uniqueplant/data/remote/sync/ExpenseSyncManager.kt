@@ -72,6 +72,15 @@ class ExpenseSyncManager @Inject constructor(
                 firestoreId = userExpensesRef.document().id
             }
 
+            // Update local sync status immediately
+            // This ensures that even if some part of the sync fails,
+            // successfully processed items are not re-processed.
+            expenseDao.updateSyncStatus(
+                expenseId = expense.expenseId,
+                firestoreId = firestoreId,
+                isSynced = true,
+                lastSyncedAt = currentSyncTime
+            )
             val expenseData = expense.toDto().copy(
                 categoryFirestoreId = categoryFirestoreId,
                 personFirestoreId = personFirestoreId
@@ -95,16 +104,6 @@ class ExpenseSyncManager @Inject constructor(
             batch.commit().await()
         }
 
-        // Update local sync status
-        unsyncedExpenses.forEach { expense ->
-            expenseDao.updateSyncStatus(
-                expenseId = expense.expenseId,
-                firestoreId = expense.firestoreId ?: expense.localId,
-                isSynced = true,
-                lastSyncedAt = currentSyncTime
-            )
-        }
-
         Log.d(TAG, "Successfully uploaded ${unsyncedExpenses.size} expenses")
     }
 
@@ -114,6 +113,7 @@ class ExpenseSyncManager @Inject constructor(
         } else {
             timestampManager.getLastSyncTimestamp(SyncType.EXPENSES, userId)
         }
+        Log.d(TAG, "Last sync time for expenses: ${Date(lastSyncTime)}")
 
         val snapshot = firestore.collection("users")
             .document(userId)

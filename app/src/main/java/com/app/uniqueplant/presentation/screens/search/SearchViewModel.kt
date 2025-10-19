@@ -6,7 +6,7 @@ import com.app.uniqueplant.domain.usecase.categories.GetCategoriesUseCase
 import com.app.uniqueplant.domain.usecase.person.GetAllPersonsUseCase
 import com.app.uniqueplant.domain.usecase.transaction.SearchTransactionUC
 import com.app.uniqueplant.presentation.mappers.toUi
-import com.app.uniqueplant.presentation.screens.categories.UiState
+import com.app.uniqueplant.presentation.screens.category.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview

@@ -1,7 +1,7 @@
 package com.app.uniqueplant.presentation.screens.transactionScreens.viewTransactions
 
 import com.app.uniqueplant.presentation.model.TransactionUi
-import com.app.uniqueplant.presentation.screens.categories.UiState
+import com.app.uniqueplant.presentation.screens.category.UiState
 import java.util.Date
 
 

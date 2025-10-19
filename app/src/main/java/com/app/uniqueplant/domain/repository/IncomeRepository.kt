@@ -1,8 +1,8 @@
 package com.app.uniqueplant.domain.repository
 
-import com.app.uniqueplant.domain.model.dataModels.Income
-import com.app.uniqueplant.domain.model.dataModels.IncomeFull
-import com.app.uniqueplant.domain.model.dataModels.IncomeWithCategory
+import com.app.uniqueplant.domain.model.base.Income
+import com.app.uniqueplant.domain.model.IncomeFull
+import com.app.uniqueplant.domain.model.IncomeWithCategory
 import kotlinx.coroutines.flow.Flow
 
 interface IncomeRepository {

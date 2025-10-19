@@ -1,9 +1,9 @@
 package com.app.uniqueplant.presentation.screens.search
 
-import com.app.uniqueplant.domain.model.dataModels.Category
-import com.app.uniqueplant.domain.model.dataModels.Person
+import com.app.uniqueplant.domain.model.base.Category
+import com.app.uniqueplant.domain.model.base.Person
 import com.app.uniqueplant.presentation.model.TransactionUi
-import com.app.uniqueplant.presentation.screens.categories.UiState
+import com.app.uniqueplant.presentation.screens.category.UiState
 import java.util.Date
 
 data class SearchScreenState(

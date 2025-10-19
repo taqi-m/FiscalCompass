@@ -68,6 +68,13 @@ class IncomeSyncManager @Inject constructor(
                 firestoreDocId = userIncomesRef.document().id
             }
 
+            incomeDao.updateSyncStatus(
+                incomeId = income.incomeId,
+                firestoreId = firestoreDocId,
+                isSynced = true,
+                lastSyncedAt = System.currentTimeMillis()
+            )
+
             val incomeData = income.toDto().copy(
                 categoryFirestoreId = categoryFirestoreId,
                 personFirestoreId = personFirestoreId
@@ -91,16 +98,6 @@ class IncomeSyncManager @Inject constructor(
             batch.commit().await()
         }
 
-        // Update local sync status
-        unsyncedIncomes.forEach { income ->
-            incomeDao.updateSyncStatus(
-                incomeId = income.incomeId,
-                firestoreId = income.firestoreId ?: income.localId,
-                isSynced = true,
-                lastSyncedAt = System.currentTimeMillis()
-            )
-        }
-
         Log.d(TAG, "Successfully uploaded ${unsyncedIncomes.size} incomes")
     }
 
@@ -110,6 +107,8 @@ class IncomeSyncManager @Inject constructor(
         } else {
             timestampManager.getLastSyncTimestamp(SyncType.INCOMES, userId)
         }
+
+        Log.d(TAG, "Last sync time for incomes: ${Date(lastSyncTime)}")
 
         val snapshot = firestore.collection("users")
             .document(userId)

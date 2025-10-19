@@ -1,26 +1,18 @@
 package com.app.uniqueplant.domain.usecase.person
 
-import com.app.uniqueplant.data.local.model.PersonType
-import com.app.uniqueplant.domain.model.dataModels.Person
+import com.app.uniqueplant.domain.model.PersonType
+import com.app.uniqueplant.domain.model.base.Person
 import com.app.uniqueplant.domain.repository.PersonRepository
-import com.app.uniqueplant.presentation.screens.categories.UiState
+import com.app.uniqueplant.presentation.screens.category.UiState
 import javax.inject.Inject
 
-
-/*
-* TODO: Implement PersonRepository to handle data operations
-*/
 
 class AddPersonUseCase @Inject constructor(
     private val personRepository: PersonRepository
 ) {
-    suspend operator fun invoke(name: String, personType: String): UiState {
+    suspend operator fun invoke(name: String,contact: String,  personType: String): UiState {
         try{
-            val person = Person(
-                personId = 0,
-                name = name,
-                personType = PersonType.valueOf(personType).name
-            )
+            val person = Person(0, name, PersonType.valueOf(personType).name, contact)
             personRepository.addPerson(person)
             return UiState.Success("Person added successfully.")
         }catch (exception: Exception) {
