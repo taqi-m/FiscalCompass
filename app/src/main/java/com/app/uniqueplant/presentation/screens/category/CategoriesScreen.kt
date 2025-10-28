@@ -54,6 +54,7 @@ import com.app.uniqueplant.ui.components.dialogs.AddCategoryDialog
 import com.app.uniqueplant.ui.components.dialogs.DeleteCategoryDialog
 import com.app.uniqueplant.ui.components.dialogs.EditCategoryDialog
 import com.app.uniqueplant.ui.components.input.TransactionTypeSelector
+import com.app.uniqueplant.ui.components.input.TypeSwitch
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,7 +71,57 @@ fun CategoriesScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val uiState = state.uiState
 
-    Scaffold(
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 8.dp),
+        contentAlignment = Alignment.Center
+    )
+    {
+        LaunchedEffect(uiState) {
+            val message: String? = when (uiState) {
+                is UiState.Error -> uiState.message
+                is UiState.Success -> uiState.message
+                else -> null
+            }
+            message?.let { msg ->
+                if (msg.isNotEmpty()) {
+                    snackBarHostState.showSnackbar(
+                        message = msg,
+                        duration = SnackbarDuration.Short,
+                        actionLabel = "Dismiss"
+                    )
+                    onEvent(CategoriesEvent.OnUiReset)
+                }
+            }
+        }
+
+        CategoriesScreenContent(
+            state = state, onEvent = onEvent, modifier = Modifier.fillMaxSize()
+        )
+
+        CategoryScreenDialogs(
+            currentDialog = state.currentDialog,
+            dialogState = state.dialogState,
+            onDialogSubmit = { submittedDialog ->
+                onEvent(
+                    CategoriesEvent.OnCategoryDialogSubmit(
+                        submittedDialog
+                    )
+                )
+            },
+            onDialogDismiss = { dialogToggled ->
+                onEvent(
+                    CategoriesEvent.OnCategoryDialogToggle(
+                        dialogToggled
+                    )
+                )
+            }
+        )
+    }
+
+    /*Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
@@ -98,60 +149,8 @@ fun CategoriesScreen(
         },
     )
     { it ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    top = it.calculateTopPadding(),
-                    start = it.calculateStartPadding(LocalLayoutDirection.current),
-                    end = it.calculateEndPadding(LocalLayoutDirection.current)
-                )
-                .padding(horizontal = 8.dp),
-            contentAlignment = Alignment.Center
-        )
-        {
-            LaunchedEffect(uiState) {
-                val message: String? = when (uiState) {
-                    is UiState.Error -> uiState.message
-                    is UiState.Success -> uiState.message
-                    else -> null
-                }
-                message?.let { msg ->
-                    if (msg.isNotEmpty()) {
-                        snackBarHostState.showSnackbar(
-                            message = msg,
-                            duration = SnackbarDuration.Short,
-                            actionLabel = "Dismiss"
-                        )
-                        onEvent(CategoriesEvent.OnUiReset)
-                    }
-                }
-            }
 
-            CategoriesScreenContent(
-                state = state, onEvent = onEvent, modifier = Modifier.fillMaxSize()
-            )
-
-            CategoryScreenDialogs(
-                currentDialog = state.currentDialog,
-                dialogState = state.dialogState,
-                onDialogSubmit = { submittedDialog ->
-                    onEvent(
-                        CategoriesEvent.OnCategoryDialogSubmit(
-                            submittedDialog
-                        )
-                    )
-                },
-                onDialogDismiss = { dialogToggled ->
-                    onEvent(
-                        CategoriesEvent.OnCategoryDialogToggle(
-                            dialogToggled
-                        )
-                    )
-                }
-            )
-        }
-    }
+    }*/
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -250,7 +249,7 @@ fun CategoriesList(
     )
     {
         stickyHeader {
-            TransactionTypeSelector(
+            /*TransactionTypeSelector(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.surface)
@@ -259,7 +258,21 @@ fun CategoriesList(
                 selectedOption = transactionType,
                 onOptionSelected = { type ->
                     onTransactionTypeChange(type)
-                })
+                })*/
+
+            val selectedIndex = TransactionType.entries.indexOf(transactionType)
+            TypeSwitch(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(vertical = 8.dp)
+                    .height(40.dp),
+                typeOptions = TransactionType.entries.map { it.name },
+                selectedTypeIndex = selectedIndex,
+                onTypeSelected = { index ->
+                    onTransactionTypeChange(TransactionType.entries[index])
+                }
+            )
         }
         when (uiState) {
             is UiState.Loading -> {

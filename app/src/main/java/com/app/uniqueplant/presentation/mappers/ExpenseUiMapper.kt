@@ -2,7 +2,7 @@ package com.app.uniqueplant.presentation.mappers
 
 import com.app.uniqueplant.domain.model.base.Expense
 import com.app.uniqueplant.domain.model.ExpenseFull
-import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
+import com.app.uniqueplant.presentation.utilities.CurrencyFormater
 import com.app.uniqueplant.presentation.model.ExpenseUi
 import com.app.uniqueplant.presentation.model.ExpenseWithCategoryAndPersonUi
 import java.text.SimpleDateFormat
@@ -14,7 +14,7 @@ private const val TIME_FORMAT = "HH:mm"
 fun Expense.toUi(): ExpenseUi {
     return ExpenseUi(
         expenseId = expenseId,
-        formatedAmount = CurrencyFormaterUseCase.formatCurrency(amount),
+        formatedAmount = CurrencyFormater.formatCurrency(amount),
         formatedDate = SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).format(date),
         formatedTime = SimpleDateFormat(TIME_FORMAT, Locale.getDefault()).format(date),
         description = description

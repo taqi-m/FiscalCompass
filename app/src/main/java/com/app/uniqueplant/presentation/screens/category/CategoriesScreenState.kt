@@ -35,7 +35,7 @@ data class CategoriesScreenState(
     val canEdit: Boolean = false,
     val canDelete: Boolean = false,
     val categories: GroupedCategoryUi = emptyMap(),
-    val transactionType: TransactionType = TransactionType.EXPENSE,
+    val transactionType: TransactionType = TransactionType.INCOME,
     val currentDialog: CategoriesDialog = CategoriesDialog.Hidden,
     val dialogState: CategoryDialogState = CategoryDialogState.Idle
 )

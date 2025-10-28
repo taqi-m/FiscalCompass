@@ -59,7 +59,7 @@ dependencies {
 
     // Hilt dependencies
     implementation(libs.hilt.android)
-    implementation(libs.androidx.material3.window.size.class1)
+//    implementation(libs.androidx.material3.window.size.class1)
     implementation(libs.androidx.compose.runtime)
     debugImplementation(libs.ui.tooling)
     ksp(libs.hilt.android.compiler)
@@ -78,6 +78,8 @@ dependencies {
     implementation(libs.android.material)
     implementation(libs.androidx.datastore)
     implementation(libs.androidx.datastore.preferences)
+
+    implementation(libs.charts)
 
 
     //Room Libraries

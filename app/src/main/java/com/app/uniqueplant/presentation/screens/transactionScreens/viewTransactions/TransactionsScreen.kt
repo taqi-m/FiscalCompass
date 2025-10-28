@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
+import com.app.uniqueplant.presentation.utilities.CurrencyFormater
 import com.app.uniqueplant.presentation.model.TransactionUi
 import com.app.uniqueplant.presentation.screens.category.UiState
 import com.app.uniqueplant.ui.components.ErrorContainer
@@ -34,6 +34,7 @@ import com.app.uniqueplant.ui.components.cards.TransactionCard
 import com.app.uniqueplant.ui.components.input.MonthSelector
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 @Composable
@@ -77,9 +78,9 @@ fun TransactionsScreen(
                 TransactionHeading(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    currentBalance = CurrencyFormaterUseCase.formatCurrency(state.incoming - state.outgoing),
-                    incoming = CurrencyFormaterUseCase.formatCurrency(state.incoming),
-                    outgoing = CurrencyFormaterUseCase.formatCurrency(state.outgoing)
+                    currentBalance = CurrencyFormater.formatCurrency(state.incoming - state.outgoing),
+                    incoming = CurrencyFormater.formatCurrency(state.incoming),
+                    outgoing = CurrencyFormater.formatCurrency(state.outgoing)
                 )
             }
 
@@ -284,10 +285,12 @@ fun TransactionsScreenPreview() {
     UniquePlantTheme {
         TransactionsScreen(
             state = TransactionScreenState(
-                uiState = UiState.Error("Failed to load transactions"),
+                incoming = 5000.0,
+                outgoing = 2000.0,
+                uiState = UiState.Idle,
                 transactions = mapOf(
-                    java.util.Date() to TransactionUi.dummyList,
-                    java.util.Date(System.currentTimeMillis() - 86400000L) to listOf(TransactionUi.dummy)
+                    Date() to TransactionUi.dummyList,
+                    Date(System.currentTimeMillis() - 86400000L) to listOf(TransactionUi.dummy)
                 )
             ),
             onEvent = {},

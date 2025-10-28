@@ -20,7 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.R
-import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
+import com.app.uniqueplant.presentation.utilities.CurrencyFormater
 import com.app.uniqueplant.presentation.model.TransactionType
 import com.app.uniqueplant.presentation.model.TransactionUi
 import java.text.SimpleDateFormat
@@ -129,7 +129,7 @@ fun TransactionCardPreview() {
             transactionId = 1L,
             categoryId = 0L,
             personId = 0L,
-            formatedAmount = CurrencyFormaterUseCase.formatCurrency(100.0),
+            formatedAmount = CurrencyFormater.formatCurrency(100.0),
             formatedDate = SimpleDateFormat("dd MM, yyyy", Locale.getDefault()).format(Date()),
             formatedTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
             description = "Sample Transaction",

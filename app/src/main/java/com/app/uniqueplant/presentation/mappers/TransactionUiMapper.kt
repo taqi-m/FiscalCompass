@@ -1,7 +1,7 @@
 package com.app.uniqueplant.presentation.mappers
 
 import com.app.uniqueplant.domain.model.Transaction
-import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
+import com.app.uniqueplant.presentation.utilities.CurrencyFormater
 import com.app.uniqueplant.presentation.model.TransactionUi
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -21,7 +21,7 @@ fun formatTime(date: Date): String {
 fun Transaction.toUi(): TransactionUi {
     return TransactionUi(
         transactionId = transactionId,
-        formatedAmount = CurrencyFormaterUseCase.formatCurrency(amount),
+        formatedAmount = CurrencyFormater.formatCurrency(amount),
         categoryId = categoryId,
         personId = personId,
         formatedDate = formatDate(date),
@@ -37,7 +37,7 @@ fun TransactionUi.toTransaction(): Transaction {
     val dateFormat = SimpleDateFormat("$DATE_FORMAT $TIME_FORMAT", Locale.getDefault())
     return Transaction(
         transactionId = transactionId,
-        amount = CurrencyFormaterUseCase.parseCurrency(formatedAmount),
+        amount = CurrencyFormater.parseCurrency(formatedAmount),
         categoryId = categoryId,
         personId = personId,
         date = dateFormat.parse(dateTimeString) ?: Date(),

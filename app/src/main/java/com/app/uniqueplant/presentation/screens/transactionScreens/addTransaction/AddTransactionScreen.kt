@@ -52,6 +52,7 @@ import com.app.uniqueplant.R
 import com.app.uniqueplant.presentation.model.CategoryUi
 import com.app.uniqueplant.presentation.model.InputField
 import com.app.uniqueplant.presentation.model.PersonUi
+import com.app.uniqueplant.presentation.model.TransactionType
 import com.app.uniqueplant.presentation.screens.category.UiState
 import com.app.uniqueplant.ui.components.dialogs.DatePickerDialog
 import com.app.uniqueplant.ui.components.dialogs.TimePickerDialog
@@ -59,6 +60,7 @@ import com.app.uniqueplant.ui.components.input.Calculator
 import com.app.uniqueplant.ui.components.input.CustomExposedDropDownMenu
 import com.app.uniqueplant.ui.components.input.ReadOnlyDataEntryTextField
 import com.app.uniqueplant.ui.components.input.TransactionTypeSelector
+import com.app.uniqueplant.ui.components.input.TypeSwitch
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -266,12 +268,18 @@ fun AddTransactionFormContent(
                 .weight(1f),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            TransactionTypeSelector(
+
+            val selectedIndex = TransactionType.entries.indexOf(state.transactionType)
+            TypeSwitch(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                selectedOption = state.transactionType,
-                onOptionSelected = { selectedType ->
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(vertical = 8.dp)
+                    .height(40.dp),
+                typeOptions = TransactionType.entries.map { it.name },
+                selectedTypeIndex = selectedIndex,
+                onTypeSelected = { index ->
+                    val selectedType = TransactionType.entries[index]
                     onEvent(AddTransactionEvent.OnTypeSelected(selectedType))
                 }
             )

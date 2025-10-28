@@ -3,24 +3,27 @@ package com.app.uniqueplant.ui.components.input
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.selection.TextSelectionColors
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,12 +31,15 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.app.uniqueplant.domain.usecase.CurrencyFormaterUseCase
+import com.app.uniqueplant.R
+import com.app.uniqueplant.presentation.utilities.CurrencyFormater
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
 
@@ -74,10 +80,13 @@ fun Calculator(
     }
 
     // Handle error and return to default state
-    val handleError = {
+    fun handleError(exception: Exception? = null) {
         displayText = "Error"
-        errorState = true
+        firstOperand = 0.0
+        operation = null
         clearOnNextInput = true
+        errorState = true
+        exception?.printStackTrace()
     }
 
     LaunchedEffect(displayText) {
@@ -94,8 +103,8 @@ fun Calculator(
     )
     {
         // Display with trailing icon
-        OutlinedTextField(
-            value = CurrencyFormaterUseCase.formatCalculatorCurrency(
+        TextField(
+            value = CurrencyFormater.formatCalculatorCurrency(
                 displayText
             ),
             onValueChange = { onValueChange(it) },
@@ -108,11 +117,9 @@ fun Calculator(
                 color = if (errorState) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
             ),
             singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors().copy(
+            colors = TextFieldDefaults.colors().copy(
                 focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.75f),
                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.75f),
-                focusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.75f),
-                unfocusedIndicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.75f),
                 // Disable selection appearance
                 textSelectionColors = TextSelectionColors(
                     backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -127,19 +134,6 @@ fun Calculator(
             ),
             interactionSource = remember { MutableInteractionSource() },
             enabled = false,
-            trailingIcon = {
-                IconButton(
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp),
-                    onClick = { deleteLastChar() },
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Clear,
-                        contentDescription = "Delete/Clear",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            },
             leadingIcon = {
                 if (operation != null) {
                     Text(
@@ -189,7 +183,7 @@ fun Calculator(
                             handleError()
                         }
                     } catch (e: NumberFormatException) {
-                        handleError()
+                        handleError(e)
                     }
                 }
             },
@@ -208,7 +202,7 @@ fun Calculator(
                         val result = when (operation) {
                             "+" -> firstOperand + secondOperand
                             "-" -> firstOperand - secondOperand
-                            "×" -> firstOperand * secondOperand
+                            "*" -> firstOperand * secondOperand
                             "÷" -> if (secondOperand != 0.0) firstOperand / secondOperand else Double.NaN
                             else -> secondOperand
                         }
@@ -230,13 +224,14 @@ fun Calculator(
                         operation = null
                         clearOnNextInput = true
                     } catch (e: NumberFormatException) {
-                        handleError()
+                        handleError(e)
                     } catch (e: Exception) {
-                        handleError()
+                        handleError(e)
                     }
                 }
             },
             onClearClick = clearDisplay,
+            onDeleteLastChar = deleteLastChar,
             onDecimalClick = {
                 if (errorState) {
                     clearDisplay()
@@ -255,7 +250,7 @@ fun Calculator(
             },
         )
     }
-    
+
 }
 
 
@@ -281,79 +276,151 @@ fun NumberBoard(
     onOperatorClick: (String) -> Unit,
     onEqualsClick: () -> Unit,
     onClearClick: () -> Unit,
+    onDeleteLastChar: () -> Unit,
     onDecimalClick: () -> Unit,
     onSaveClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier.padding(4.dp),
-        verticalArrangement = Arrangement.SpaceEvenly
+    Row(
+        modifier = modifier
+            .padding(4.dp)
+            .height(IntrinsicSize.Min),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Row 1: 7, 8, 9, ÷
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            CalcButton(text = "7", onClick = { onNumberClick(7) }, modifier = Modifier.weight(1f))
-            CalcButton(text = "8", onClick = { onNumberClick(8) }, modifier = Modifier.weight(1f))
-            CalcButton(text = "9", onClick = { onNumberClick(9) }, modifier = Modifier.weight(1f))
-            OperatorButton(
-                text = "÷", onClick = { onOperatorClick("÷") }, modifier = Modifier.weight(1f)
-            )
+                .fillMaxWidth()
+                .weight(0.6f)
+                .fillMaxHeight(),
+        )
+        {
+            // Row 3: 1, 2, 3, -
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                CalcButton(
+                    text = "1",
+                    onClick = { onNumberClick(1) },
+                    modifier = Modifier.weight(1f)
+                )
+                CalcButton(
+                    text = "2",
+                    onClick = { onNumberClick(2) },
+                    modifier = Modifier.weight(1f)
+                )
+                CalcButton(
+                    text = "3",
+                    onClick = { onNumberClick(3) },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            // Row 2: 4, 5, 6, ×
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                CalcButton(
+                    text = "4",
+                    onClick = { onNumberClick(4) },
+                    modifier = Modifier.weight(1f)
+                )
+                CalcButton(
+                    text = "5",
+                    onClick = { onNumberClick(5) },
+                    modifier = Modifier.weight(1f)
+                )
+                CalcButton(
+                    text = "6",
+                    onClick = { onNumberClick(6) },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            // Row 1: 7, 8, 9, ÷
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                CalcButton(
+                    text = "7",
+                    onClick = { onNumberClick(7) },
+                    modifier = Modifier.weight(1f)
+                )
+                CalcButton(
+                    text = "8",
+                    onClick = { onNumberClick(8) },
+                    modifier = Modifier.weight(1f)
+                )
+                CalcButton(
+                    text = "9",
+                    onClick = { onNumberClick(9) },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+
+            // Row 4: 0, ., =, +
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                CalcButton(
+                    text = ".",
+                    onClick = { onDecimalClick() },
+                    modifier = Modifier.weight(1f)
+                )
+                CalcButton(
+                    text = "0",
+                    onClick = { onNumberClick(0) },
+                    modifier = Modifier.weight(1f)
+                )
+
+                EqualsButton(onClick = onEqualsClick, modifier = Modifier.weight(1f))
+            }
         }
 
-        // Row 2: 4, 5, 6, ×
-        Row(
+
+        Column(
             modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            CalcButton(text = "4", onClick = { onNumberClick(4) }, modifier = Modifier.weight(1f))
-            CalcButton(text = "5", onClick = { onNumberClick(5) }, modifier = Modifier.weight(1f))
-            CalcButton(text = "6", onClick = { onNumberClick(6) }, modifier = Modifier.weight(1f))
-            OperatorButton(
-                text = "×", onClick = { onOperatorClick("×") }, modifier = Modifier.weight(1f)
-            )
+                .fillMaxHeight(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        )
+        {
+            OperatorButton(text = "*", onClick = { onOperatorClick("*") })
+            OperatorButton(text = "÷", onClick = { onOperatorClick("÷") })
+            OperatorButton(text = "+", onClick = { onOperatorClick("+") })
+            OperatorButton(text = "-", onClick = { onOperatorClick("-") })
         }
 
-        // Row 3: 1, 2, 3, -
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            CalcButton(text = "1", onClick = { onNumberClick(1) }, modifier = Modifier.weight(1f))
-            CalcButton(text = "2", onClick = { onNumberClick(2) }, modifier = Modifier.weight(1f))
-            CalcButton(text = "3", onClick = { onNumberClick(3) }, modifier = Modifier.weight(1f))
-            OperatorButton(
-                text = "-", onClick = { onOperatorClick("-") }, modifier = Modifier.weight(1f)
+                .fillMaxHeight(),
+        )
+        {
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(1f)
+                    .width(IntrinsicSize.Min),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                ClearButton(
+                    modifier = Modifier.fillMaxHeight().weight(1f),
+                    onClick = onClearClick,
+                )
+
+                BackspaceButton(
+                    onClick = onDeleteLastChar,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            SaveButton(
+                onClick = onSaveClick,
             )
-        }
-
-        // Row 4: 0, ., =, +
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            CalcButton(text = ".", onClick = { onDecimalClick() }, modifier = Modifier.weight(1f))
-            CalcButton(text = "0", onClick = { onNumberClick(0) }, modifier = Modifier.weight(1f))
-
-            EqualsButton(onClick = onEqualsClick, modifier = Modifier.weight(1f))
-            OperatorButton(
-                text = "+", onClick = { onOperatorClick("+") }, modifier = Modifier.weight(1f)
-            )
-        }
-
-        // Row 5: Clear, Save
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            ClearButton(onClick = onClearClick, modifier = Modifier.weight(1f))
-            SaveButton(onClick = onSaveClick, modifier = Modifier.weight(1f))
         }
     }
 }
@@ -365,10 +432,12 @@ fun NumberBoard(
 fun NumberBoardPreview() {
     UniquePlantTheme {
         NumberBoard(
+            modifier = Modifier.wrapContentSize(),
             onNumberClick = {},
             onOperatorClick = {},
             onEqualsClick = {},
             onClearClick = {},
+            onDeleteLastChar = {},
             onDecimalClick = {},
             onSaveClick = {})
     }
@@ -381,7 +450,7 @@ private fun CalcButton(
 ) {
     Button(
         onClick = onClick,
-//        shape = CircleShape,
+        shape = MaterialTheme.shapes.medium,
         modifier = modifier
             .heightIn(min = 36.dp, max = 56.dp),
         colors = ButtonDefaults.buttonColors(
@@ -405,9 +474,8 @@ private fun OperatorButton(
 ) {
     Button(
         onClick = onClick,
-        shape = CircleShape,
+        shape = MaterialTheme.shapes.medium,
         modifier = modifier,
-//            .aspectRatio(1f),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         )
@@ -426,14 +494,14 @@ private fun EqualsButton(
 ) {
     Button(
         onClick = onClick,
-        shape = CircleShape,
+        shape = MaterialTheme.shapes.medium,
         modifier = modifier,
-//            .aspectRatio(1f),
         colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary
+            containerColor = MaterialTheme.colorScheme.inversePrimary,
+            contentColor = MaterialTheme.colorScheme.primary
         )
     ) {
-        Text(text = "=", fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
+        Text(text = "=", fontSize = 20.sp)
     }
 }
 
@@ -442,14 +510,53 @@ private fun ClearButton(
     onClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Button(
-        onClick = onClick, modifier = modifier, colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.errorContainer
+        shape = MaterialTheme.shapes.medium,
+        onClick = onClick,
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+            contentColor = MaterialTheme.colorScheme.onErrorContainer
         )
     ) {
         Text(
-            text = "Clear",
-            fontSize = 18.sp,
-            color = MaterialTheme.colorScheme.onErrorContainer,
+            text = "AC",
+            fontSize = 18.sp
+        )
+    }
+}
+
+
+@Composable
+private fun BackspaceButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+
+
+    /*IconButton(
+        modifier = Modifier
+            .padding(horizontal = 8.dp),
+        onClick = { deleteLastChar() },
+    ) {
+        Icon(
+            imageVector = Icons.Default.Clear,
+            contentDescription = "Delete/Clear",
+            tint = MaterialTheme.colorScheme.primary
+        )
+    }*/
+    Button(
+        shape = MaterialTheme.shapes.medium,
+        onClick = onClick,
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+        )
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_keyboard_backspace_24),
+            contentDescription = "Backspace",
+            tint = MaterialTheme.colorScheme.onTertiaryContainer
         )
     }
 }
@@ -459,14 +566,17 @@ private fun SaveButton(
     onClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Button(
-        onClick = onClick, modifier = modifier, colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
+        onClick = onClick,
+        shape = MaterialTheme.shapes.medium,
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
         )
     ) {
         Text(
-            text = "Save",
-            fontSize = 18.sp,
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            text = "OK",
+            fontSize = 18.sp
         )
     }
 }

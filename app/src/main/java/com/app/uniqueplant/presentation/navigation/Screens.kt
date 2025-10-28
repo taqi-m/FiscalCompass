@@ -23,10 +23,11 @@ sealed class MainScreens(val route: String) {
     }
 }
 
-sealed class HomeBottomScreen(val route: String, val label: String, val iconResource: Int) {
-    object Dashboard : HomeBottomScreen("dashboard", "Home", R.drawable.ic_home_24)
-    object Transactions : HomeBottomScreen("transactions", "Records", R.drawable.ic_list_24)
-    object Analytics : HomeBottomScreen("analytics", "Reports", R.drawable.ic_bar_chart_24)
-    object Categories : HomeBottomScreen("categories", "Categories", R.drawable.ic_category_24)
+sealed class HomeBottomScreen(val route: String, val label: String, val unselectedIcon: Int,val selectedIcon: Int) {
+    object Dashboard : HomeBottomScreen("dashboard", "Home", R.drawable.ic_outlined_dashboard_panel_24, selectedIcon = R.drawable.ic_filled_dashboard_panel_24)
+//    object Transactions : HomeBottomScreen("transactions", "Records", R.drawable.ic_compare_arrows_24)
+    object Analytics : HomeBottomScreen("analytics", "Analysis", R.drawable.ic_outlined_data_report_24, selectedIcon = R.drawable.ic_filled_data_report_24)
+    object Categories : HomeBottomScreen("categories", "Categories", R.drawable.ic_outlined_categories, selectedIcon = R.drawable.ic_filled_categories)
+    object People : HomeBottomScreen("people", "People", R.drawable.ic_outlined_employees_24, selectedIcon = R.drawable.ic_filled_employees_24)
 
 }

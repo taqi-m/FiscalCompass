@@ -7,7 +7,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.domain.repository.AppPreferenceRepository
@@ -22,13 +21,11 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
     @Inject
     lateinit var preferenceManager: AppPreferenceRepository
-    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
-            SettingsProvider(
-            ) {
+            SettingsProvider {
                 UniquePlantTheme (
                     darkTheme = LocalDarkTheme.current.isDarkTheme()
                 ) {

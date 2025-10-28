@@ -9,10 +9,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.app.uniqueplant.presentation.screens.category.CategoriesScreen
+import com.app.uniqueplant.presentation.screens.category.CategoriesViewModel
 import com.app.uniqueplant.presentation.screens.home.analytics.AnalyticsScreen
 import com.app.uniqueplant.presentation.screens.home.analytics.AnalyticsViewModel
 import com.app.uniqueplant.presentation.screens.home.dashboard.DashboardScreen
 import com.app.uniqueplant.presentation.screens.home.dashboard.DashboardViewModel
+import com.app.uniqueplant.presentation.screens.person.PersonScreen
+import com.app.uniqueplant.presentation.screens.person.PersonViewModel
 import com.app.uniqueplant.presentation.screens.transactionScreens.viewTransactions.TransactionViewModel
 import com.app.uniqueplant.presentation.screens.transactionScreens.viewTransactions.TransactionsScreen
 import com.google.gson.Gson
@@ -44,7 +48,7 @@ fun HomeNavGraph(
             )
         }
 
-        composable(
+        /*composable(
             route = HomeBottomScreen.Transactions.route,
 
             ) { backStackEntry ->
@@ -62,7 +66,7 @@ fun HomeNavGraph(
                     )
                 }
             )
-        }
+        }*/
 
         composable(
             route = HomeBottomScreen.Analytics.route,
@@ -73,6 +77,30 @@ fun HomeNavGraph(
             AnalyticsScreen(
                 state = state,
                 onEvent = analyticsViewModel::onEvent
+            )
+        }
+
+        composable(
+            route = HomeBottomScreen.Categories.route
+        ) { backStackEntry ->
+            val categoriesViewModel: CategoriesViewModel = hiltViewModel(backStackEntry)
+            val state by categoriesViewModel.state.collectAsState()
+            CategoriesScreen(
+                appNavController = appNavController,
+                state = state,
+                onEvent = categoriesViewModel::onEvent
+            )
+        }
+
+        composable(
+            route = HomeBottomScreen.People.route
+        ){ backStackEntry ->
+            val personViewModel: PersonViewModel = hiltViewModel()
+            val state by personViewModel.state.collectAsState()
+            PersonScreen(
+                appNavController = appNavController,
+                state = state,
+                onEvent = personViewModel::onEvent
             )
         }
     }
