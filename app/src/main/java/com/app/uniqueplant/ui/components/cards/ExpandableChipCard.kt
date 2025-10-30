@@ -5,14 +5,17 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -20,8 +23,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,6 +48,7 @@ import kotlinx.coroutines.flow.collectLatest
 fun <T> ExpandableChipCard(
     modifier: Modifier = Modifier,
     title: String,
+    showIcon: Boolean = false,
     trailingIcon: (@Composable () -> Unit)? = null,
     chips: List<T>,
     onChipClick: ((T) -> Unit)? = null,
@@ -53,10 +59,14 @@ fun <T> ExpandableChipCard(
     ChipCardItemsContainer(
         modifier = modifier,
         title = title,
+        showIcon = showIcon,
         trailingIcon = trailingIcon,
         initiallyExpanded = initiallyExpanded,
     ) {
         ChipFlow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp),
             chips = chips,
             onChipClick = onChipClick,
             onChipLongClick = onChipLongClick,
@@ -72,6 +82,7 @@ fun <T> ExpandableChipCard(
 fun ChipCardItemsContainer(
     modifier: Modifier = Modifier,
     title: String,
+    showIcon: Boolean = false,
     trailingIcon: @Composable (() -> Unit)? = null,
     initiallyExpanded: Boolean = false,
     chipsFlow: @Composable () -> Unit,
@@ -83,24 +94,63 @@ fun ChipCardItemsContainer(
             contentColor = MaterialTheme.colorScheme.onSurface
         )
     ) {
-        Column(
+        CardHeader(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal =  16.dp, vertical = 8.dp),
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                .padding(vertical = 8.dp, horizontal = 8.dp)
+                .padding(end = 8.dp),
+            title = title,
+            showIcon = showIcon,
+            trailingIcon = trailingIcon
+        )
+
+        HorizontalDivider(
+            modifier = Modifier.padding(top = 4.dp),
+            thickness = 1.dp
+        )
+
+        chipsFlow()
+    }
+}
+
+@Composable
+private fun CardHeader(
+    modifier: Modifier = Modifier,
+    showIcon: Boolean = false,
+    icon: @Composable (() -> Unit)? = null,
+    title: String,
+    trailingIcon: @Composable (() -> Unit)? = null
+){
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        if (showIcon){
+            Surface(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .size(40.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary
             ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f)
-                )
-                trailingIcon?.let { it() }
+                Box(
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = title.first().toString(),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
             }
-            chipsFlow()
         }
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.weight(1f).padding(start = if (showIcon) 0.dp else 8.dp),
+        )
+        trailingIcon?.let { it() }
     }
 }
 
@@ -120,7 +170,9 @@ fun <T> ChipFlow(
         Text(
             text = placeholder,
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.fillMaxWidth().padding(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
             textAlign = TextAlign.Center
         )
         return
@@ -212,7 +264,9 @@ fun ExpandableChipCardPreview() {
             title = "Expandable Chip Card",
             trailingIcon = {
                 FilledTonalIconButton (
-                    modifier = Modifier.height(32.dp).width(32.dp),
+                    modifier = Modifier
+                        .height(32.dp)
+                        .width(32.dp),
                     shape = RoundedCornerShape(15),
                     onClick = { /* Handle filter icon click */ }
                 ) {

@@ -1,6 +1,9 @@
 package com.app.uniqueplant.presentation.navigation
 
-import android.net.Uri
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -17,9 +20,13 @@ import com.app.uniqueplant.presentation.screens.home.dashboard.DashboardScreen
 import com.app.uniqueplant.presentation.screens.home.dashboard.DashboardViewModel
 import com.app.uniqueplant.presentation.screens.person.PersonScreen
 import com.app.uniqueplant.presentation.screens.person.PersonViewModel
-import com.app.uniqueplant.presentation.screens.transactionScreens.viewTransactions.TransactionViewModel
-import com.app.uniqueplant.presentation.screens.transactionScreens.viewTransactions.TransactionsScreen
-import com.google.gson.Gson
+
+private const val TRANSITION_DURATION = 300
+
+private val defaultTransitionSpec = tween<Float>(
+    durationMillis = TRANSITION_DURATION,
+    easing = FastOutSlowInEasing
+)
 
 
 @Composable
@@ -32,8 +39,16 @@ fun HomeNavGraph(
         homeNavController,
         startDestination = HomeBottomScreen.Dashboard.route,
         modifier = modifier,
-        enterTransition = { androidx.compose.animation.EnterTransition.None },
-        exitTransition = { androidx.compose.animation.ExitTransition.None }
+        enterTransition = {
+            fadeIn(
+                animationSpec = defaultTransitionSpec
+            )
+        },
+        exitTransition = {
+            fadeOut(
+                animationSpec = defaultTransitionSpec
+            )
+        }
     ) {
         composable(
             route = HomeBottomScreen.Dashboard.route,
@@ -47,26 +62,6 @@ fun HomeNavGraph(
                 onEvent = dashboardViewModel::onEvent,
             )
         }
-
-        /*composable(
-            route = HomeBottomScreen.Transactions.route,
-
-            ) { backStackEntry ->
-            val transactionViewModel: TransactionViewModel = hiltViewModel(backStackEntry)
-            val state by transactionViewModel.state.collectAsState()
-            TransactionsScreen(
-                state = state,
-                onEvent = transactionViewModel::onEvent,
-                onNavigateClicked = { transactionUi ->
-                    val transaction = Uri.encode(Gson().toJson(transactionUi))
-                    appNavController.navigate(
-                        MainScreens.TransactionDetail.passTransaction(
-                            transaction
-                        )
-                    )
-                }
-            )
-        }*/
 
         composable(
             route = HomeBottomScreen.Analytics.route,
@@ -98,7 +93,6 @@ fun HomeNavGraph(
             val personViewModel: PersonViewModel = hiltViewModel()
             val state by personViewModel.state.collectAsState()
             PersonScreen(
-                appNavController = appNavController,
                 state = state,
                 onEvent = personViewModel::onEvent
             )

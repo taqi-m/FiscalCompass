@@ -41,7 +41,7 @@ import com.google.gson.Gson
 
 
 // Animation duration constant for consistent transitions
-private const val TRANSITION_DURATION = 500
+private const val TRANSITION_DURATION = 300
 
 // Pre-defined transition animations
 private val enterFromLeft = fadeIn(animationSpec = tween(TRANSITION_DURATION)) +
@@ -143,10 +143,10 @@ fun AppNavigation (
 
         composable(
             MainScreens.Settings.route,
-            enterTransition = { enterFromRight },
-            exitTransition = { exitToRight },
-            popEnterTransition = { enterFromRight },
-            popExitTransition = { exitToRight }) { backStackEntry ->
+            enterTransition = { enterFromLeft },
+            exitTransition = { exitToLeft },
+            popEnterTransition = { enterFromLeft },
+            popExitTransition = { exitToLeft }) { backStackEntry ->
             val settingsViewModel: SettingsViewModel = hiltViewModel(backStackEntry)
             val state by settingsViewModel.state.collectAsState()
             SettingsScreen(
@@ -198,7 +198,6 @@ fun AppNavigation (
             val personViewModel: PersonViewModel = hiltViewModel()
             val state by personViewModel.state.collectAsState()
             PersonScreen(
-                appNavController = navController,
                 state = state,
                 onEvent = personViewModel::onEvent
             )

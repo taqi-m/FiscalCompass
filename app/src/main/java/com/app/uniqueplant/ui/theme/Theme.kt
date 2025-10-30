@@ -28,7 +28,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun UniquePlantTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val view = LocalView.current

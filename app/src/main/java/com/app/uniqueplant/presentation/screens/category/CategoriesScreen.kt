@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,28 +20,20 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.app.uniqueplant.R
 import com.app.uniqueplant.presentation.mappers.toCategory
 import com.app.uniqueplant.presentation.model.CategoryUi
 import com.app.uniqueplant.presentation.model.GroupedCategoryUi
@@ -53,7 +43,6 @@ import com.app.uniqueplant.ui.components.cards.ExpandableChipCard
 import com.app.uniqueplant.ui.components.dialogs.AddCategoryDialog
 import com.app.uniqueplant.ui.components.dialogs.DeleteCategoryDialog
 import com.app.uniqueplant.ui.components.dialogs.EditCategoryDialog
-import com.app.uniqueplant.ui.components.input.TransactionTypeSelector
 import com.app.uniqueplant.ui.components.input.TypeSwitch
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
@@ -64,11 +53,7 @@ fun CategoriesScreen(
     state: CategoriesScreenState,
     onEvent: (CategoriesEvent) -> Unit,
 ) {
-    val snackBarHostState = remember {
-        SnackbarHostState()
-    }
-
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val snackBarHostState = remember { SnackbarHostState() }
     val uiState = state.uiState
 
     Box(
@@ -120,75 +105,9 @@ fun CategoriesScreen(
             }
         )
     }
-
-    /*Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            TopAppBar(
-                scrollBehavior = scrollBehavior,
-                title = { Text(text = "Categories") },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            appNavController.popBackStack()
-                        }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_arrow_back_24),
-                            contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-            )
-        },
-        snackbarHost = {
-            SnackbarHost(
-                hostState = snackBarHostState
-            )
-        },
-    )
-    { it ->
-
-    }*/
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = false, showSystemUi = false,
-    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL
-)
-@Composable
-fun CategoriesScreenPreview() {
-    val appNavController = rememberNavController()
-    val state = CategoriesScreenState(
-        uiState = UiState.Idle,
-        canAdd = true,
-        canEdit = true,
-        canDelete = true,
-        categories = CategoryUi.dummyGroup,
-        transactionType = TransactionType.EXPENSE,
-        currentDialog = CategoriesDialog.Hidden,
-        dialogState = CategoryDialogState.Idle
-    )
-    UniquePlantTheme { CategoriesScreen(appNavController = appNavController, state = state, onEvent = {}) }
-}
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL)
-@Composable
-fun CategoriesScreenNoAddPreview() {
-    val appNavController = rememberNavController()
-    val state = CategoriesScreenState(
-        uiState = UiState.Idle,
-        canAdd = false,
-        canEdit = true,
-        canDelete = true,
-        categories = CategoryUi.dummyGroup,
-        transactionType = TransactionType.EXPENSE,
-        currentDialog = CategoriesDialog.Hidden,
-        dialogState = CategoryDialogState.Idle
-    )
-    UniquePlantTheme { CategoriesScreen(appNavController = appNavController, state = state, onEvent = {}) }
-}
+
 
 @Composable
 fun CategoriesScreenContent(
@@ -249,24 +168,14 @@ fun CategoriesList(
     )
     {
         stickyHeader {
-            /*TransactionTypeSelector(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(vertical = 8.dp)
-                    .height(48.dp),
-                selectedOption = transactionType,
-                onOptionSelected = { type ->
-                    onTransactionTypeChange(type)
-                })*/
-
             val selectedIndex = TransactionType.entries.indexOf(transactionType)
             TypeSwitch(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.surface)
-                    .padding(vertical = 8.dp)
+                    .padding(bottom = 8.dp, top = 4.dp)
                     .height(40.dp),
+                shape = MaterialTheme.shapes.small,
                 typeOptions = TransactionType.entries.map { it.name },
                 selectedTypeIndex = selectedIndex,
                 onTypeSelected = { index ->
@@ -299,6 +208,7 @@ fun CategoriesList(
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp),
                             title = category.name,
+                            showIcon = true,
                             trailingIcon = onAddNewCategoryClicked?.let {
                                     {
                                         FilledTonalIconButton(
@@ -411,4 +321,39 @@ fun CategoryScreenDialogs(
 
         else -> {}
     }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = false, showSystemUi = false
+)
+@Composable
+fun CategoriesScreenPreview() {
+    val appNavController = rememberNavController()
+    val state = CategoriesScreenState(
+        uiState = UiState.Idle,
+        canAdd = true,
+        canEdit = true,
+        canDelete = true,
+        categories = CategoryUi.dummyGroup,
+        transactionType = TransactionType.EXPENSE,
+        currentDialog = CategoriesDialog.Hidden,
+        dialogState = CategoryDialogState.Idle
+    )
+    UniquePlantTheme { CategoriesScreen(appNavController = appNavController, state = state, onEvent = {}) }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL)
+@Composable
+fun CategoriesScreenNoAddPreview() {
+    val appNavController = rememberNavController()
+    val state = CategoriesScreenState(
+        uiState = UiState.Idle,
+        canAdd = false,
+        canEdit = true,
+        canDelete = true,
+        categories = CategoryUi.dummyGroup,
+        transactionType = TransactionType.EXPENSE,
+        currentDialog = CategoriesDialog.Hidden,
+        dialogState = CategoryDialogState.Idle
+    )
+    UniquePlantTheme { CategoriesScreen(appNavController = appNavController, state = state, onEvent = {}) }
 }

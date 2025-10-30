@@ -13,7 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 @Composable
 fun TypeSwitch(
     modifier: Modifier = Modifier,
-    shape: CornerBasedShape = MaterialTheme.shapes.small,
+    shape: CornerBasedShape = MaterialTheme.shapes.extraLarge,
     typeOptions: List<String>,
     selectedTypeIndex: Int,
     onTypeSelected: (Int) -> Unit,

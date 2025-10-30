@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.app.uniqueplant.presentation.model.TransactionUi
 import com.app.uniqueplant.presentation.utilities.CurrencyFormater
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
@@ -66,6 +67,13 @@ private fun DashboardScreenContent(
             alignment = Alignment.Top
         )
     ) {
+        GreetingSection(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            userName = state.userInfo.name
+        )
+
         BalanceOverview(
             modifier = Modifier
                 .wrapContentHeight()
@@ -78,6 +86,11 @@ private fun DashboardScreenContent(
         TopCategoriesSection(
             modifier = Modifier
                 .fillMaxWidth()
+        )
+
+        RecentTransactionsSection(
+            modifier = Modifier.fillMaxWidth(),
+            transactions = TransactionUi.dummyList
         )
     }
 }
@@ -93,7 +106,7 @@ private fun BalanceOverview(
             .wrapContentHeight()
             .fillMaxWidth()
             .background(
-                color = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.5f),
+                color = MaterialTheme.colorScheme.primaryContainer,
                 shape = MaterialTheme.shapes.medium
             )
             .padding(24.dp),
@@ -103,10 +116,12 @@ private fun BalanceOverview(
         Text(
             text = "Total Balance",
             style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
         )
         Text(
             text = CurrencyFormater.formatCurrency(userInfo.balance),
             style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
         )
     }
 }
@@ -220,6 +235,56 @@ private fun TopCategoriesSectionPreview() {
     }
 }
 
+@Composable
+private fun GreetingSection(
+    modifier: Modifier = Modifier,
+    userName: String = "User"
+) {
+    Text(
+        modifier = modifier,
+        text = "Hello, $userName!",
+        style = MaterialTheme.typography.headlineMedium
+    )
+}
+
+@Composable
+private fun RecentTransactionsSection(
+    modifier: Modifier = Modifier,
+    transactions: List<TransactionUi> = emptyList()
+) {
+    Column(
+        modifier = modifier
+            .wrapContentHeight()
+            .fillMaxWidth()
+            .background(
+                MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.5f),
+                MaterialTheme.shapes.medium
+            )
+            .padding(24.dp),
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ){
+        Text(text = "Recent Transactions", style = MaterialTheme.typography.titleMedium)
+
+        when {
+            transactions.isEmpty() ->
+                EmptyPlaceholder()
+
+            else ->
+                NumberedList(items = transactions.map { it.formatedAmount })
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RecentTransactionsSectionPreview() {
+    val transactions = TransactionUi.dummyList
+    UniquePlantTheme {
+        RecentTransactionsSection(transactions = transactions)
+    }
+}
+
 @Preview(
     showBackground = true,
     device = "spec:width=1080px,height=2340px,dpi=440",
@@ -228,7 +293,10 @@ private fun TopCategoriesSectionPreview() {
 @Composable
 fun DashboardScreenPreview() {
     val state = DashboardScreenState(
-        userInfo = UserInfo()
+        userInfo = UserInfo(
+            name = "John Doe",
+            balance = 12345.67,
+        )
     )
     UniquePlantTheme {
         DashboardScreen(
