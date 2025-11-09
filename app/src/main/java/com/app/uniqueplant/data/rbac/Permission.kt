@@ -9,7 +9,6 @@ enum class Permission {
     ADD_PERSON,
     EDIT_PERSON,
     DELETE_PERSON,
-    // Add other permissions as needed
     VIEW_ALL_TRANSACTIONS,
     VIEW_OWN_TRANSACTIONS,
     ADD_TRANSACTION,

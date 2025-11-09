@@ -1,6 +1,7 @@
 package com.app.uniqueplant.domain.usecase.transaction
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -11,6 +12,9 @@ class GetCurrentMonthBalanceUC @Inject constructor(
         val calendar = Calendar.getInstance()
         val currentMonth = calendar.get(Calendar.MONTH)
         val currentYear = calendar.get(Calendar.YEAR)
-        return getMonthlyBalanceUC(currentMonth, currentYear)
+        val balanceFlow = getMonthlyBalanceUC(currentMonth, currentYear)
+        val balanceValue = balanceFlow.first()
+        return balanceFlow
+        //return getMonthlyBalanceUC(currentMonth, currentYear)
     }
 }

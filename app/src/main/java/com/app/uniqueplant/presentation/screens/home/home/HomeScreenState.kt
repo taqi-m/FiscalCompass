@@ -9,4 +9,6 @@ data class HomeScreenState(
     val appNavController: NavHostController? = null,
     val selectedTab: String = HomeBottomScreen.Dashboard.route,
     val isFabExpanded: Boolean = false,
+    val canViewCategories: Boolean = false,
+    val canViewPeople: Boolean = false
 )

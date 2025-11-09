@@ -5,6 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,16 +21,18 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -59,7 +62,6 @@ import com.app.uniqueplant.ui.components.dialogs.TimePickerDialog
 import com.app.uniqueplant.ui.components.input.Calculator
 import com.app.uniqueplant.ui.components.input.CustomExposedDropDownMenu
 import com.app.uniqueplant.ui.components.input.ReadOnlyDataEntryTextField
-import com.app.uniqueplant.ui.components.input.TransactionTypeSelector
 import com.app.uniqueplant.ui.components.input.TypeSwitch
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import kotlinx.coroutines.delay
@@ -102,7 +104,7 @@ fun AddTransactionScreen(
 
             else -> null
         }
-        if(uiState !is UiState.Success){
+        if (uiState !is UiState.Success) {
             message?.let { msg ->
                 if (msg.isNotEmpty()) {
                     snackbarHostState.showSnackbar(
@@ -238,7 +240,7 @@ fun AddTransactionScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AddTransactionFormContent(
     modifier: Modifier = Modifier,
@@ -258,7 +260,6 @@ fun AddTransactionFormContent(
             .fillMaxSize()
             .padding(horizontal = 8.dp)
             .padding(bottom = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Form content
         Column(
@@ -266,7 +267,7 @@ fun AddTransactionFormContent(
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
                 .weight(1f),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
 
             val selectedIndex = TransactionType.entries.indexOf(state.transactionType)
@@ -274,8 +275,9 @@ fun AddTransactionFormContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.surface)
-                    .padding(vertical = 8.dp)
+                    .padding(bottom = 8.dp)
                     .height(40.dp),
+                shape = MaterialTheme.shapes.small,
                 typeOptions = TransactionType.entries.map { it.name },
                 selectedTypeIndex = selectedIndex,
                 onTypeSelected = { index ->
@@ -358,15 +360,7 @@ fun AddTransactionFormContent(
                 }
             )
 
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(text = "Note") },
-                placeholder = { Text(text = "Add a short description") },
-                value = state.description.value,
-                onValueChange = {
-                    onEvent(AddTransactionEvent.OnDescriptionChange(it))
-                }
-            )
+
 
             ReadOnlyDataEntryTextField(
                 modifier = Modifier
@@ -395,6 +389,30 @@ fun AddTransactionFormContent(
                 label = "Time",
                 value = state.formatedTime
             )
+
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Note",
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+                TextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outline,
+                            shape = MaterialTheme.shapes.extraSmall
+                        ),
+                    value = state.description.value,
+                    onValueChange = { onEvent(AddTransactionEvent.OnDescriptionChange(it)) },
+                    placeholder = { Text(text = "Add a short note") },
+                    minLines = 4,
+                    maxLines = 4,
+                    shape = MaterialTheme.shapes.extraSmall,
+                    colors = OutlinedTextFieldDefaults.colors()
+                )
+            }
         }
 
         // Next button
@@ -405,7 +423,11 @@ fun AddTransactionFormContent(
                 .fillMaxWidth()
                 .height(56.dp)
         ) {
-            Text(text = "Next - Enter Amount")
+            Text(
+                text = "Next - Enter Amount",
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
         }
     }
 }
@@ -548,7 +570,7 @@ fun AddTransactionFormContentPreview() {
                         error = ""
                     ),
                     description = InputField(
-                        value = "Monthly Salary",
+                        value = "",
                         error = ""
                     ),
                     personId = 1L,

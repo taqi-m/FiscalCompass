@@ -19,11 +19,7 @@ object CurrencyFormater {
      * @return A formatted currency string.
      */
     fun formatCurrency(amount: Double, currencySymbol: String = "Rs. "): String {
-        val formattedAmount = if (amount % 1 == 0.0) {
-            INTEGER_FORMAT.format(amount.toLong())
-        } else {
-            String.format(Locale.getDefault(), DECIMAL_FORMAT, amount)
-        }
+        val formattedAmount = INTEGER_FORMAT.format(amount.toLong())
         return "$currencySymbol$formattedAmount"
     }
 
@@ -37,14 +33,9 @@ object CurrencyFormater {
     fun formatCalculatorCurrency(amount: String, currencySymbol: String = "Rs. "): String {
         val numericAmount = amount.replace(Regex("[^0-9.]"), "")
         val formattedAmount = if (numericAmount.isEmpty()) {
-            "0.00"
+            "0"
         } else {
-            val parsedAmount = numericAmount.toDoubleOrNull() ?: 0.0
-            if (parsedAmount % 1 == 0.0) {
-                String.format(Locale.getDefault(), CALCULATOR_INTEGER_FORMAT, parsedAmount)
-            } else {
-                String.format(Locale.getDefault(), DECIMAL_FORMAT, parsedAmount)
-            }
+            String.format(Locale.getDefault(), CALCULATOR_INTEGER_FORMAT, numericAmount.toDoubleOrNull() ?: 0.0)
         }
         return "$currencySymbol$formattedAmount"
     }

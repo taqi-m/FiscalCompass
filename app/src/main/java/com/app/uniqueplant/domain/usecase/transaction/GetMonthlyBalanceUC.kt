@@ -17,10 +17,8 @@ class GetMonthlyBalanceUC @Inject constructor(
     private val checkPermission: CheckPermissionUseCase
 ){
     suspend operator fun invoke(month: Int, year: Int): Flow<Double> {
-        var userId = userRepository.getLoggedInUser()?.userId
-        if (userId == null) {
-            throw IllegalStateException("User is not logged in")
-        }
+        var userId: String? = userRepository.getLoggedInUser()?.userId
+            ?: throw IllegalStateException("User is not logged in")
 
         val canViewAll = checkPermission(Permission.VIEW_ALL_ANALYTICS)
         if (canViewAll){

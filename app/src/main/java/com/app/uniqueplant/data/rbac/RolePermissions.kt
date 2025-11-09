@@ -7,6 +7,7 @@ object RolePermissions {
             Permission.ADD_CATEGORY,
             Permission.EDIT_CATEGORY,
             Permission.DELETE_CATEGORY,
+            Permission.VIEW_PERSON,
             Permission.ADD_PERSON,
             Permission.EDIT_PERSON,
             Permission.DELETE_PERSON,
@@ -17,8 +18,6 @@ object RolePermissions {
             Permission.VIEW_OWN_ANALYTICS
         ),
         Role.EMPLOYEE to setOf(
-            Permission.VIEW_CATEGORIES,
-            Permission.VIEW_PERSON,
             Permission.VIEW_OWN_TRANSACTIONS,
             Permission.ADD_TRANSACTION,
             Permission.VIEW_OWN_ANALYTICS

@@ -1,8 +1,5 @@
 package com.app.uniqueplant.presentation.screens.home.home
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -76,12 +73,18 @@ fun HomeScreen(
             }
         }
     }
-    val items = listOf(
+
+    val items = mutableListOf<HomeBottomScreen>(
         HomeBottomScreen.Dashboard,
         HomeBottomScreen.Analytics,
-        HomeBottomScreen.Categories,
-        HomeBottomScreen.People,
     )
+
+    if (state.canViewCategories) {
+        items.add(HomeBottomScreen.Categories)
+    }
+    if (state.canViewPeople) {
+        items.add(HomeBottomScreen.People)
+    }
 
     val homeNavController = rememberNavController()
 
@@ -91,51 +94,48 @@ fun HomeScreen(
 
     Scaffold(
         bottomBar = {
-            AnimatedVisibility(
-                visible = true,
-                enter = slideInVertically { it },
-                exit = slideOutVertically { it }
-            ) {
-                NavigationBar {
-                    items.forEach { screen ->
-                        val isSelected = currentRoute == screen.route
-                        val icon = if (isSelected) screen.selectedIcon else screen.unselectedIcon
-                        NavigationBarItem(
-                            colors = NavigationBarItemDefaults.colors().copy(
-                                selectedIndicatorColor = MaterialTheme.colorScheme.secondaryContainer,
-                                selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                            ),
-                            icon = {
-                                Icon(
-                                    painter = painterResource(icon),
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .height(24.dp)
-                                        .width(24.dp)
-                                )
-                            },
-                            label = {
-                                Text(
-                                    text = screen.label,
-                                    style = MaterialTheme.typography.labelMedium,
-                                )
-                            },
-                            selected = isSelected,
-                            onClick = {
-                                if (!isSelected) {
-                                    homeNavController.navigate(screen.route) {
-                                        popUpTo(homeNavController.graph.startDestinationId) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
+            if (items.size == 1) {
+                return@Scaffold
+            }
+            NavigationBar {
+                items.forEach { screen ->
+                    val isSelected = currentRoute == screen.route
+                    val icon = if (isSelected) screen.selectedIcon else screen.unselectedIcon
+                    NavigationBarItem(
+                        colors = NavigationBarItemDefaults.colors().copy(
+                            selectedIndicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                            selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        ),
+                        icon = {
+                            Icon(
+                                painter = painterResource(icon),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .height(24.dp)
+                                    .width(24.dp)
+                            )
+                        },
+                        label = {
+                            Text(
+                                text = screen.label,
+                                style = MaterialTheme.typography.labelMedium,
+                            )
+                        },
+                        selected = isSelected,
+                        onClick = {
+                            if (!isSelected) {
+                                homeNavController.navigate(screen.route) {
+                                    popUpTo(homeNavController.graph.startDestinationId) {
+                                        saveState = true
                                     }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
                             }
-                        )
-                    }
+                        }
+                    )
                 }
             }
         },

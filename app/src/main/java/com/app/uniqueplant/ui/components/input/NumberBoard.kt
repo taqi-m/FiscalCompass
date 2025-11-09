@@ -1,6 +1,6 @@
 package com.app.uniqueplant.ui.components.input
 
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -13,17 +13,11 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -102,48 +96,21 @@ fun Calculator(
         verticalArrangement = Arrangement.SpaceBetween
     )
     {
-        // Display with trailing icon
-        TextField(
-            value = CurrencyFormater.formatCalculatorCurrency(
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(0.6f),
+                    shape = MaterialTheme.shapes.medium
+                )
+                .padding(16.dp),
+            text = CurrencyFormater.formatCalculatorCurrency(
                 displayText
             ),
-            onValueChange = { onValueChange(it) },
-            modifier = Modifier
-                .fillMaxWidth(),
-            readOnly = true,
-            textStyle = LocalTextStyle.current.copy(
-                fontSize = 28.sp,
-                textAlign = TextAlign.End,
-                color = if (errorState) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
-            ),
-            singleLine = true,
-            colors = TextFieldDefaults.colors().copy(
-                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.75f),
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.75f),
-                // Disable selection appearance
-                textSelectionColors = TextSelectionColors(
-                    backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
-                    handleColor = MaterialTheme.colorScheme.surfaceVariant
-                ),
-                disabledTextColor = if (errorState)
-                    MaterialTheme.colorScheme.error
-                else
-                    OutlinedTextFieldDefaults.colors().focusedTextColor,
-                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                disabledIndicatorColor = MaterialTheme.colorScheme.primary
-            ),
-            interactionSource = remember { MutableInteractionSource() },
-            enabled = false,
-            leadingIcon = {
-                if (operation != null) {
-                    Text(
-                        text = operation ?: "",
-                        fontSize = 24.sp,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                }
-            }
+            style = MaterialTheme.typography.titleLarge,
+            textAlign = TextAlign.Left,
+            color = if (errorState) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
         )
 
         // Number pad
@@ -262,11 +229,13 @@ fun Calculator(
 )
 @Composable
 fun CalculatorPreview() {
-    Calculator(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp)
-    )
+    UniquePlantTheme{
+        Calculator(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp)
+        )
+    }
 }
 
 
@@ -285,7 +254,7 @@ fun NumberBoard(
         modifier = modifier
             .padding(4.dp)
             .height(IntrinsicSize.Min),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Column(
             modifier = Modifier
@@ -298,7 +267,7 @@ fun NumberBoard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 CalcButton(
                     text = "1",
@@ -320,7 +289,7 @@ fun NumberBoard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 CalcButton(
                     text = "4",
@@ -342,7 +311,7 @@ fun NumberBoard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 CalcButton(
                     text = "7",
@@ -366,11 +335,14 @@ fun NumberBoard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 CalcButton(
-                    text = ".",
-                    onClick = { onDecimalClick() },
+                    text = "00",
+                    onClick = {
+                        onNumberClick(0)
+                        onNumberClick(0)
+                    },
                     modifier = Modifier.weight(1f)
                 )
                 CalcButton(
@@ -409,7 +381,9 @@ fun NumberBoard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 ClearButton(
-                    modifier = Modifier.fillMaxHeight().weight(1f),
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .weight(1f),
                     onClick = onClearClick,
                 )
 
@@ -448,20 +422,23 @@ fun NumberBoardPreview() {
 private fun CalcButton(
     text: String, onClick: () -> Unit, modifier: Modifier = Modifier
 ) {
+    val textStyle = MaterialTheme.typography.titleMedium
+
     Button(
         onClick = onClick,
         shape = MaterialTheme.shapes.medium,
         modifier = modifier
             .heightIn(min = 36.dp, max = 56.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
         )
     ) {
         Text(
+            modifier = Modifier.fillMaxWidth(),
             text = text,
-            fontSize = 20.sp,
+            style = textStyle,
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }

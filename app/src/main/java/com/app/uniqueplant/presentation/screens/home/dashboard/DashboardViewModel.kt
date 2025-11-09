@@ -3,6 +3,7 @@ package com.app.uniqueplant.presentation.screens.home.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.uniqueplant.domain.usecase.analytics.GetUserInfoUseCase
+import com.app.uniqueplant.domain.usecase.rbac.CheckPermissionUseCase
 import com.app.uniqueplant.domain.usecase.transaction.GetCurrentMonthBalanceUC
 import com.app.uniqueplant.presentation.navigation.MainScreens
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +20,8 @@ import javax.inject.Inject
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     private val getUserInfo: GetUserInfoUseCase,
-    private val currentMonthBalance: GetCurrentMonthBalanceUC
+    private val currentMonthBalance: GetCurrentMonthBalanceUC,
+    private val checkPermissionUseCase: CheckPermissionUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DashboardScreenState())
