@@ -1,6 +1,5 @@
 package com.app.uniqueplant.presentation.navigation
 
-import android.net.Uri
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -41,25 +40,26 @@ import com.google.gson.Gson
 
 
 // Animation duration constant for consistent transitions
-private const val TRANSITION_DURATION = 300
+private const val TRANSITION_DURATION = 400
+private const val FADE_TRANSITION_DURATION = (TRANSITION_DURATION * 1.5).toInt()
 
 // Pre-defined transition animations
-private val enterFromLeft = fadeIn(animationSpec = tween(TRANSITION_DURATION)) +
+private val enterFromLeft = fadeIn(animationSpec = tween(FADE_TRANSITION_DURATION)) +
         slideInHorizontally(animationSpec = tween(TRANSITION_DURATION)) { fullWidth -> -fullWidth }
 
-private val enterFromRight = fadeIn(animationSpec = tween(TRANSITION_DURATION)) +
+private val enterFromRight = fadeIn(animationSpec = tween(FADE_TRANSITION_DURATION)) +
         slideInHorizontally(animationSpec = tween(TRANSITION_DURATION)) { fullWidth -> fullWidth }
 
-private val enterFromUp = fadeIn(animationSpec = tween(TRANSITION_DURATION)) +
+private val enterFromUp = fadeIn(animationSpec = tween(FADE_TRANSITION_DURATION)) +
         slideInVertically(animationSpec = tween(TRANSITION_DURATION)) { fullHeight -> fullHeight }
 
-private val exitToLeft = fadeOut(animationSpec = tween(TRANSITION_DURATION)) +
+private val exitToLeft = fadeOut(animationSpec = tween(FADE_TRANSITION_DURATION)) +
         slideOutHorizontally(animationSpec = tween(TRANSITION_DURATION)) { fullWidth -> -fullWidth }
 
-private val exitToRight = fadeOut(animationSpec = tween(TRANSITION_DURATION)) +
+private val exitToRight = fadeOut(animationSpec = tween(FADE_TRANSITION_DURATION)) +
         slideOutHorizontally(animationSpec = tween(TRANSITION_DURATION)) { fullWidth -> fullWidth }
 
-private val exitToDown = fadeOut(animationSpec = tween(TRANSITION_DURATION)) +
+private val exitToDown = fadeOut(animationSpec = tween(FADE_TRANSITION_DURATION)) +
         slideOutVertically(animationSpec = tween(TRANSITION_DURATION)) { fullHeight -> fullHeight }
 
 @Composable
@@ -220,10 +220,10 @@ fun AppNavigation (
 
         composable(
             route = MainScreens.TransactionDetail.route,
-            enterTransition = { enterFromRight },
-            exitTransition = { exitToRight },
-            popEnterTransition = { enterFromRight },
-            popExitTransition = { exitToRight }
+            enterTransition = { enterFromLeft },
+            exitTransition = { exitToLeft },
+            popEnterTransition = { enterFromLeft },
+            popExitTransition = { exitToLeft}
         ) { backstackEntry ->
             val transactionJson = backstackEntry.arguments?.getString("transaction")
             val transactionUi = Gson().fromJson(transactionJson, TransactionUi::class.java)
@@ -251,14 +251,7 @@ fun AppNavigation (
             SearchScreen(
                 state = state,
                 onEvent = searchViewModel::onEvent,
-                onNavigateClicked = { transactionUi ->
-                    val transaction = Uri.encode(Gson().toJson(transactionUi))
-                    navController.navigate(
-                        MainScreens.TransactionDetail.passTransaction(
-                            transaction
-                        )
-                    )
-                }
+                appNavController = navController
             )
         }
 

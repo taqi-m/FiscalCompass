@@ -1,5 +1,6 @@
 package com.app.uniqueplant.presentation.screens.search
 
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -38,13 +39,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.R
 import com.app.uniqueplant.presentation.model.TransactionUi
+import com.app.uniqueplant.presentation.navigation.MainScreens
 import com.app.uniqueplant.presentation.screens.category.UiState
 import com.app.uniqueplant.presentation.screens.transactionScreens.viewTransactions.DateHeader
 import com.app.uniqueplant.ui.components.cards.ChipFlow
 import com.app.uniqueplant.ui.components.cards.TransactionCard
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
+import com.google.gson.Gson
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -59,7 +64,7 @@ private enum class SearchScreens {
 fun SearchScreen(
     state: SearchScreenState,
     onEvent: (SearchEvent) -> Unit,
-    onNavigateClicked: (TransactionUi) -> Unit,
+    appNavController: NavHostController,
 ) {
     var currentScreen by rememberSaveable { mutableStateOf(SearchScreens.RESULTS) }
 
@@ -85,7 +90,7 @@ fun SearchScreen(
                             if (currentScreen == SearchScreens.FILTERS) {
                                 currentScreen = SearchScreens.RESULTS
                             } else {
-//                                onEvent(SearchEvent.OnBackPressed)
+                                appNavController.popBackStack()
                             }
                         }
                     ){
@@ -114,9 +119,14 @@ fun SearchScreen(
         when(currentScreen) {
             SearchScreens.RESULTS -> {
                 ResultsScreen(
-                    modifier = Modifier.padding(paddingValues).padding(horizontal = 8.dp),
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .padding(horizontal = 8.dp),
                     state = state,
-                    onNavigateClicked = onNavigateClicked
+                    onTransactionSelected = {
+                        val transaction = Uri.encode(Gson().toJson(it))
+                        appNavController.navigate(MainScreens.TransactionDetail.passTransaction(transaction))
+                    }
                 )
             }
 
@@ -173,7 +183,7 @@ fun SearchScreen(
 fun ResultsScreen(
     modifier: Modifier = Modifier,
     state: SearchScreenState,
-    onNavigateClicked: (TransactionUi) -> Unit,
+    onTransactionSelected: (TransactionUi) -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -223,7 +233,7 @@ fun ResultsScreen(
                     TransactionCard(
                         transaction = transactionsForDate[index],
                         onClicked = {
-                            onNavigateClicked(transactionsForDate[index])
+                            onTransactionSelected(transactionsForDate[index])
                         },
                         onEditClicked = {},
                         onDeleteClicked = {},
@@ -441,7 +451,7 @@ fun SearchScreenPreview() {
         SearchScreen(
             state = SearchScreenState(),
             onEvent = {},
-            onNavigateClicked = {}
+            appNavController = rememberNavController()
         )
     }
 }
