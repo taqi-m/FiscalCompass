@@ -46,8 +46,8 @@ import com.app.uniqueplant.presentation.model.TransactionUi
 import com.app.uniqueplant.presentation.navigation.MainScreens
 import com.app.uniqueplant.presentation.screens.category.UiState
 import com.app.uniqueplant.presentation.screens.transactionScreens.viewTransactions.DateHeader
-import com.app.uniqueplant.ui.components.cards.ChipFlow
 import com.app.uniqueplant.ui.components.cards.TransactionCard
+import com.app.uniqueplant.ui.components.search.SearchableChipSelector
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import com.google.gson.Gson
 import java.text.SimpleDateFormat
@@ -93,7 +93,7 @@ fun SearchScreen(
                                 appNavController.popBackStack()
                             }
                         }
-                    ){
+                    ) {
                         Icon(
                             painterResource(id = R.drawable.ic_arrow_back_24),
                             contentDescription = "Back"
@@ -116,7 +116,7 @@ fun SearchScreen(
         }
     ) { paddingValues ->
 
-        when(currentScreen) {
+        when (currentScreen) {
             SearchScreens.RESULTS -> {
                 ResultsScreen(
                     modifier = Modifier
@@ -125,7 +125,11 @@ fun SearchScreen(
                     state = state,
                     onTransactionSelected = {
                         val transaction = Uri.encode(Gson().toJson(it))
-                        appNavController.navigate(MainScreens.TransactionDetail.passTransaction(transaction))
+                        appNavController.navigate(
+                            MainScreens.TransactionDetail.passTransaction(
+                                transaction
+                            )
+                        )
                     }
                 )
             }
@@ -143,39 +147,6 @@ fun SearchScreen(
         }
     }
 
-    if (state.showCategoryFilterDialog) {
-        MultiSelectDialog(
-            items = state.allCategories,
-            selectedItems = state.allCategories.filter {
-                state.filterCategories?.contains(it.categoryId) == true
-            },
-            itemToLabel = { it.name },
-            onDismissRequest = { onEvent(SearchEvent.OnDismissCategoryFilterDialog) },
-            onConfirmation = { updatedList ->
-                for (category in updatedList) {
-                    onEvent(SearchEvent.SubmitFilterCategory(category.categoryId))
-                }
-                onEvent(SearchEvent.OnDismissCategoryFilterDialog)
-            }
-        )
-    }
-
-    if (state.showPersonFilterDialog) {
-        MultiSelectDialog(
-            items = state.allPersons,
-            selectedItems = state.allPersons.filter {
-                state.filterPersons?.contains(it.personId) == true
-            },
-            itemToLabel = { it.name },
-            onDismissRequest = { onEvent(SearchEvent.OnDismissPersonFilterDialog) },
-            onConfirmation = { updatedList ->
-                for (person in updatedList) {
-                    onEvent(SearchEvent.SubmitFilterPerson(person.personId))
-                }
-                onEvent(SearchEvent.OnDismissPersonFilterDialog)
-            }
-        )
-    }
 }
 
 
@@ -250,7 +221,7 @@ fun FilterScreen(
     modifier: Modifier = Modifier,
     state: SearchScreenState,
     onEvent: (SearchEvent) -> Unit,
-    onDismissRequest: () -> Unit ,
+    onDismissRequest: () -> Unit,
 ) {
     // Remember mutable states for temporary selections within the dialog
     var tempFilterType by remember { mutableStateOf(state.filterType ?: "") }
@@ -305,99 +276,59 @@ fun FilterScreen(
             )
 
 
-            //Show Selected Categories as Chips
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(),
+            // Categories Search and Selection
+            SearchableChipSelector(
+                title = "Categories",
+                searchQuery = state.categorySearchQuery,
+                showDropdown = state.showCategoryDropdown,
+                allItems = state.allCategories,
+                selectedItems = categories,
+                searchPlaceholder = "Search categories",
+                emptyMessage = "No categories found",
+                itemToLabel = { it.name },
+                onSearchQueryChanged = { query ->
+                    onEvent(SearchEvent.UpdateCategorySearchQuery(query))
+                },
+                onDropdownVisibilityChanged = { show ->
+                    onEvent(SearchEvent.ShowCategoryDropdown(show))
+                },
+                onItemSelected = { category ->
+                    onEvent(SearchEvent.SubmitFilterCategory(category.categoryId))
+                },
+                onChipClicked = { category ->
+                    // Remove Category on click if already selected
+                    onEvent(SearchEvent.SubmitFilterCategory(category.categoryId))
+                }
             )
-            {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                {
-                    Text(
-                        "Categories",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.weight(1f)
-                    )
-                    IconButton(
-                        onClick = {
-                            onEvent(SearchEvent.OnShowCategoryFilterDialog)
-                        }
-                    ) {
-                        Icon(
-                            painterResource(id = R.drawable.ic_keyboard_arrow_right_24),
-                            contentDescription = "Select Categories"
-                        )
-                    }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
+
+            // Persons Search and Selection
+            SearchableChipSelector(
+                title = "Persons",
+                searchQuery = state.personSearchQuery,
+                showDropdown = state.showPersonDropdown,
+                allItems = state.allPersons,
+                selectedItems = persons,
+                searchPlaceholder = "Search persons",
+                emptyMessage = "No persons found",
+                itemToLabel = { it.name },
+                onSearchQueryChanged = { query ->
+                    onEvent(SearchEvent.UpdatePersonSearchQuery(query))
+                },
+                onDropdownVisibilityChanged = { show ->
+                    onEvent(SearchEvent.ShowPersonDropdown(show))
+                },
+                onItemSelected = { person ->
+                    onEvent(SearchEvent.SubmitFilterPerson(person.personId))
+                },
+                onChipClicked = { person ->
+                    // Remove Person on click if already selected
+                    onEvent(SearchEvent.SubmitFilterPerson(person.personId))
                 }
-                ChipFlow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
-                    placeholder = "No categories selected.",
-                    chips = categories,
-                    maxLines = 1,
-                    onChipClick = { category ->
-                        //Remove Category on click if already selected
-                        onEvent(SearchEvent.SubmitFilterCategory(category.categoryId))
-                    },
-                    chipToLabel = { it.name }
-                )
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
-            }
-
-            //Show Selected Persons as Chips
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(),
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                {
-                    Text(
-                        "Persons",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.weight(1f)
-                    )
-                    IconButton(
-                        onClick = {
-                            onEvent(SearchEvent.OnShowPersonFilterDialog)
-                        }
-                    )
-                    {
-                        Icon(
-                            painterResource(id = R.drawable.ic_keyboard_arrow_right_24),
-                            contentDescription = "Select Persons"
-                        )
-                    }
-                }
-                ChipFlow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
-                    placeholder = "No persons selected.",
-                    chips = persons,
-                    maxLines = 1,
-                    onChipClick = { person ->
-                        //Remove Person on click if already selected
-                        onEvent(SearchEvent.SubmitFilterPerson(person.personId))
-                    },
-                    chipToLabel = { it.name }
-                )
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
-            }
+            )
 
             Text("Date Range", style = MaterialTheme.typography.titleMedium)
             OutlinedTextField(
@@ -422,6 +353,10 @@ fun FilterScreen(
                 shape = MaterialTheme.shapes.small,
                 onClick = {
                     tempFilterType = ""
+                    onEvent(SearchEvent.UpdateCategorySearchQuery(""))
+                    onEvent(SearchEvent.UpdatePersonSearchQuery(""))
+                    onEvent(SearchEvent.ShowCategoryDropdown(false))
+                    onEvent(SearchEvent.ShowPersonDropdown(false))
                     onEvent(SearchEvent.ClearFilters)
                 }) {
                 Text("Clear Filters")

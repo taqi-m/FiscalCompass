@@ -43,18 +43,6 @@ class SearchViewModel @Inject constructor(
             SearchEvent.OnDismissFilterDialog -> {
                 updateState { copy(showFilterDialog = false) }
             }
-            SearchEvent.OnShowCategoryFilterDialog -> {
-                updateState { copy(showCategoryFilterDialog = true) }
-            }
-            SearchEvent.OnDismissCategoryFilterDialog -> {
-                updateState { copy(showCategoryFilterDialog = false) }
-            }
-            SearchEvent.OnShowPersonFilterDialog -> {
-                updateState { copy(showPersonFilterDialog = true) }
-            }
-            SearchEvent.OnDismissPersonFilterDialog -> {
-                updateState { copy(showPersonFilterDialog = false) }
-            }
             is SearchEvent.UpdateFilterType -> {
                 updateState { copy(filterType = event.type) }
             }
@@ -81,12 +69,26 @@ class SearchViewModel @Inject constructor(
             is SearchEvent.UpdateFilterDateRange -> {
                 updateState { copy(filterStartDate = event.startDate, filterEndDate = event.endDate) }
             }
+            is SearchEvent.UpdateCategorySearchQuery -> {
+                updateState { copy(categorySearchQuery = event.query) }
+            }
+            is SearchEvent.UpdatePersonSearchQuery -> {
+                updateState { copy(personSearchQuery = event.query) }
+            }
+            is SearchEvent.ShowCategoryDropdown -> {
+                updateState { copy(showCategoryDropdown = event.show) }
+            }
+            is SearchEvent.ShowPersonDropdown -> {
+                updateState { copy(showPersonDropdown = event.show) }
+            }
             SearchEvent.ApplyFilters -> {
                 updateState {
                     copy(
                         showFilterDialog = false,
-                        showCategoryFilterDialog = false,
-                        showPersonFilterDialog = false
+                        categorySearchQuery = "",
+                        personSearchQuery = "",
+                        showCategoryDropdown = false,
+                        showPersonDropdown = false
                     )
                 }
                 fetchTransactions()
@@ -98,7 +100,11 @@ class SearchViewModel @Inject constructor(
                         filterCategories = mutableListOf(),
                         filterPersons = mutableListOf(),
                         filterStartDate = null,
-                        filterEndDate = null
+                        filterEndDate = null,
+                        categorySearchQuery = "",
+                        personSearchQuery = "",
+                        showCategoryDropdown = false,
+                        showPersonDropdown = false
                     )
                 }
                 fetchTransactions()
