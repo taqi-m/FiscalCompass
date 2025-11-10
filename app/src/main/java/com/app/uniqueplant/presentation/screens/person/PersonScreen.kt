@@ -1,7 +1,6 @@
 package com.app.uniqueplant.presentation.screens.person
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.Top
@@ -10,16 +9,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -30,13 +30,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.app.uniqueplant.R
 import com.app.uniqueplant.domain.model.PersonType
 import com.app.uniqueplant.domain.model.base.Person
 import com.app.uniqueplant.presentation.screens.category.UiState
 import com.app.uniqueplant.ui.components.LoadingProgress
-import com.app.uniqueplant.ui.components.buttons.AddNewButton
 import com.app.uniqueplant.ui.components.dialogs.AddPersonDialog
 import com.app.uniqueplant.ui.components.dialogs.DeletePersonDialog
 import com.app.uniqueplant.ui.components.dialogs.EditPersonDialog
@@ -73,14 +74,32 @@ fun PersonScreen(
         }
     }
 
-    PersonScreenContent(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 8.dp),
-        state = state,
-        onEvent = onEvent
-    )
+    Scaffold(
+        floatingActionButton = {
+            if (state.canAdd){
+                FloatingActionButton(
+                    onClick = { onEvent(PersonEvent.OnPersonDialogToggle(PersonDialogToggle.Add)) },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_add_24),
+                        contentDescription = "Add Transaction"
+                    )
+                }
+            }
+        }
+    ) {
+        PersonScreenContent(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(horizontal = 8.dp),
+            state = state,
+            onEvent = onEvent
+        )
+    }
+
 
     when (state.currentDialog) {
         PersonDialog.Hidden -> {}
@@ -282,7 +301,7 @@ fun PersonList(
             }
         }
 
-        onAddNewPersonClick?.let {
+        /*onAddNewPersonClick?.let {
             item {
                 AddNewButton(
                     modifier = Modifier
@@ -298,7 +317,7 @@ fun PersonList(
                         onAddNewPersonClick(state.selectedType)
                     })
             }
-        }
+        }*/
     }
 }
 

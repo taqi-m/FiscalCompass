@@ -94,7 +94,7 @@ fun HomeNavGraph(
             val state by personViewModel.state.collectAsState()
             PersonScreen(
                 state = state,
-                onEvent = personViewModel::onEvent
+                onEvent = personViewModel::onEvent,
             )
         }
     }

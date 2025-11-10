@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -40,7 +39,6 @@ import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.R
 import com.app.uniqueplant.presentation.navigation.HomeBottomScreen
 import com.app.uniqueplant.presentation.navigation.HomeNavGraph
-import com.app.uniqueplant.presentation.navigation.MainScreens
 import com.app.uniqueplant.ui.components.buttons.TopBarActionButton
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
@@ -167,18 +165,6 @@ fun HomeScreen(
                 }
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { appNavController.navigate(MainScreens.AddTransaction.route) },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_add_24),
-                    contentDescription = "Add Transaction"
-                )
-            }
-        }
     )
     { paddingValues ->
         if (LocalInspectionMode.current) {
