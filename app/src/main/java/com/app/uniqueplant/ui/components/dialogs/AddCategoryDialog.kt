@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -13,13 +13,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.domain.model.PersonType
+import com.app.uniqueplant.ui.components.input.DataEntryTextField
 
 @Composable
 fun AddCategoryDialog(
@@ -40,37 +39,32 @@ fun AddCategoryDialog(
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
-        title = { Text(text = "Add New Category") },
+        title = { Text(text = "Add category", style = MaterialTheme.typography.titleLarge) },
         text = {
             Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                OutlinedTextField(
-                    modifier = Modifier.focusRequester(focusRequester),
+                DataEntryTextField(
                     value = categoryName,
                     onValueChange = { categoryName = it },
-                    label = { Text(text = "Name") },
+                    label = "Title",
+                    placeholder = "Category name",
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Next
-                    )
+                    ),
+
                 )
 
-                /*GenericExposedDropDownMenu(
-                    label = "Expected Person Type",
-                    options = personTypes,
-                    selectedOption = expectedPersonType,
-                    onOptionSelected = { expectedPersonType = it }
-                )*/
-
-                OutlinedTextField(
+                DataEntryTextField(
                     value = categoryDescription,
                     onValueChange = { categoryDescription = it },
-                    label = { Text(text = "Description") },
+                    label = "Description",
+                    placeholder = "Category description",
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Done
-                    )
+                    ),
                 )
             }
         },

@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -17,6 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.domain.model.PersonType
 import com.app.uniqueplant.domain.model.base.Person
+import com.app.uniqueplant.ui.components.input.DataEntryTextField
 import com.app.uniqueplant.ui.components.input.GenericExposedDropDownMenu
 
 @Composable
@@ -48,24 +48,24 @@ fun EditPersonDialog(
             Column (
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ){
-                OutlinedTextField(
+                DataEntryTextField(
+                    label = "Name",
+                    placeholder = "Enter new name",
                     value = personName,
                     onValueChange = { personName = it },
-                    label = { Text(text = "Name") },
-                    singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Next
-                    )
+                    ),
                 )
 
-                OutlinedTextField(
+                DataEntryTextField(
+                    label = "Contact",
+                    placeholder = "Enter contact",
                     value = personContact,
                     onValueChange = { personContact = it },
-                    label = { Text(text = "Contact") },
-                    singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Next
-                    )
+                    ),
                 )
 
 

@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.FocusInteraction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -47,8 +48,11 @@ import com.app.uniqueplant.R
 fun DataEntryTextField(
     modifier: Modifier = Modifier,
     label: String,
-    placeholder: String? = null,
+    placeholder: String = "",
     value: String,
+    singleLine: Boolean = true,
+    maxLines: Int = 1,
+    minLines: Int = 1,
     onValueChange: (String) -> Unit,
     isError: Boolean = false,
     errorMessage: String? = null,
@@ -56,25 +60,44 @@ fun DataEntryTextField(
         imeAction = ImeAction.Next
     )
 ) {
-    OutlinedTextField(
-        modifier = modifier,
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(text = label) },
-//        isError = isError,
-        singleLine = true,
-        keyboardOptions = keyboardOptions,
-        placeholder = {
-            Text(
-                text = placeholder ?: "Enter $label",
-                style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
-            )
-        },
-        /*supportingText = {
-            if (isError && errorMessage != null) {
-                Text(text = errorMessage)
-            }
-        }*/
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+        TextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outline,
+                    shape = MaterialTheme.shapes.extraSmall
+                ),
+            value = value,
+            onValueChange = { onValueChange(it) },
+            placeholder = { Text(text = placeholder) },
+            shape = MaterialTheme.shapes.extraSmall,
+            colors = OutlinedTextFieldDefaults.colors(),
+            isError = isError,
+            keyboardOptions = keyboardOptions,
+            singleLine = singleLine,
+            maxLines = maxLines,
+            minLines = minLines,
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DataEntryTextFieldPreview() {
+    var text by remember { mutableStateOf("") }
+    DataEntryTextField(
+        modifier = Modifier.padding(12.dp),
+        label = "Username",
+        placeholder = "Enter your username",
+        value = text,
+        onValueChange = { text = it },
     )
 }
 

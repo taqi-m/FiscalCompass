@@ -16,7 +16,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.app.uniqueplant.ui.theme.UniquePlantTheme
 
 @Composable
 fun FormTextField(
@@ -50,6 +52,22 @@ fun FormTextField(
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
             leadingIcon = leadingIcon,
             visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FormTextFieldPreview() {
+    UniquePlantTheme {
+        FormTextField(
+            value = "",
+            onValueChange = {},
+            label = "Username",
+            placeholder = "Enter your username",
+            leadingIcon = null,
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Next
         )
     }
 }

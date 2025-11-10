@@ -5,7 +5,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,13 +25,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -61,6 +58,7 @@ import com.app.uniqueplant.ui.components.dialogs.DatePickerDialog
 import com.app.uniqueplant.ui.components.dialogs.TimePickerDialog
 import com.app.uniqueplant.ui.components.input.Calculator
 import com.app.uniqueplant.ui.components.input.CustomExposedDropDownMenu
+import com.app.uniqueplant.ui.components.input.DataEntryTextField
 import com.app.uniqueplant.ui.components.input.ReadOnlyDataEntryTextField
 import com.app.uniqueplant.ui.components.input.TypeSwitch
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
@@ -390,7 +388,7 @@ fun AddTransactionFormContent(
                 value = state.formatedTime
             )
 
-            Column(modifier = Modifier.fillMaxWidth()) {
+            /*Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Note",
                     style = MaterialTheme.typography.labelMedium,
@@ -412,7 +410,18 @@ fun AddTransactionFormContent(
                     shape = MaterialTheme.shapes.extraSmall,
                     colors = OutlinedTextFieldDefaults.colors()
                 )
-            }
+            }*/
+            DataEntryTextField(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                label = "Note",
+                placeholder = "Add a short note",
+                value = state.description.value,
+                onValueChange = { onEvent(AddTransactionEvent.OnDescriptionChange(it)) },
+                maxLines = 4,
+                singleLine = false,
+                minLines = 4
+            )
         }
 
         // Next button

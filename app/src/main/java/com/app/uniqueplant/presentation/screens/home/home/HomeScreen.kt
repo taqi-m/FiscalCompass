@@ -86,6 +86,7 @@ fun HomeScreen(
         items.add(HomeBottomScreen.People)
     }
 
+
     val homeNavController = rememberNavController()
 
     val currentRoute = homeNavController.currentBackStackEntryAsState().value?.destination?.route

@@ -1,6 +1,7 @@
 package com.app.uniqueplant.presentation.screens.person
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.Top
@@ -9,11 +10,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +36,7 @@ import com.app.uniqueplant.domain.model.PersonType
 import com.app.uniqueplant.domain.model.base.Person
 import com.app.uniqueplant.presentation.screens.category.UiState
 import com.app.uniqueplant.ui.components.LoadingProgress
+import com.app.uniqueplant.ui.components.buttons.AddNewButton
 import com.app.uniqueplant.ui.components.dialogs.AddPersonDialog
 import com.app.uniqueplant.ui.components.dialogs.DeletePersonDialog
 import com.app.uniqueplant.ui.components.dialogs.EditPersonDialog
@@ -211,9 +215,7 @@ fun PersonList(
     onDeletePersonClick: ((Person) -> Unit)? = null,
 ) {
     if (state.uiState is UiState.Loading) {
-        LoadingProgress(
-            true
-        )
+        LoadingProgress(true)
         return@PersonList
     }
 
@@ -277,6 +279,24 @@ fun PersonList(
             }
             if (index < persons.lastIndex) {
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 8.dp))
+            }
+        }
+
+        onAddNewPersonClick?.let {
+            item {
+                AddNewButton(
+                    modifier = Modifier
+                        .padding(vertical = 4.dp)
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .border(
+                            width = 2.dp,
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = RoundedCornerShape(4.dp)
+                        ), text = "Add Person",
+                    onClick = {
+                        onAddNewPersonClick(state.selectedType)
+                    })
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.app.uniqueplant.ui.components.dialogs
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -9,6 +10,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.data.local.model.ExpenseEntity
 import com.app.uniqueplant.data.local.model.IncomeEntity
 import com.app.uniqueplant.ui.components.input.DataEntryTextField
@@ -122,25 +124,27 @@ fun EditDialogPreview() {
 fun EditExpenseContent(
     expense: ExpenseEntity,
 ){
-    Column {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         DataEntryTextField(
             label = "Amount",
+            placeholder = "Amount",
             value = expense.amount.toString(),
             onValueChange = {},
-            isError = false,
-            errorMessage = null
         )
         DataEntryTextField(
             label = "Description",
+            placeholder = "Description",
             value = expense.description,
             onValueChange = {},
-            isError = false,
-            errorMessage = null
         )
     }
 }
 
-@Preview
+@Preview(
+    showBackground = true
+)
 @Composable
 fun EditExpenseContentPreview() {
     UniquePlantTheme {

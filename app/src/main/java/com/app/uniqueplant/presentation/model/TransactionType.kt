@@ -1,8 +1,8 @@
 package com.app.uniqueplant.presentation.model
 
 enum class TransactionType {
-    INCOME,
-    EXPENSE;
+    EXPENSE,
+    INCOME;
 
     companion object {
         fun fromString(value: String): TransactionType {

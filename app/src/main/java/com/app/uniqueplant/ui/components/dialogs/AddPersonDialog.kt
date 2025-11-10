@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -17,8 +16,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.uniqueplant.domain.model.PersonType
+import com.app.uniqueplant.ui.components.input.DataEntryTextField
 import com.app.uniqueplant.ui.components.input.GenericExposedDropDownMenu
 
 @Composable
@@ -48,26 +49,28 @@ fun AddPersonDialog(
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ){
-                OutlinedTextField(
+                DataEntryTextField(
                     modifier = Modifier.focusRequester(focusRequester),
+                    label = "Name",
+                    placeholder = "Enter name",
                     value = personName,
                     onValueChange = { personName = it },
-                    label = { Text(text = "Name") },
-                    singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Next
                     )
                 )
 
-                OutlinedTextField(
+
+                DataEntryTextField(
+                    label = "Contact",
+                    placeholder = "Enter contact",
                     value = personContact,
                     onValueChange = { personContact = it },
-                    label = { Text(text = "Contact (Optional)") },
-                    singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Done
                     )
                 )
+
 
                 GenericExposedDropDownMenu(
                     label = "Person Type",
@@ -102,5 +105,15 @@ fun AddPersonDialog(
                 )
             }
         }
+    )
+}
+
+@Preview
+@Composable
+fun AddPersonDialogPreview() {
+    AddPersonDialog(
+        selectedType = "Client",
+        onAddNewPerson = { _, _, _ -> },
+        onDismiss = {}
     )
 }

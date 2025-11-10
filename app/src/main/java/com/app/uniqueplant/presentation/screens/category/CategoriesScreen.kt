@@ -24,7 +24,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -248,7 +247,7 @@ fun CategoriesList(
                                     width = 2.dp,
                                     color = MaterialTheme.colorScheme.primary,
                                     shape = RoundedCornerShape(4.dp)
-                                ), text = "Add New Category",
+                                ), text = "Add Category",
                             onClick = {
                                 onAddNewCategoryClicked(null)
                             })
