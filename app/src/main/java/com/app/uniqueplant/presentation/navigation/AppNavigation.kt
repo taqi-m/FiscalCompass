@@ -1,5 +1,6 @@
 package com.app.uniqueplant.presentation.navigation
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -10,6 +11,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -22,6 +24,10 @@ import com.app.uniqueplant.presentation.screens.category.CategoriesScreen
 import com.app.uniqueplant.presentation.screens.category.CategoriesViewModel
 import com.app.uniqueplant.presentation.screens.home.home.HomeScreen
 import com.app.uniqueplant.presentation.screens.home.home.HomeViewModel
+import com.app.uniqueplant.presentation.screens.itemselection.ItemSelectionEvent
+import com.app.uniqueplant.presentation.screens.itemselection.ItemSelectionScreen
+import com.app.uniqueplant.presentation.screens.itemselection.ItemSelectionViewModel
+import com.app.uniqueplant.presentation.screens.itemselection.SelectableItem
 import com.app.uniqueplant.presentation.screens.jobs.JobsScreen
 import com.app.uniqueplant.presentation.screens.jobs.JobsViewModel
 import com.app.uniqueplant.presentation.screens.person.PersonScreen
@@ -62,8 +68,9 @@ private val exitToRight = fadeOut(animationSpec = tween(FADE_TRANSITION_DURATION
 private val exitToDown = fadeOut(animationSpec = tween(FADE_TRANSITION_DURATION)) +
         slideOutVertically(animationSpec = tween(TRANSITION_DURATION)) { fullHeight -> fullHeight }
 
+@SuppressLint("UnrememberedGetBackStackEntry")
 @Composable
-fun AppNavigation (
+fun AppNavigation(
     navController: NavHostController,
     prefs: AppPreferenceRepository
 ) {
@@ -73,14 +80,14 @@ fun AppNavigation (
         startDestination =
             if (prefs.isUserLoggedIn()) {
                 MainScreens.AdminHome.route
-            /*when (prefs.getUserType()) {
-                "admin" -> MainScreens.AdminHome.route
-                "employee" -> MainScreens.EmployeeHome.route
-                else -> MainScreens.Auth.route
-            }*/
-        } else {
-            MainScreens.Auth.route
-        }
+                /*when (prefs.getUserType()) {
+                    "admin" -> MainScreens.AdminHome.route
+                    "employee" -> MainScreens.EmployeeHome.route
+                    else -> MainScreens.Auth.route
+                }*/
+            } else {
+                MainScreens.Auth.route
+            }
     ) {
 
         composable(
@@ -116,7 +123,7 @@ fun AppNavigation (
 
         composable(
             route = MainScreens.AdminHome.route,
-            ) { backStackEntry ->
+        ) { backStackEntry ->
             val homeViewModel: HomeViewModel = hiltViewModel(backStackEntry)
             val homeState by homeViewModel.state.collectAsState()
             HomeScreen(
@@ -223,7 +230,7 @@ fun AppNavigation (
             enterTransition = { enterFromLeft },
             exitTransition = { exitToLeft },
             popEnterTransition = { enterFromLeft },
-            popExitTransition = { exitToLeft}
+            popExitTransition = { exitToLeft }
         ) { backstackEntry ->
             val transactionJson = backstackEntry.arguments?.getString("transaction")
             val transactionUi = Gson().fromJson(transactionJson, TransactionUi::class.java)
@@ -252,6 +259,131 @@ fun AppNavigation (
                 state = state,
                 onEvent = searchViewModel::onEvent,
                 appNavController = navController
+            )
+        }
+
+        composable(
+            route = MainScreens.MultiSelection.route,
+            enterTransition = { enterFromLeft },
+            exitTransition = { exitToLeft },
+            popEnterTransition = { enterFromLeft },
+            popExitTransition = { exitToLeft }
+        ) { backStackEntry ->
+            val preSelectedIdsString = backStackEntry.arguments?.getString("preSelectedIds") ?: ""
+            val preSelectedIds = if (preSelectedIdsString.isEmpty()) emptyList()
+            else preSelectedIdsString.split(",").map { it.toLong() }
+
+            val searchViewModel: SearchViewModel = hiltViewModel(
+                remember { navController.getBackStackEntry(MainScreens.Search.route) }
+            )
+            val searchState by searchViewModel.state.collectAsState()
+
+            val itemSelectionViewModel: ItemSelectionViewModel = hiltViewModel()
+            val itemSelectionState by itemSelectionViewModel.state.collectAsState()
+
+            val allSelectableItems = remember(searchState.allCategories) {
+                searchState.allCategories.map { category ->
+                    SelectableItem(
+                        id = category.categoryId.toString(),
+                        name = category.name
+                    )
+                }
+            }
+
+            val preSelectedSelectableItems =
+                remember(allSelectableItems, preSelectedIds) {
+                    allSelectableItems.filter { selectableItem ->
+                        preSelectedIds.contains(selectableItem.id.toLong())
+                    }
+                }
+
+            // Initialize the screen
+            if (itemSelectionState.allItems.isEmpty()) {
+                itemSelectionViewModel.onEvent(
+                    ItemSelectionEvent.InitializeScreen(
+                        allItems = allSelectableItems,
+                        preSelectedItems = preSelectedSelectableItems
+                    )
+                )
+            }
+
+            ItemSelectionScreen(
+                state = itemSelectionState,
+                onEvent = itemSelectionViewModel::onEvent,
+                title = "Select Items",
+                searchPlaceholder = "Search item...",
+                onConfirm = { selectedCategories ->
+                    val selectedIds = selectedCategories.joinToString(",") { it.id }
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("selectedCategoryIds", selectedIds)
+                    navController.popBackStack()
+                },
+                onCancel = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            route = MainScreens.PersonSelection.route,
+            enterTransition = { enterFromLeft },
+            exitTransition = { exitToLeft },
+            popEnterTransition = { enterFromLeft },
+            popExitTransition = { exitToLeft }
+        ) { backStackEntry ->
+            val preSelectedIdsString = backStackEntry.arguments?.getString("preSelectedIds") ?: ""
+            val preSelectedIds = if (preSelectedIdsString.isEmpty()) emptyList()
+            else preSelectedIdsString.split(",").map { it.toLong() }
+
+            val searchViewModel: SearchViewModel = hiltViewModel(
+                remember { navController.getBackStackEntry(MainScreens.Search.route) }
+            )
+            val searchState by searchViewModel.state.collectAsState()
+
+            val personViewModel: ItemSelectionViewModel = hiltViewModel()
+            val personState by personViewModel.state.collectAsState()
+
+            val allSelectablePersons = remember(searchState.allPersons) {
+                searchState.allPersons.map { person ->
+                    SelectableItem(
+                        id = person.personId.toString(),
+                        name = person.name
+                    )
+                }
+            }
+
+            val preSelectedSelectablePersons = remember(allSelectablePersons, preSelectedIds) {
+                allSelectablePersons.filter { selectableItem ->
+                    preSelectedIds.contains(selectableItem.id.toLong())
+                }
+            }
+
+            // Initialize the screen
+            if (personState.allItems.isEmpty()) {
+                personViewModel.onEvent(
+                    ItemSelectionEvent.InitializeScreen(
+                        allItems = allSelectablePersons,
+                        preSelectedItems = preSelectedSelectablePersons
+                    )
+                )
+            }
+
+            ItemSelectionScreen(
+                state = personState,
+                onEvent = personViewModel::onEvent,
+                title = "Select Persons",
+                searchPlaceholder = "Search persons...",
+                onConfirm = { selectedPersons ->
+                    val selectedIds = selectedPersons.joinToString(",") { it.id }
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("selectedPersonIds", selectedIds)
+                    navController.popBackStack()
+                },
+                onCancel = {
+                    navController.popBackStack()
+                }
             )
         }
 

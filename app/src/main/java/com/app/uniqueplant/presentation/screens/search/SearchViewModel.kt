@@ -69,28 +69,44 @@ class SearchViewModel @Inject constructor(
             is SearchEvent.UpdateFilterDateRange -> {
                 updateState { copy(filterStartDate = event.startDate, filterEndDate = event.endDate) }
             }
-            is SearchEvent.UpdateCategorySearchQuery -> {
-                updateState { copy(categorySearchQuery = event.query) }
+
+            SearchEvent.NavigateToCategorySelection -> {
+                updateState { copy(navigateToCategorySelection = true) }
             }
-            is SearchEvent.UpdatePersonSearchQuery -> {
-                updateState { copy(personSearchQuery = event.query) }
+
+            SearchEvent.NavigateToPersonSelection -> {
+                updateState { copy(navigateToPersonSelection = true) }
             }
-            is SearchEvent.ShowCategoryDropdown -> {
-                updateState { copy(showCategoryDropdown = event.show) }
-            }
-            is SearchEvent.ShowPersonDropdown -> {
-                updateState { copy(showPersonDropdown = event.show) }
-            }
-            SearchEvent.ApplyFilters -> {
+
+            SearchEvent.ResetNavigation -> {
                 updateState {
                     copy(
-                        showFilterDialog = false,
-                        categorySearchQuery = "",
-                        personSearchQuery = "",
-                        showCategoryDropdown = false,
-                        showPersonDropdown = false
+                        navigateToCategorySelection = false,
+                        navigateToPersonSelection = false
                     )
                 }
+            }
+
+            is SearchEvent.UpdateSelectedCategories -> {
+                updateState {
+                    copy(
+                        filterCategories = event.categoryIds.toMutableList(),
+                        navigateToCategorySelection = false
+                    )
+                }
+            }
+
+            is SearchEvent.UpdateSelectedPersons -> {
+                updateState {
+                    copy(
+                        filterPersons = event.personIds.toMutableList(),
+                        navigateToPersonSelection = false
+                    )
+                }
+            }
+
+            SearchEvent.ApplyFilters -> {
+                updateState { copy(showFilterDialog = false) }
                 fetchTransactions()
             }
             SearchEvent.ClearFilters -> {
@@ -100,11 +116,7 @@ class SearchViewModel @Inject constructor(
                         filterCategories = mutableListOf(),
                         filterPersons = mutableListOf(),
                         filterStartDate = null,
-                        filterEndDate = null,
-                        categorySearchQuery = "",
-                        personSearchQuery = "",
-                        showCategoryDropdown = false,
-                        showPersonDropdown = false
+                        filterEndDate = null
                     )
                 }
                 fetchTransactions()

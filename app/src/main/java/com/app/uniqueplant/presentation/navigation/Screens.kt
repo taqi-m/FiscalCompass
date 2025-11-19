@@ -16,6 +16,18 @@ sealed class MainScreens(val route: String) {
     object Jobs : MainScreens("jobs_screen")
     object Search : MainScreens("search_screen")
 
+    object MultiSelection : MainScreens("multi_selection_screen/{preSelectedIds}") {
+        fun passIds(ids: String): String {
+            return "multi_selection_screen/$ids"
+        }
+    }
+
+    object PersonSelection : MainScreens("person_selection_screen/{preSelectedIds}") {
+        fun passPersonIds(ids: String): String {
+            return "person_selection_screen/$ids"
+        }
+    }
+
     object TransactionDetail : MainScreens("transaction_detail_screen/{transaction}"){
         fun passTransaction(transaction: String): String {
             return "transaction_detail_screen/$transaction"

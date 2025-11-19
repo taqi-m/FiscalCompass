@@ -17,8 +17,6 @@ data class SearchScreenState(
     val filterEndDate: Long? = null,
     val allCategories: List<Category> = emptyList(),
     val allPersons: List<Person> = emptyList(),
-    val categorySearchQuery: String = "",
-    val personSearchQuery: String = "",
-    val showCategoryDropdown: Boolean = false,
-    val showPersonDropdown: Boolean = false
+    val navigateToCategorySelection: Boolean = false,
+    val navigateToPersonSelection: Boolean = false
 )

@@ -3,6 +3,7 @@ package com.app.uniqueplant.presentation.screens.search
 import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,7 +14,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -27,15 +32,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -46,8 +53,8 @@ import com.app.uniqueplant.presentation.model.TransactionUi
 import com.app.uniqueplant.presentation.navigation.MainScreens
 import com.app.uniqueplant.presentation.screens.category.UiState
 import com.app.uniqueplant.presentation.screens.transactionScreens.viewTransactions.DateHeader
+import com.app.uniqueplant.ui.components.cards.ChipFlow
 import com.app.uniqueplant.ui.components.cards.TransactionCard
-import com.app.uniqueplant.ui.components.search.SearchableChipSelector
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import com.google.gson.Gson
 import java.text.SimpleDateFormat
@@ -67,6 +74,50 @@ fun SearchScreen(
     appNavController: NavHostController,
 ) {
     var currentScreen by rememberSaveable { mutableStateOf(SearchScreens.RESULTS) }
+
+    // Handle navigation to category selection
+    LaunchedEffect(state.navigateToCategorySelection) {
+        if (state.navigateToCategorySelection) {
+            val preSelectedIds = state.filterCategories?.joinToString(",") ?: ""
+            appNavController.navigate(MainScreens.MultiSelection.passIds(preSelectedIds))
+            onEvent(SearchEvent.ResetNavigation)
+        }
+    }
+
+    // Handle navigation to person selection
+    LaunchedEffect(state.navigateToPersonSelection) {
+        if (state.navigateToPersonSelection) {
+            val preSelectedIds = state.filterPersons?.joinToString(",") ?: ""
+            appNavController.navigate(MainScreens.PersonSelection.passPersonIds(preSelectedIds))
+            onEvent(SearchEvent.ResetNavigation)
+        }
+    }
+
+    // Get selected category IDs from navigation result
+    LaunchedEffect(appNavController.currentBackStackEntry) {
+        appNavController.currentBackStackEntry
+            ?.savedStateHandle
+            ?.get<String>("selectedCategoryIds")
+            ?.let { idsString ->
+                val ids = if (idsString.isEmpty()) emptyList()
+                else idsString.split(",").map { it.toLong() }
+                onEvent(SearchEvent.UpdateSelectedCategories(ids))
+                appNavController.currentBackStackEntry?.savedStateHandle?.remove<String>("selectedCategoryIds")
+            }
+    }
+
+    // Get selected person IDs from navigation result
+    LaunchedEffect(appNavController.currentBackStackEntry) {
+        appNavController.currentBackStackEntry
+            ?.savedStateHandle
+            ?.get<String>("selectedPersonIds")
+            ?.let { idsString ->
+                val ids = if (idsString.isEmpty()) emptyList()
+                else idsString.split(",").map { it.toLong() }
+                onEvent(SearchEvent.UpdateSelectedPersons(ids))
+                appNavController.currentBackStackEntry?.savedStateHandle?.remove<String>("selectedPersonIds")
+            }
+    }
 
     BackHandler(enabled = currentScreen == SearchScreens.FILTERS) {
         currentScreen = SearchScreens.RESULTS
@@ -111,7 +162,11 @@ fun SearchScreen(
                             )
                         }
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             )
         }
     ) { paddingValues ->
@@ -223,24 +278,20 @@ fun FilterScreen(
     onEvent: (SearchEvent) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
-    // Remember mutable states for temporary selections within the dialog
     var tempFilterType by remember { mutableStateOf(state.filterType ?: "") }
 
-    // Use rememberUpdatedState for categories and persons
-    val categories by rememberUpdatedState(
-        state.allCategories.filter { state.filterCategories?.contains(it.categoryId) == true }
-    )
-    val persons by rememberUpdatedState(
-        state.allPersons.filter { state.filterPersons?.contains(it.personId) == true }
-    )
+    val selectedCategories = state.allCategories.filter {
+        state.filterCategories?.contains(it.categoryId) == true
+    }
+    val selectedPersons = state.allPersons.filter {
+        state.filterPersons?.contains(it.personId) == true
+    }
 
-    // Add states for start and end date if you have date pickers
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp)
+            .padding(16.dp)
     ) {
-        // Main content area that scrolls
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -271,64 +322,117 @@ fun FilterScreen(
                 )
             }
 
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 4.dp)
-            )
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
-
-            // Categories Search and Selection
-            SearchableChipSelector(
-                title = "Categories",
-                searchQuery = state.categorySearchQuery,
-                showDropdown = state.showCategoryDropdown,
-                allItems = state.allCategories,
-                selectedItems = categories,
-                searchPlaceholder = "Search categories",
-                emptyMessage = "No categories found",
-                itemToLabel = { it.name },
-                onSearchQueryChanged = { query ->
-                    onEvent(SearchEvent.UpdateCategorySearchQuery(query))
-                },
-                onDropdownVisibilityChanged = { show ->
-                    onEvent(SearchEvent.ShowCategoryDropdown(show))
-                },
-                onItemSelected = { category ->
-                    onEvent(SearchEvent.SubmitFilterCategory(category.categoryId))
-                },
-                onChipClicked = { category ->
-                    // Remove Category on click if already selected
-                    onEvent(SearchEvent.SubmitFilterCategory(category.categoryId))
+            // Categories Selection Card
+            Text("Categories", style = MaterialTheme.typography.titleMedium)
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.small)
+                    .clickable { onEvent(SearchEvent.NavigateToCategorySelection) },
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                border = CardDefaults.outlinedCardBorder(),
+                shape = MaterialTheme.shapes.small
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (selectedCategories.isEmpty()) "None selected"
+                            else "${selectedCategories.size} selected",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowRight,
+                            contentDescription = "Select categories",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    if (selectedCategories.isNotEmpty()) {
+                        ChipFlow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            placeholder = "",
+                            maxLines = 1,
+                            chips = selectedCategories,
+                            onChipClick = {},
+                            chipToLabel = {
+                                it.name
+                            }
+                        )
+                    }
                 }
-            )
+            }
 
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 4.dp)
-            )
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
-            // Persons Search and Selection
-            SearchableChipSelector(
-                title = "Persons",
-                searchQuery = state.personSearchQuery,
-                showDropdown = state.showPersonDropdown,
-                allItems = state.allPersons,
-                selectedItems = persons,
-                searchPlaceholder = "Search persons",
-                emptyMessage = "No persons found",
-                itemToLabel = { it.name },
-                onSearchQueryChanged = { query ->
-                    onEvent(SearchEvent.UpdatePersonSearchQuery(query))
-                },
-                onDropdownVisibilityChanged = { show ->
-                    onEvent(SearchEvent.ShowPersonDropdown(show))
-                },
-                onItemSelected = { person ->
-                    onEvent(SearchEvent.SubmitFilterPerson(person.personId))
-                },
-                onChipClicked = { person ->
-                    // Remove Person on click if already selected
-                    onEvent(SearchEvent.SubmitFilterPerson(person.personId))
+            // Persons Selection Card
+            Text("Persons", style = MaterialTheme.typography.titleMedium)
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.small)
+                    .clickable { onEvent(SearchEvent.NavigateToPersonSelection) },
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                border = CardDefaults.outlinedCardBorder(),
+                shape = MaterialTheme.shapes.small
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (selectedPersons.isEmpty()) "None selected"
+                            else "${selectedPersons.size} selected",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowRight,
+                            contentDescription = "Select persons",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    if (selectedPersons.isNotEmpty()) {
+                        ChipFlow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            placeholder = "",
+                            maxLines = 1,
+                            chips = selectedPersons,
+                            onChipClick = {},
+                            chipToLabel = {
+                                it.name
+                            }
+                        )
+                    }
                 }
-            )
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
             Text("Date Range", style = MaterialTheme.typography.titleMedium)
             OutlinedTextField(
@@ -341,10 +445,8 @@ fun FilterScreen(
                 value = "End Date",
                 onValueChange = {},
                 label = { Text("End Date") })
-
-
         }
-        // Sticky bottom action buttons
+
         Column(modifier = Modifier.padding(bottom = 16.dp)) {
             OutlinedButton(
                 modifier = Modifier
@@ -353,10 +455,6 @@ fun FilterScreen(
                 shape = MaterialTheme.shapes.small,
                 onClick = {
                     tempFilterType = ""
-                    onEvent(SearchEvent.UpdateCategorySearchQuery(""))
-                    onEvent(SearchEvent.UpdatePersonSearchQuery(""))
-                    onEvent(SearchEvent.ShowCategoryDropdown(false))
-                    onEvent(SearchEvent.ShowPersonDropdown(false))
                     onEvent(SearchEvent.ClearFilters)
                 }) {
                 Text("Clear Filters")
@@ -368,7 +466,6 @@ fun FilterScreen(
                 shape = MaterialTheme.shapes.medium,
                 onClick = {
                     onEvent(SearchEvent.UpdateFilterType(tempFilterType.ifEmpty { null }))
-                    // onEvent(SearchEvent.UpdateFilterDateRange(startDate, endDate)) // Get values from date pickers
                     onEvent(SearchEvent.ApplyFilters)
                     onDismissRequest()
                 }) {
@@ -394,6 +491,7 @@ fun SearchScreenPreview() {
 @Preview(showBackground = true)
 @Composable
 fun FilterScreenPreview() {
+
     UniquePlantTheme {
         Surface {
             FilterScreen(

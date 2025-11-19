@@ -15,7 +15,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -45,6 +51,7 @@ import com.app.uniqueplant.ui.theme.UniquePlantTheme
  */
 @Composable
 fun <T : Any> SearchableChipSelector(
+    modifier: Modifier = Modifier,
     title: String,
     searchQuery: String,
     showDropdown: Boolean,
@@ -56,86 +63,39 @@ fun <T : Any> SearchableChipSelector(
     onSearchQueryChanged: (String) -> Unit,
     onDropdownVisibilityChanged: (Boolean) -> Unit,
     onItemSelected: (T) -> Unit,
-    onChipClicked: (T) -> Unit,
-    modifier: Modifier = Modifier
+    onChipClicked: (T) -> Unit
 ) {
-    val focusRequester = remember { FocusRequester() }
+    // Use derivedStateOf to prevent unnecessary recompositions
+    val filteredItems by remember(allItems, searchQuery) {
+        derivedStateOf {
+            allItems.filter { item ->
+                itemToLabel(item).contains(searchQuery, ignoreCase = true)
+            }
+        }
+    }
 
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Box {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.fillMaxWidth()
-                )
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.fillMaxWidth()
+        )
 
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { query ->
-                        onSearchQueryChanged(query)
-                        onDropdownVisibilityChanged(query.isNotEmpty())
-                    },
-                    placeholder = { Text(searchPlaceholder) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(focusRequester)
-                        .onFocusChanged { focusState ->
-                            if (focusState.isFocused && searchQuery.isNotEmpty()) {
-                                onDropdownVisibilityChanged(true)
-                            }
-                        }
-                )
-            }
-
-            DropdownMenu(
-                expanded = showDropdown,
-                onDismissRequest = {
-                    onDropdownVisibilityChanged(false)
-                    // Don't clear focus when dropdown dismisses
-                },
-                modifier = Modifier
-                    .heightIn(max = 200.dp)
-                    .fillMaxWidth(0.9f)
-            ) {
-                val filteredItems = allItems.filter { item ->
-                    itemToLabel(item).contains(searchQuery, ignoreCase = true)
-                }
-
-                if (filteredItems.isEmpty()) {
-                    DropdownMenuItem(
-                        text = { Text(emptyMessage) },
-                        onClick = { }
-                    )
-                } else {
-                    filteredItems.take(10).forEach { item ->
-                        DropdownMenuItem(
-                            text = { Text(itemToLabel(item)) },
-                            onClick = {
-                                onItemSelected(item)
-                                onSearchQueryChanged("")
-                                onDropdownVisibilityChanged(false)
-                                // Request focus back to TextField after selection
-                                focusRequester.requestFocus()
-                            }
-                        )
-                    }
-
-                    if (filteredItems.size > 10) {
-                        DropdownMenuItem(
-                            text = { Text("... and ${filteredItems.size - 10} more", style = MaterialTheme.typography.bodySmall) },
-                            onClick = { }
-                        )
-                    }
-                }
-            }
-        }
+        // Separate the search field and dropdown to prevent recomposition issues
+        SearchFieldWithDropdown(
+            searchQuery = searchQuery,
+            showDropdown = showDropdown,
+            searchPlaceholder = searchPlaceholder,
+            filteredItems = filteredItems,
+            emptyMessage = emptyMessage,
+            itemToLabel = itemToLabel,
+            onSearchQueryChanged = onSearchQueryChanged,
+            onDropdownVisibilityChanged = onDropdownVisibilityChanged,
+            onItemSelected = onItemSelected
+        )
 
         if (selectedItems.isNotEmpty()){
             ChipFlow(
@@ -155,6 +115,93 @@ fun <T : Any> SearchableChipSelector(
     }
 }
 
+@Composable
+private fun <T : Any> SearchFieldWithDropdown(
+    searchQuery: String,
+    showDropdown: Boolean,
+    searchPlaceholder: String,
+    filteredItems: List<T>,
+    emptyMessage: String,
+    itemToLabel: (T) -> String,
+    onSearchQueryChanged: (String) -> Unit,
+    onDropdownVisibilityChanged: (Boolean) -> Unit,
+    onItemSelected: (T) -> Unit
+) {
+    val focusRequester = remember { FocusRequester() }
+
+    // Use internal state to prevent recomposition from parent affecting the TextField
+    var internalQuery by remember { mutableStateOf(searchQuery) }
+    val currentSearchQuery by rememberUpdatedState(searchQuery)
+
+    // Sync internal state with external state when it changes externally (e.g., clear)
+    if (currentSearchQuery != internalQuery && currentSearchQuery.isEmpty()) {
+        internalQuery = currentSearchQuery
+    }
+
+    Box {
+        // Use key to prevent TextField from losing focus when other parts recompose
+        key("search-text-field") {
+            OutlinedTextField(
+                value = internalQuery,
+                onValueChange = { query ->
+                    internalQuery = query
+                    onSearchQueryChanged(query)
+                    onDropdownVisibilityChanged(query.isNotEmpty())
+                },
+                placeholder = { Text(searchPlaceholder) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester)
+                    .onFocusChanged { focusState ->
+                        if (focusState.isFocused && internalQuery.isNotEmpty()) {
+                            onDropdownVisibilityChanged(true)
+                        }
+                    },
+                singleLine = true
+            )
+        }
+
+        // Separate the dropdown from the text field to minimize recomposition impact
+        if (showDropdown) {
+            DropdownMenu(
+                expanded = true,
+                onDismissRequest = {
+                    onDropdownVisibilityChanged(false)
+                },
+                modifier = Modifier
+                    .heightIn(max = 200.dp)
+                    .fillMaxWidth(0.9f)
+            ) {
+                if (filteredItems.isEmpty()) {
+                    DropdownMenuItem(
+                        text = { Text(emptyMessage) },
+                        onClick = { }
+                    )
+                } else {
+                    filteredItems.take(10).forEach { item ->
+                        DropdownMenuItem(
+                            text = { Text(itemToLabel(item)) },
+                            onClick = {
+                                onItemSelected(item)
+                                internalQuery = ""
+                                onSearchQueryChanged("")
+                                onDropdownVisibilityChanged(false)
+                            }
+                        )
+                    }
+
+                    if (filteredItems.size > 10) {
+                        DropdownMenuItem(
+                            text = { Text("... and ${filteredItems.size - 10} more", style = MaterialTheme.typography.bodySmall) },
+                            onClick = { }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Preview(
     showBackground = true,
 )
@@ -171,7 +218,7 @@ fun SearchableChipSelectorPreview() {
             modifier = Modifier.padding(16.dp),
             title = "Fruits",
             searchQuery = "",
-            showDropdown = true,
+            showDropdown = false,
             allItems = allItems,
             selectedItems = listOf("Banana", "Date"),
             searchPlaceholder = "Search for a fruit",
