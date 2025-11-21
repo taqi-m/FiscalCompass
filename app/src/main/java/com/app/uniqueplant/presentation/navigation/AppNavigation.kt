@@ -1,6 +1,7 @@
 package com.app.uniqueplant.presentation.navigation
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -12,6 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.text.capitalize
+import androidx.compose.ui.text.intl.Locale
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -269,31 +272,27 @@ fun AppNavigation(
             popEnterTransition = { enterFromLeft },
             popExitTransition = { exitToLeft }
         ) { backStackEntry ->
-            val preSelectedIdsString = backStackEntry.arguments?.getString("preSelectedIds") ?: ""
-            val preSelectedIds = if (preSelectedIdsString.isEmpty()) emptyList()
-            else preSelectedIdsString.split(",").map { it.toLong() }
-
-            val searchViewModel: SearchViewModel = hiltViewModel(
-                remember { navController.getBackStackEntry(MainScreens.Search.route) }
-            )
-            val searchState by searchViewModel.state.collectAsState()
+            val navKey = backStackEntry.arguments?.getString("navKey") ?: ""
+            val title = backStackEntry.arguments?.getString("title") ?: ""
+            val allSelectableItemsJson = backStackEntry.arguments?.getString("allIds")
+            val decodedJson = allSelectableItemsJson?.let { Uri.decode(it) }
+            val allSelectableItems = if (!decodedJson.isNullOrEmpty()) {
+                try {
+                    Gson().fromJson(decodedJson, Array<SelectableItem>::class.java).toList()
+                } catch (e: Exception) {
+                    emptyList()
+                }
+            } else {
+                emptyList()
+            }
 
             val itemSelectionViewModel: ItemSelectionViewModel = hiltViewModel()
             val itemSelectionState by itemSelectionViewModel.state.collectAsState()
 
-            val allSelectableItems = remember(searchState.allCategories) {
-                searchState.allCategories.map { category ->
-                    SelectableItem(
-                        id = category.categoryId.toString(),
-                        name = category.name
-                    )
-                }
-            }
-
             val preSelectedSelectableItems =
-                remember(allSelectableItems, preSelectedIds) {
+                remember(allSelectableItems) {
                     allSelectableItems.filter { selectableItem ->
-                        preSelectedIds.contains(selectableItem.id.toLong())
+                        selectableItem.isSelected
                     }
                 }
 
@@ -310,13 +309,13 @@ fun AppNavigation(
             ItemSelectionScreen(
                 state = itemSelectionState,
                 onEvent = itemSelectionViewModel::onEvent,
-                title = "Select Items",
-                searchPlaceholder = "Search item...",
+                title = "${title.capitalize(Locale.current)} selection",
+                searchPlaceholder = "Search $title...",
                 onConfirm = { selectedCategories ->
                     val selectedIds = selectedCategories.joinToString(",") { it.id }
                     navController.previousBackStackEntry
                         ?.savedStateHandle
-                        ?.set("selectedCategoryIds", selectedIds)
+                        ?.set(navKey, selectedIds)
                     navController.popBackStack()
                 },
                 onCancel = {

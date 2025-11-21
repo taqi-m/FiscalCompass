@@ -21,7 +21,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,6 +28,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -52,6 +54,7 @@ import com.app.uniqueplant.R
 import com.app.uniqueplant.presentation.model.TransactionUi
 import com.app.uniqueplant.presentation.navigation.MainScreens
 import com.app.uniqueplant.presentation.screens.category.UiState
+import com.app.uniqueplant.presentation.screens.itemselection.SelectableItem
 import com.app.uniqueplant.presentation.screens.transactionScreens.viewTransactions.DateHeader
 import com.app.uniqueplant.ui.components.cards.ChipFlow
 import com.app.uniqueplant.ui.components.cards.TransactionCard
@@ -78,8 +81,22 @@ fun SearchScreen(
     // Handle navigation to category selection
     LaunchedEffect(state.navigateToCategorySelection) {
         if (state.navigateToCategorySelection) {
-            val preSelectedIds = state.filterCategories?.joinToString(",") ?: ""
-            appNavController.navigate(MainScreens.MultiSelection.passIds(preSelectedIds))
+            val allSelectableItems = state.allCategories.map { category ->
+                SelectableItem(
+                    id = category.categoryId.toString(),
+                    name = category.name,
+                    isSelected = state.filterCategories?.contains(category.categoryId) == true
+                )
+            }
+            appNavController.navigate(
+                MainScreens.MultiSelection.passParameters(
+                    Uri.encode(
+                        Gson().toJson(
+                            allSelectableItems
+                        )
+                    ), "category", "selectedIds"
+                )
+            )
             onEvent(SearchEvent.ResetNavigation)
         }
     }
@@ -87,8 +104,20 @@ fun SearchScreen(
     // Handle navigation to person selection
     LaunchedEffect(state.navigateToPersonSelection) {
         if (state.navigateToPersonSelection) {
-            val preSelectedIds = state.filterPersons?.joinToString(",") ?: ""
-            appNavController.navigate(MainScreens.PersonSelection.passPersonIds(preSelectedIds))
+            val allSelectableItems = state.allPersons.map { person ->
+                SelectableItem(
+                    id = person.personId.toString(),
+                    name = person.name,
+                    isSelected = state.filterPersons?.contains(person.personId) == true
+                )
+            }
+            appNavController.navigate(
+                MainScreens.MultiSelection.passParameters(
+                    Gson().toJson(
+                        allSelectableItems
+                    ), "person", "selectedPersonIds"
+                )
+            )
             onEvent(SearchEvent.ResetNavigation)
         }
     }
@@ -97,12 +126,12 @@ fun SearchScreen(
     LaunchedEffect(appNavController.currentBackStackEntry) {
         appNavController.currentBackStackEntry
             ?.savedStateHandle
-            ?.get<String>("selectedCategoryIds")
+            ?.get<String>("selectedIds")
             ?.let { idsString ->
                 val ids = if (idsString.isEmpty()) emptyList()
                 else idsString.split(",").map { it.toLong() }
                 onEvent(SearchEvent.UpdateSelectedCategories(ids))
-                appNavController.currentBackStackEntry?.savedStateHandle?.remove<String>("selectedCategoryIds")
+                appNavController.currentBackStackEntry?.savedStateHandle?.remove<String>("selectedIds")
             }
     }
 
@@ -128,8 +157,8 @@ fun SearchScreen(
             TopAppBar(
                 title = {
                     val titleText = when (currentScreen) {
-                        SearchScreens.RESULTS -> "Search Transactions"
-                        SearchScreens.FILTERS -> "Filter Transactions"
+                        SearchScreens.RESULTS -> "Transaction History"
+                        SearchScreens.FILTERS -> "Filters"
                     }
                     Text(
                         text = titleText
@@ -298,28 +327,40 @@ fun FilterScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Filter by Type:", style = MaterialTheme.typography.titleMedium)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState(0)),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            Text("Type:", style = MaterialTheme.typography.titleMedium)
+            SingleChoiceSegmentedButtonRow(
+                modifier = Modifier.fillMaxWidth()
             ) {
-                FilterChip(
+                SegmentedButton(
                     selected = tempFilterType == "",
-                    onClick = { tempFilterType = "" },
-                    label = { Text("All") }
-                )
-                FilterChip(
+                    onClick = {
+                        tempFilterType = ""
+                        onEvent(SearchEvent.UpdateFilterType(null))
+                    },
+                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 3)
+                ) {
+                    Text("All")
+                }
+                SegmentedButton(
                     selected = tempFilterType == "Income",
-                    onClick = { tempFilterType = "Income" },
-                    label = { Text("Income") }
-                )
-                FilterChip(
+                    onClick = {
+                        tempFilterType = "Income"
+                        onEvent(SearchEvent.UpdateFilterType("Income"))
+                    },
+                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 3)
+                ) {
+                    Text("Income")
+                }
+                SegmentedButton(
                     selected = tempFilterType == "Expense",
-                    onClick = { tempFilterType = "Expense" },
-                    label = { Text("Expense") }
-                )
+                    onClick = {
+                        tempFilterType = "Expense"
+                        onEvent(SearchEvent.UpdateFilterType("Expense"))
+                    },
+                    shape = SegmentedButtonDefaults.itemShape(index = 2, count = 3)
+                ) {
+                    Text("Expense")
+                }
             }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
@@ -465,7 +506,6 @@ fun FilterScreen(
                     .padding(top = 8.dp),
                 shape = MaterialTheme.shapes.medium,
                 onClick = {
-                    onEvent(SearchEvent.UpdateFilterType(tempFilterType.ifEmpty { null }))
                     onEvent(SearchEvent.ApplyFilters)
                     onDismissRequest()
                 }) {
