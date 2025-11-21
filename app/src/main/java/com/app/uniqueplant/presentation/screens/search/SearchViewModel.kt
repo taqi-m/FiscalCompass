@@ -66,8 +66,12 @@ class SearchViewModel @Inject constructor(
                 updateState { copy(filterPersons = currentPersons) }
             }
 
-            is SearchEvent.UpdateFilterDateRange -> {
-                updateState { copy(filterStartDate = event.startDate, filterEndDate = event.endDate) }
+            is SearchEvent.StartDateSelected -> {
+                updateState { copy(filterStartDate = event.startDate) }
+            }
+
+            is SearchEvent.EndDateSelected -> {
+                updateState { copy(filterEndDate = event.endDate) }
             }
 
             SearchEvent.NavigateToCategorySelection -> {

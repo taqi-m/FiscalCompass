@@ -26,7 +26,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -58,6 +57,7 @@ import com.app.uniqueplant.presentation.screens.itemselection.SelectableItem
 import com.app.uniqueplant.presentation.screens.transactionScreens.viewTransactions.DateHeader
 import com.app.uniqueplant.ui.components.cards.ChipFlow
 import com.app.uniqueplant.ui.components.cards.TransactionCard
+import com.app.uniqueplant.ui.components.pickers.DatePicker
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import com.google.gson.Gson
 import java.text.SimpleDateFormat
@@ -476,16 +476,22 @@ fun FilterScreen(
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
             Text("Date Range", style = MaterialTheme.typography.titleMedium)
-            OutlinedTextField(
+            DatePicker(
                 modifier = Modifier.fillMaxWidth(),
-                value = "Start Date",
-                onValueChange = {},
-                label = { Text("Start Date") })
-            OutlinedTextField(
+                label = "Start Date",
+                selectedDate = state.filterStartDate,
+                onDateSelected = { date ->
+                    onEvent(SearchEvent.StartDateSelected(date))
+                }
+            )
+            DatePicker(
                 modifier = Modifier.fillMaxWidth(),
-                value = "End Date",
-                onValueChange = {},
-                label = { Text("End Date") })
+                label = "End Date",
+                selectedDate = state.filterEndDate,
+                onDateSelected = { date ->
+                    onEvent(SearchEvent.EndDateSelected(date))
+                }
+            )
         }
 
         Column(modifier = Modifier.padding(bottom = 16.dp)) {

@@ -1,25 +1,13 @@
 package com.app.uniqueplant.presentation.screens.search
 
-sealed class SearchDialogToggle {
-    object DatePicker : SearchDialogToggle()
-    object TimePicker : SearchDialogToggle()
-    object Hidden : SearchDialogToggle()
-}
-
-sealed class SearchDialogSubmit {
-    data class DateSelected(val selectedDate: Long?) : SearchDialogSubmit()
-    data class TimeSelected(val selectedTime: Long?) : SearchDialogSubmit()
-    object Hidden : SearchDialogSubmit()
-}
-
-
 sealed class SearchEvent {
     object OnFilterIconClicked : SearchEvent()
     object OnDismissFilterDialog : SearchEvent()
     data class UpdateFilterType(val type: String?) : SearchEvent()
     data class SubmitFilterCategory(val categoryId: Long) : SearchEvent()
     data class SubmitFilterPerson(val personId: Long) : SearchEvent()
-    data class UpdateFilterDateRange(val startDate: Long?, val endDate: Long?) : SearchEvent()
+    data class StartDateSelected(val startDate: Long) : SearchEvent()
+    data class EndDateSelected(val endDate: Long) : SearchEvent()
     object NavigateToCategorySelection : SearchEvent()
     object NavigateToPersonSelection : SearchEvent()
     object ResetNavigation: SearchEvent()
