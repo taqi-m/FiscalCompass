@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.app.uniqueplant.presentation.model.InputField
 import com.app.uniqueplant.domain.usecase.categories.GetCategoriesUseCase
 import com.app.uniqueplant.domain.usecase.person.GetAllPersonsUseCase
 import com.app.uniqueplant.domain.usecase.transaction.AddTransactionUC
@@ -14,6 +13,7 @@ import com.app.uniqueplant.presentation.mappers.toGroupedCategoryUi
 import com.app.uniqueplant.presentation.mappers.toTransaction
 import com.app.uniqueplant.presentation.mappers.toUiList
 import com.app.uniqueplant.presentation.model.GroupedCategoryUi
+import com.app.uniqueplant.presentation.model.InputField
 import com.app.uniqueplant.presentation.model.PersonUi
 import com.app.uniqueplant.presentation.model.TransactionType
 import com.app.uniqueplant.presentation.model.TransactionUi
@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.Calendar
-import java.util.GregorianCalendar
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,11 +33,11 @@ class AddTransactionViewModel @Inject constructor(
     private val categoryUseCase: GetCategoriesUseCase,
     private val getPersonUseCase: GetAllPersonsUseCase
 ) : ViewModel() {
-    val date = Calendar.getInstance().time
+    val date = Calendar.getInstance()
     private val _state = MutableStateFlow(
         AddTransactionState(
-            formatedDate = formatDate(date),
-            formatedTime = formatTime(date),
+            selectedDate = date.time.time,
+            selectedTime = date,
             categories = emptyMap(),
             categoryId = 0L,
         )
@@ -67,7 +66,8 @@ class AddTransactionViewModel @Inject constructor(
                 )
 
                 Log.d(
-                    "AddTransactionViewModel", "init: personId: ${_state.value.personId} persons: ${_state.value.persons} "
+                    "AddTransactionViewModel",
+                    "init: personId: ${_state.value.personId} persons: ${_state.value.persons} "
                 )
                 assignCategories()
 
@@ -98,10 +98,6 @@ class AddTransactionViewModel @Inject constructor(
                 )
             }
 
-            is AddTransactionEvent.OnDateChange -> {
-                _state.value = _state.value.copy(formatedDate = formatDate(event.date))
-            }
-
             is AddTransactionEvent.OnPersonSelected -> {
                 updateState { copy(personId = event.personId) }
             }
@@ -119,21 +115,13 @@ class AddTransactionViewModel @Inject constructor(
             }
 
             is AddTransactionEvent.OnResetClicked -> {
-                val date = Calendar.getInstance().time
+                val date = Calendar.getInstance()
                 _state.value = AddTransactionState(
                     categories = _state.value.categories,
-                    formatedDate = formatDate(date),
-                    formatedTime = formatTime(date),
                     categoryId = _state.value.categoryId,
+                    selectedDate = date.timeInMillis,
+                    selectedTime = date,
                 )
-            }
-
-            is AddTransactionEvent.OnAddTransactionDialogToggle -> {
-                onDialogToggle(event.event)
-            }
-
-            is AddTransactionEvent.OnAddTransactionDialogSubmit -> {
-                onDialogSubmit(event.event)
             }
 
             is AddTransactionEvent.OnUiReset -> {
@@ -152,66 +140,18 @@ class AddTransactionViewModel @Inject constructor(
                 }
             }
 
-        }
-    }
-
-    private fun onDialogToggle(event: AddTransactionDialog) {
-        when (event) {
-            AddTransactionDialog.DatePicker -> {
+            is AddTransactionEvent.DateSelected -> {
                 updateState {
-                    copy(currentDialog = AddTransactionDialog.DatePicker)
+                    copy(selectedDate = event.selectedDate)
                 }
             }
 
-            AddTransactionDialog.TimePicker -> {
+            is AddTransactionEvent.TimeSelected -> {
                 updateState {
-                    copy(currentDialog = AddTransactionDialog.TimePicker)
+                    copy(selectedTime = event.selectedTime)
                 }
             }
 
-            AddTransactionDialog.Hidden -> {
-                updateState {
-                    copy(currentDialog = AddTransactionDialog.Hidden)
-                }
-            }
-        }
-    }
-
-    @ExperimentalMaterial3Api
-    private fun onDialogSubmit(event: AddTransactionDialogSubmit) {
-        when (event) {
-            is AddTransactionDialogSubmit.DateSelected -> {
-                event.selectedDate?.let { selectedDate ->
-                    val selectedCalendar = Calendar.getInstance().apply {
-                        timeInMillis = selectedDate
-                    }
-
-                    val date = selectedCalendar.time
-
-                    updateState {
-                        copy(formatedDate = formatDate(date))
-                    }
-                }
-                updateState {
-                    copy(currentDialog = AddTransactionDialog.Hidden)
-                }
-            }
-
-            is AddTransactionDialogSubmit.TimeSelected -> {
-
-                event.selectedTime?.let { pickedTime ->
-                    val calendar = GregorianCalendar.getInstance().apply {
-                        set(Calendar.HOUR_OF_DAY, pickedTime.hour)
-                        set(Calendar.MINUTE, pickedTime.minute)
-                    }
-                    _state.value = _state.value.copy(formatedTime = formatTime(calendar.time))
-                } ?: run {
-                }
-            }
-
-            AddTransactionDialogSubmit.Hidden -> {
-                _state.value = _state.value.copy(currentDialog = AddTransactionDialog.Hidden)
-            }
         }
     }
 
@@ -241,29 +181,41 @@ class AddTransactionViewModel @Inject constructor(
 
 
     private fun addTransaction() {
+        // Combine date and time into a single Calendar instance
+        val combinedDateTime = Calendar.getInstance().apply {
+            _state.value.selectedDate?.let { timeInMillis = it }
+            _state.value.selectedTime?.let { time ->
+                set(Calendar.HOUR_OF_DAY, time.get(Calendar.HOUR_OF_DAY))
+                set(Calendar.MINUTE, time.get(Calendar.MINUTE))
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+        }
+
         val transaction = TransactionUi(
             transactionId = 0L,
             formatedAmount = _state.value.amount.value,
             categoryId = _state.value.subCategoryId.takeIf { it != 0L } ?: _state.value.categoryId,
             personId = _state.value.personId,
-            formatedTime = _state.value.formatedTime,
-            formatedDate = _state.value.formatedDate,
+            formatedTime = formatTime(combinedDateTime.time),
+            formatedDate = formatDate(combinedDateTime.time),
             description = _state.value.description.value.ifBlank { null },
             isExpense = _state.value.transactionType == TransactionType.EXPENSE,
             transactionType = _state.value.transactionType.name
         ).toTransaction()
+
         viewModelScope.launch(Dispatchers.IO) {
             updateState { copy(uiState = UiState.Loading) }
             val result = addTransactionUC(transaction)
             result.onSuccess { transactionId ->
-                val date = Calendar.getInstance().time
+                val newDate = Calendar.getInstance()
                 updateState {
                     copy(
                         uiState = UiState.Success("Transaction added successfully"),
                         amount = InputField(""),
                         description = InputField(""),
-                        formatedDate = formatDate(date),
-                        formatedTime = formatTime(date)
+                        selectedDate = newDate.timeInMillis,
+                        selectedTime = newDate
                     )
                 }
             }.onFailure { exception ->

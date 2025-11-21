@@ -162,6 +162,7 @@ fun AppNavigation(
             SettingsScreen(
                 state = state,
                 onEvent = settingsViewModel::onEvent,
+                appNavController = navController,
                 onLogout = { route ->
                     navController.navigate(MainScreens.Auth.route) {
                         popUpTo(0) { inclusive = true }

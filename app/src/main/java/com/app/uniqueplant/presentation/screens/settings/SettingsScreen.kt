@@ -6,25 +6,35 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.app.uniqueplant.presentation.navigation.MainScreens
 import com.app.uniqueplant.ui.components.ThemeSwitch
 import com.app.uniqueplant.ui.components.cards.ProfileCard
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import com.app.uniqueplant.ui.util.PreferenceUtil
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     state: SettingsScreenState,
     onEvent: (SettingsEvent) -> Unit,
+    appNavController: NavHostController,
     onLogout: (String) -> Unit
 ) {
     LaunchedEffect(
@@ -36,13 +46,34 @@ fun SettingsScreen(
     }
 
 
-    Scaffold {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    androidx.compose.material3.Text(
+                        text = "Settings", style = MaterialTheme.typography.titleLarge
+                    )
+                }, colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                ), navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            appNavController.popBackStack()
+                        }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                })
+        }) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
                 .padding(it)
-                .padding(vertical =  16.dp, horizontal = 8.dp),
+                .padding(vertical = 16.dp, horizontal = 8.dp),
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Top
         ) {
@@ -56,19 +87,17 @@ fun SettingsScreen(
             )
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 16.dp),
+                modifier = Modifier.padding(vertical = 8.dp),
                 thickness = 1.dp,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
             )
 
             ThemeSwitch(
-                modifier = Modifier.fillMaxWidth(),
-                onSwitchChange = { themeMode ->
+                modifier = Modifier.fillMaxWidth(), onSwitchChange = { themeMode ->
                     PreferenceUtil.modifyDarkThemePreference(
                         darkThemeValue = themeMode as Int,
                     )
-                }
-            )
+                })
         }
     }
 }
@@ -76,6 +105,8 @@ fun SettingsScreen(
 @Preview(showBackground = true)
 @Composable
 fun SettingsScreenPreview() {
+    val navController = rememberNavController()
+
     UniquePlantTheme {
         SettingsScreen(
             state = SettingsScreenState(
@@ -89,6 +120,7 @@ fun SettingsScreenPreview() {
             onEvent = {
 
             },
+            appNavController = navController,
             onLogout = { route ->
                 // Handle logout action
             },

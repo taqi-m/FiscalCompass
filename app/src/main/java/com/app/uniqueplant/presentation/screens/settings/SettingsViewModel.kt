@@ -38,6 +38,14 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun onEvent(event: SettingsEvent) {
+        when (event) {
+            is SettingsEvent.OnLogoutClicked -> {
+                logout()
+            }
+        }
+    }
+
     private fun logout() {
         viewModelScope.launch(Dispatchers.IO) {
             sessionUseCase.logout().collect { resource ->
@@ -60,14 +68,6 @@ class SettingsViewModel @Inject constructor(
                         updateState { copy(isLoading = true) }
                     }
                 }
-            }
-        }
-    }
-
-    fun onEvent(event: SettingsEvent) {
-        when (event) {
-            is SettingsEvent.OnLogoutClicked -> {
-                logout()
             }
         }
     }

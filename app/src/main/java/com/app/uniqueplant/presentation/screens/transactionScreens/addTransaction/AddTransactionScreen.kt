@@ -54,17 +54,14 @@ import com.app.uniqueplant.presentation.model.InputField
 import com.app.uniqueplant.presentation.model.PersonUi
 import com.app.uniqueplant.presentation.model.TransactionType
 import com.app.uniqueplant.presentation.screens.category.UiState
-import com.app.uniqueplant.ui.components.dialogs.DatePickerDialog
-import com.app.uniqueplant.ui.components.dialogs.TimePickerDialog
 import com.app.uniqueplant.ui.components.input.Calculator
 import com.app.uniqueplant.ui.components.input.CustomExposedDropDownMenu
 import com.app.uniqueplant.ui.components.input.DataEntryTextField
-import com.app.uniqueplant.ui.components.input.ReadOnlyDataEntryTextField
 import com.app.uniqueplant.ui.components.input.TypeSwitch
+import com.app.uniqueplant.ui.components.pickers.DatePicker
 import com.app.uniqueplant.ui.theme.UniquePlantTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
-import java.util.Calendar
 
 private enum class AddTransactionScreen {
     FORM,
@@ -96,7 +93,7 @@ fun AddTransactionScreen(
         val message: String? = when (uiState) {
             is UiState.Error -> uiState.message
             is UiState.Success -> {
-                currentScreen = AddTransactionScreen.SUCCESS;
+                currentScreen = AddTransactionScreen.SUCCESS
                 null
             }
 
@@ -188,54 +185,6 @@ fun AddTransactionScreen(
             }
         }
     )
-
-    when (state.currentDialog) {
-        is AddTransactionDialog.DatePicker -> {
-            DatePickerDialog(
-                onDismissRequest = {
-                    onEvent(
-                        AddTransactionEvent.OnAddTransactionDialogToggle(
-                            AddTransactionDialog.Hidden
-                        )
-                    )
-                },
-                onDateSelected = { selectedDate ->
-                    onEvent(
-                        AddTransactionEvent.OnAddTransactionDialogSubmit(
-                            AddTransactionDialogSubmit.DateSelected(selectedDate)
-                        )
-                    )
-                },
-            )
-        }
-
-        is AddTransactionDialog.TimePicker -> {
-            val calendar = Calendar.getInstance()
-            val initialTime = Calendar.getInstance().apply {
-                set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY))
-                set(Calendar.MINUTE, calendar.get(Calendar.MINUTE))
-            }
-            TimePickerDialog(
-                onDismiss = {
-                    onEvent(
-                        AddTransactionEvent.OnAddTransactionDialogToggle(
-                            AddTransactionDialog.Hidden
-                        )
-                    )
-                },
-                onConfirm = {
-                    onEvent(
-                        AddTransactionEvent.OnAddTransactionDialogSubmit(
-                            AddTransactionDialogSubmit.TimeSelected(it)
-                        )
-                    )
-                },
-                initialTime = initialTime
-            )
-        }
-
-        else -> {}
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -359,33 +308,22 @@ fun AddTransactionFormContent(
             )
 
 
-
-            ReadOnlyDataEntryTextField(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                onClick = {
-                    onEvent(
-                        AddTransactionEvent.OnAddTransactionDialogToggle(
-                            AddTransactionDialog.DatePicker
-                        )
-                    )
-                },
+            DatePicker(
+                modifier = Modifier.fillMaxWidth(),
                 label = "Date",
-                value = state.formatedDate
+                selectedDate = state.selectedDate,
+                onDateSelected = { date ->
+                    onEvent(AddTransactionEvent.DateSelected(date))
+                }
             )
 
-            ReadOnlyDataEntryTextField(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                onClick = {
-                    onEvent(
-                        AddTransactionEvent.OnAddTransactionDialogToggle(
-                            AddTransactionDialog.TimePicker
-                        )
-                    )
-                },
+            com.app.uniqueplant.ui.components.pickers.TimePicker(
+                modifier = Modifier.fillMaxWidth(),
                 label = "Time",
-                value = state.formatedTime
+                selectedTime = state.selectedTime,
+                onTimeSelected = { time ->
+                    onEvent(AddTransactionEvent.TimeSelected(time))
+                }
             )
 
             /*Column(modifier = Modifier.fillMaxWidth()) {
@@ -584,6 +522,8 @@ fun AddTransactionFormContentPreview() {
                     ),
                     personId = 1L,
                     categoryId = 1L,
+                    selectedDate = System.currentTimeMillis(),
+                    selectedTime = java.util.Calendar.getInstance(),
                     categories = mapOf(
                         CategoryUi(
                             categoryId = 1L,
@@ -649,8 +589,6 @@ fun AddTransactionFormContentPreview() {
                             personType = "DEALER"
                         )
                     ),
-                    formatedDate = "2024-01-01",
-                    formatedTime = "12:00 PM",
                 ),
                 onEvent = {},
                 onNextClick = {}
