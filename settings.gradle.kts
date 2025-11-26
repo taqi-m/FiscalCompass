@@ -21,6 +21,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Unique Plant"
+rootProject.name = "FiscalCompass"
 include(":app")
  
