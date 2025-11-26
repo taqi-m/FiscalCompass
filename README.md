@@ -2,11 +2,11 @@
 [![Android](https://img.shields.io/badge/Android-API%2021+-43A047?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com)
 [![License](https://img.shields.io/badge/License-MIT-FFC107?style=for-the-badge)](LICENSE)
 
-# Unique Plant
+# Fiscal Compass
 
 ## Overview
 
-Unique Plant is an Android finance management application built with Kotlin that helps users track their expenses and income. The app provides features for budget management, transaction categorization, and financial reporting.
+Fiscal Compass is an Android finance management application built with Kotlin that helps users track their expenses and income. The app provides features for budget management, transaction categorization, and financial reporting.
 
 **Status**: This project is currently under development.
 
@@ -65,7 +65,7 @@ The project follows a Clean Architecture approach with the following main packag
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/taqi-m/unique-plant.git
+git clone https://github.com/taqi-m/FiscalCompass.git
 ```
 
 2. Open the project in Android Studio
@@ -84,4 +84,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-*Last updated: 2025-07-16 09:21:21 UTC by [taqi-m](https://github.com/taqi-m)*
+*Last updated: 2025-11-27 03:09:01 UTC by [taqi-m](https://github.com/taqi-m)*
