@@ -1,0 +1,79 @@
+package com.fiscal.compass.presentation.screens.settings
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.fiscal.compass.domain.model.Resource
+import com.fiscal.compass.domain.usecase.analytics.GetUserInfoUseCase
+import com.fiscal.compass.domain.usecase.auth.SessionUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class SettingsViewModel @Inject constructor(
+    private val getUserInfoUseCase: GetUserInfoUseCase,
+    private val sessionUseCase: SessionUseCase
+) : ViewModel() {
+
+
+    private val _state = MutableStateFlow(SettingsScreenState())
+    val state: StateFlow<SettingsScreenState> = _state.asStateFlow()
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            _state.value = _state.value.copy(isLoading = true)
+            // Load initial data, such as user info
+            getUserInfoUseCase().let { userInfo ->
+                val userInfo = UserInfo(
+                    userName = userInfo.userName,
+                    userEmail = userInfo.email,
+                    profilePictureUrl = userInfo.profilePicUrl
+                )
+                _state.value = _state.value.copy(userInfo = userInfo, isLoading = false)
+            }
+        }
+    }
+
+    fun onEvent(event: SettingsEvent) {
+        when (event) {
+            is SettingsEvent.OnLogoutClicked -> {
+                logout()
+            }
+        }
+    }
+
+    private fun logout() {
+        viewModelScope.launch(Dispatchers.IO) {
+            sessionUseCase.logout().collect { resource ->
+                when (resource) {
+                    is Resource.Success -> {
+                        updateState {
+                            copy(
+                                userInfo = null,
+                                error = null,
+                                isLogOutSuccess = true
+                            )
+                        }
+                    }
+
+                    is Resource.Error -> {
+                        updateState { copy(error = resource.message) }
+                    }
+
+                    is Resource.Loading -> {
+                        updateState { copy(isLoading = true) }
+                    }
+                }
+            }
+        }
+    }
+
+
+    private fun updateState(update: SettingsScreenState.() -> SettingsScreenState) {
+        _state.value = _state.value.update()
+    }
+}

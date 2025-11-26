@@ -16,11 +16,11 @@ android {
             keyPassword = "testConfig"
         }
     }
-    namespace = "com.app.uniqueplant"
+    namespace = "com.fiscal.compass"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.app.uniqueplant"
+        applicationId = "com.fiscal.compass"
         minSdk = 25
         targetSdk = 36
         versionCode = 1

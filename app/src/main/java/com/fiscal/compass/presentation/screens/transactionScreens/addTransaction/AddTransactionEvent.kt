@@ -1,0 +1,24 @@
+package com.fiscal.compass.presentation.screens.transactionScreens.addTransaction
+
+import com.fiscal.compass.presentation.model.TransactionType
+import java.util.Calendar
+
+sealed class AddTransactionEvent {
+    data class OnAmountChange(val amount: String) : AddTransactionEvent()
+    data class OnDescriptionChange(val description: String) : AddTransactionEvent()
+
+    data class OnPersonSelected(val personId: Long?) : AddTransactionEvent()
+    data class OnCategorySelected(val categoryId: Long) : AddTransactionEvent()
+
+    data class OnSubCategorySelected(val subCategoryId: Long?) : AddTransactionEvent()
+
+    data class OnTypeSelected(val selectedType: TransactionType) : AddTransactionEvent()
+
+    object OnSaveClicked : AddTransactionEvent()
+    object OnResetClicked : AddTransactionEvent()
+
+    object OnUiReset : AddTransactionEvent()
+
+    data class DateSelected(val selectedDate: Long) : AddTransactionEvent()
+    data class TimeSelected(val selectedTime: Calendar) : AddTransactionEvent()
+}
