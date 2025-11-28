@@ -25,8 +25,39 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    flavorDimensions += "environment"
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+
+            buildConfigField("Boolean", "USE_EMULATOR", "true")
+            buildConfigField("String", "EMULATOR_HOST", "\"localhost\"")
+            // Match the ports from your emulator output
+            buildConfigField("int", "AUTH_EMULATOR_PORT", "9099")
+            buildConfigField("int", "FIRESTORE_EMULATOR_PORT", "8080")
+            buildConfigField("int", "STORAGE_EMULATOR_PORT", "9199")
+            buildConfigField("int", "FUNCTIONS_EMULATOR_PORT", "5001")
+
+
+
+            resValue("string", "app_name", "FiscalCompass Dev")
+        }
+
+        create("prod") {
+            dimension = "environment"
+
+            buildConfigField("Boolean", "USE_EMULATOR", "false")
+            buildConfigField("String", "EMULATOR_HOST", "\"\"")
+            buildConfigField("int", "FIRESTORE_EMULATOR_PORT", "0")
+            buildConfigField("int", "AUTH_EMULATOR_PORT", "0")
+
+            resValue("string", "app_name", "FiscalCompass")
+        }
     }
 
     buildTypes {
@@ -38,16 +69,22 @@ android {
             )
             signingConfig = signingConfigs.getByName("test-release")
         }
+        debug {
+            isMinifyEnabled = false
+        }
     }
+
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
         jvmTarget = "11"
-    }
-    buildFeatures {
-        compose = true
     }
 }
 
@@ -56,10 +93,7 @@ ksp {
 }
 
 dependencies {
-
-    // Hilt dependencies
     implementation(libs.hilt.android)
-//    implementation(libs.androidx.material3.window.size.class1)
     implementation(libs.androidx.compose.runtime)
     debugImplementation(libs.ui.tooling)
     ksp(libs.hilt.android.compiler)
@@ -81,12 +115,10 @@ dependencies {
 
     implementation(libs.charts)
 
-
     //Room Libraries
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
-
 
     //Firebase dependencies
     implementation(platform(libs.firebase.bom))
@@ -97,10 +129,7 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
 
-    //
     implementation(libs.gson)
-
-
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
