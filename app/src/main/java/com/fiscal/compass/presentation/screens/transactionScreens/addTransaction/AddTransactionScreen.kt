@@ -234,49 +234,17 @@ fun AddTransactionFormContent(
             )
 
             if (!isCategoriesEmpty) {
-                val mainCategories = state.categories.keys.toList()
-                var subCategories = state.categories.entries
-                    .firstOrNull { it.key.categoryId == state.categoryId }?.value
-                    ?: emptyList()
-                subCategories = listOf(
-                    CategoryUi(
-                        categoryId = -1L,
-                        parentId = null,
-                        isExpenseCategory = false,
-                        name = "N/A",
-                        description = "",
-                        icon = "",
-                        color = ""
-                    )
-                ) + subCategories
+                val allCategories = state.categories
 
                 CustomExposedDropDownMenu(
                     modifier = Modifier.fillMaxWidth(),
                     label = "Category",
-                    options = mainCategories,
-                    selectedOption = mainCategories.first { it.categoryId == state.categoryId },
+                    options = allCategories,
+                    selectedOption = allCategories.first { it.categoryId == state.categoryId },
                     onOptionSelected = { selected ->
                         onEvent(AddTransactionEvent.OnCategorySelected(selected.categoryId))
                     },
                     optionToString = { it.name }
-                )
-
-                CustomExposedDropDownMenu(
-                    modifier = Modifier.fillMaxWidth(),
-                    label = "Sub Category",
-                    options = subCategories,
-                    selectedOption = subCategories.firstOrNull { it.categoryId == state.subCategoryId }
-                        ?: subCategories.firstOrNull(),
-                    onOptionSelected = { selected ->
-                        if (selected.categoryId == -1L) {
-                            onEvent(AddTransactionEvent.OnSubCategorySelected(null))
-                            return@CustomExposedDropDownMenu
-                        }
-                        onEvent(AddTransactionEvent.OnSubCategorySelected(selected.categoryId))
-                    },
-                    optionToString = {
-                        it.name
-                    }
                 )
             }
 
@@ -420,8 +388,6 @@ fun AddTransactionSuccessContent(
     )
 
     LaunchedEffect(Unit) {
-        triggerAnimation = true
-
         snapshotFlow { progress }
             .collectLatest {
                 remainingTime = countdownFrom - (countdownFrom * it).toInt()
@@ -524,64 +490,7 @@ fun AddTransactionFormContentPreview() {
                     categoryId = 1L,
                     selectedDate = System.currentTimeMillis(),
                     selectedTime = java.util.Calendar.getInstance(),
-                    categories = mapOf(
-                        CategoryUi(
-                            categoryId = 1L,
-                            parentId = null,
-                            isExpenseCategory = false,
-                            name = "Income",
-                            description = "Income Category",
-                            icon = "ic_income",
-                            color = "FF4CAF50"
-                        ) to listOf(
-                            CategoryUi(
-                                categoryId = 2L,
-                                parentId = 1L,
-                                isExpenseCategory = false,
-                                name = "Salary",
-                                description = "Salary Category",
-                                icon = "ic_salary",
-                                color = "FF2196F3"
-                            ),
-                            CategoryUi(
-                                categoryId = 3L,
-                                parentId = 1L,
-                                isExpenseCategory = false,
-                                name = "Business",
-                                description = "Business Category",
-                                icon = "ic_business",
-                                color = "FFFF9800"
-                            )
-                        ),
-                        CategoryUi(
-                            categoryId = 4L,
-                            parentId = null,
-                            isExpenseCategory = true,
-                            name = "Expense",
-                            description = "Expense Category",
-                            icon = "ic_expense",
-                            color = "FFF44336"
-                        ) to listOf(
-                            CategoryUi(
-                                categoryId = 5L,
-                                parentId = 4L,
-                                isExpenseCategory = true,
-                                name = "Food",
-                                description = "Food Category",
-                                icon = "ic_food",
-                                color = "FFFFEB3B"
-                            ),
-                            CategoryUi(
-                                categoryId = 6L,
-                                parentId = 4L,
-                                isExpenseCategory = true,
-                                name = "Transport",
-                                description = "Transport Category",
-                                icon = "ic_transport",
-                                color = "FF9C27B0"
-                            )
-                        )
-                    ),
+                    categories = CategoryUi.dummyList,
                     persons = listOf(
                         PersonUi(
                             personId = 1L,

@@ -1,5 +1,6 @@
 package com.fiscal.compass.presentation.screens.transactionScreens.addTransaction
 
+import com.fiscal.compass.presentation.model.CategoryUi
 import com.fiscal.compass.presentation.model.GroupedCategoryUi
 import com.fiscal.compass.presentation.model.InputField
 import com.fiscal.compass.presentation.model.PersonUi
@@ -24,7 +25,6 @@ data class AddTransactionState(
     val selectedTime: Calendar? = null,
     val personId: Long? = null,
     val categoryId: Long,
-    val subCategoryId: Long? = null,
-    val categories: GroupedCategoryUi = emptyMap(),
+    val categories: List<CategoryUi> = emptyList(),
     val persons: List<PersonUi> = emptyList()
 )

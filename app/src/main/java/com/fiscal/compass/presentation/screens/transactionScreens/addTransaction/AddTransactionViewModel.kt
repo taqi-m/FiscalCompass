@@ -9,10 +9,10 @@ import com.fiscal.compass.domain.usecase.person.GetAllPersonsUseCase
 import com.fiscal.compass.domain.usecase.transaction.AddTransactionUC
 import com.fiscal.compass.presentation.mappers.formatDate
 import com.fiscal.compass.presentation.mappers.formatTime
-import com.fiscal.compass.presentation.mappers.toGroupedCategoryUi
 import com.fiscal.compass.presentation.mappers.toTransaction
+import com.fiscal.compass.presentation.mappers.toUi
 import com.fiscal.compass.presentation.mappers.toUiList
-import com.fiscal.compass.presentation.model.GroupedCategoryUi
+import com.fiscal.compass.presentation.model.CategoryUi
 import com.fiscal.compass.presentation.model.InputField
 import com.fiscal.compass.presentation.model.PersonUi
 import com.fiscal.compass.presentation.model.TransactionType
@@ -38,14 +38,14 @@ class AddTransactionViewModel @Inject constructor(
         AddTransactionState(
             selectedDate = date.time.time,
             selectedTime = date,
-            categories = emptyMap(),
+            categories = emptyList(),
             categoryId = 0L,
         )
     )
     val state: StateFlow<AddTransactionState> = _state.asStateFlow()
 
-    private var expenseCategories: GroupedCategoryUi = emptyMap()
-    private var incomeCategories: GroupedCategoryUi = emptyMap()
+    private var expenseCategories: List<CategoryUi> = emptyList()
+    private var incomeCategories: List<CategoryUi> = emptyList()
 
     private var persons = emptyList<PersonUi>()
 
@@ -53,9 +53,13 @@ class AddTransactionViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             try {
 
-                expenseCategories = categoryUseCase.getExpenseCategoriesTree().toGroupedCategoryUi()
+                expenseCategories = categoryUseCase.getExpenseCategories().map {
+                    it.toUi()
+                }
 
-                incomeCategories = categoryUseCase.getIncomeCategoriesTree().toGroupedCategoryUi()
+                incomeCategories = categoryUseCase.getIncomeCategories().map {
+                    it.toUi()
+                }
 
                 persons = getPersonUseCase.getAllPersons().toUiList()
 
@@ -72,6 +76,7 @@ class AddTransactionViewModel @Inject constructor(
                 assignCategories()
 
             } catch (e: Exception) {
+                Log.e("AddTransactionViewModel", "init: ", e)
             }
         }
     }
@@ -106,10 +111,6 @@ class AddTransactionViewModel @Inject constructor(
                 updateState { copy(categoryId = event.categoryId) }
             }
 
-            is AddTransactionEvent.OnSubCategorySelected -> {
-                updateState { copy(subCategoryId = event.subCategoryId) }
-            }
-
             is AddTransactionEvent.OnSaveClicked -> {
                 addTransaction()
             }
@@ -131,8 +132,7 @@ class AddTransactionViewModel @Inject constructor(
             }
 
             is AddTransactionEvent.OnTypeSelected -> {
-                if (event.selectedType == _state.value.transactionType) {
-                } else {
+                if (event.selectedType != _state.value.transactionType) {
                     _state.value = _state.value.copy(
                         transactionType = event.selectedType
                     )
@@ -162,7 +162,7 @@ class AddTransactionViewModel @Inject constructor(
                     updateState {
                         copy(
                             categories = expenseCategories,
-                            categoryId = expenseCategories.keys.first().categoryId,
+                            categoryId = expenseCategories.first().categoryId,
                         )
                     }
                 }
@@ -171,7 +171,7 @@ class AddTransactionViewModel @Inject constructor(
                     updateState {
                         copy(
                             categories = incomeCategories,
-                            categoryId = incomeCategories.keys.first().categoryId
+                            categoryId = incomeCategories.first().categoryId
                         )
                     }
                 }
@@ -195,7 +195,7 @@ class AddTransactionViewModel @Inject constructor(
         val transaction = TransactionUi(
             transactionId = 0L,
             formatedAmount = _state.value.amount.value,
-            categoryId = _state.value.subCategoryId.takeIf { it != 0L } ?: _state.value.categoryId,
+            categoryId = _state.value.categoryId,
             personId = _state.value.personId,
             formatedTime = formatTime(combinedDateTime.time),
             formatedDate = formatDate(combinedDateTime.time),
@@ -207,7 +207,7 @@ class AddTransactionViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             updateState { copy(uiState = UiState.Loading) }
             val result = addTransactionUC(transaction)
-            result.onSuccess { transactionId ->
+            result.onSuccess {
                 val newDate = Calendar.getInstance()
                 updateState {
                     copy(

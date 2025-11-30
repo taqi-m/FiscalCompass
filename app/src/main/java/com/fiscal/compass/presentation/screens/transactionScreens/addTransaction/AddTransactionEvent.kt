@@ -10,8 +10,6 @@ sealed class AddTransactionEvent {
     data class OnPersonSelected(val personId: Long?) : AddTransactionEvent()
     data class OnCategorySelected(val categoryId: Long) : AddTransactionEvent()
 
-    data class OnSubCategorySelected(val subCategoryId: Long?) : AddTransactionEvent()
-
     data class OnTypeSelected(val selectedType: TransactionType) : AddTransactionEvent()
 
     object OnSaveClicked : AddTransactionEvent()
