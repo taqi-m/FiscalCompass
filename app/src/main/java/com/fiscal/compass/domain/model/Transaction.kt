@@ -7,6 +7,7 @@ import java.util.Date
 data class Transaction(
     val transactionId: Long,
     val amount: Double,
+    val amountPaid: Double = 0.0,
     val categoryId: Long,
     val category : Category? = null,
     val personId: Long? = null,

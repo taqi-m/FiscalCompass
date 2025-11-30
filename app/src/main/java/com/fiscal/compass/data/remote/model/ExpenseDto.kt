@@ -13,6 +13,9 @@ data class ExpenseDto(
     @get:PropertyName("amount") @set:PropertyName("amount")
     var amount: Double = 0.0,
 
+    @get:PropertyName("amountPaid") @set:PropertyName("amountPaid")
+    var amountPaid: Double = 0.0,
+
     @get:PropertyName("description") @set:PropertyName("description")
     var description: String = "",
 

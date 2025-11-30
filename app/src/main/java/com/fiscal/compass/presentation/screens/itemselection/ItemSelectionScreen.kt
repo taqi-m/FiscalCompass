@@ -214,6 +214,91 @@ private fun SelectableItemRow(
     }
 }
 
+@Preview(showBackground = true, name = "Error State")
+@Composable
+fun ItemSelectionScreenErrorPreview() {
+    FiscalCompassTheme {
+        ItemSelectionScreen(
+            state = ItemSelectionScreenState(
+                searchQuery = "",
+                allItems = emptyList(),
+                selectedItems = emptySet(),
+                isLoading = false,
+                error = "Failed to load items. Please try again."
+            ),
+            onEvent = {},
+            title = "Select Items",
+            searchPlaceholder = "Search...",
+            onConfirm = {},
+            onCancel = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Single Selection Mode")
+@Composable
+fun ItemSelectionScreenSingleSelectionPreview() {
+    val sampleItems = listOf(
+        SelectableItem(id = "apple", name = "Apple"),
+        SelectableItem(id = "banana", name = "Banana"),
+        SelectableItem(id = "cherry", name = "Cherry")
+    )
+
+    val preSelectedItems = listOf(
+        SelectableItem(id = "banana", name = "Banana")
+    )
+
+    FiscalCompassTheme {
+        ItemSelectionScreen(
+            state = ItemSelectionScreenState(
+                searchQuery = "",
+                allItems = sampleItems,
+                selectedItems = preSelectedItems.toSet(),
+                isLoading = false,
+                error = null,
+                singleSelectionMode = true
+            ),
+            onEvent = {},
+            title = "Select a Fruit",
+            searchPlaceholder = "Search fruits...",
+            onConfirm = {},
+            onCancel = {},
+            singleSelectionMode = true
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Long Item Names")
+@Composable
+fun ItemSelectionScreenLongNamesPreview() {
+    val sampleItems = listOf(
+        SelectableItem(id = "long1", name = "This is a very long item name that should wrap or truncate"),
+        SelectableItem(id = "long2", name = "Another example of an extremely long name for an item in the list"),
+        SelectableItem(id = "short1", name = "Short Name")
+    )
+
+    val preSelectedItems = listOf(
+        SelectableItem(id = "long1", name = "This is a very long item name that should wrap or truncate")
+    )
+
+    FiscalCompassTheme {
+        ItemSelectionScreen(
+            state = ItemSelectionScreenState(
+                searchQuery = "",
+                allItems = sampleItems,
+                selectedItems = preSelectedItems.toSet(),
+                isLoading = false,
+                error = null
+            ),
+            onEvent = {},
+            title = "Select Long Items",
+            searchPlaceholder = "Search...",
+            onConfirm = {},
+            onCancel = {}
+        )
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun ItemSelectionScreenPreview() {

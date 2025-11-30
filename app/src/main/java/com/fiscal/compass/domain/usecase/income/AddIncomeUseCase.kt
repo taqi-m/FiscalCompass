@@ -3,6 +3,7 @@ package com.fiscal.compass.domain.usecase.income
 import com.fiscal.compass.domain.model.base.Income
 import com.fiscal.compass.domain.repository.IncomeRepository
 import com.fiscal.compass.domain.usecase.auth.SessionUseCase
+import com.fiscal.compass.domain.validation.PaymentValidation
 import java.util.Date
 
 class AddIncomeUseCase(
@@ -13,7 +14,8 @@ class AddIncomeUseCase(
         amount: Double,
         categoryId: Long,
         description: String,
-        date: Date
+        date: Date,
+        amountPaid: Double = 0.0
     ): Result<Unit> {
         return try {
             val uid: String? = sessionUseCase.getCurrentUser()?.uid
@@ -21,8 +23,14 @@ class AddIncomeUseCase(
                 return Result.failure(IllegalStateException("User is not logged in"))
             }
 
+            // Validate payment amount
+            PaymentValidation.validatePaymentAmount(amount, amountPaid).getOrElse {
+                return Result.failure(it)
+            }
+
             val newIncome = Income(
                 amount = amount,
+                amountPaid = amountPaid,
                 description = description,
                 date = date,
                 categoryId = categoryId,

@@ -5,6 +5,7 @@ import java.util.Date
 data class Income(
     val incomeId: Long = 0,
     val amount: Double,
+    val amountPaid: Double = 0.0,
     val description: String,
     val date: Date,
     val categoryId: Long,

@@ -39,6 +39,7 @@ data class ExpenseEntity(
     val firestoreId: String? = null,  // Firestore document ID
     val localId: String = UUID.randomUUID().toString(), // Unique local identifier
     val amount: Double,
+    val amountPaid: Double = 0.0,
     val description: String,
     val date: Long,
     val categoryId: Long,
