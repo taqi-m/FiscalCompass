@@ -1,13 +1,16 @@
 package com.fiscal.compass.presentation.screens.transactionScreens.addTransaction
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,6 +20,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -53,13 +59,15 @@ import com.fiscal.compass.presentation.model.CategoryUi
 import com.fiscal.compass.presentation.model.InputField
 import com.fiscal.compass.presentation.model.PersonUi
 import com.fiscal.compass.presentation.model.TransactionType
+import com.fiscal.compass.presentation.navigation.MainScreens
 import com.fiscal.compass.presentation.screens.category.UiState
+import com.fiscal.compass.presentation.screens.itemselection.SelectableItem
 import com.fiscal.compass.ui.components.input.Calculator
-import com.fiscal.compass.ui.components.input.CustomExposedDropDownMenu
 import com.fiscal.compass.ui.components.input.DataEntryTextField
 import com.fiscal.compass.ui.components.input.TypeSwitch
 import com.fiscal.compass.ui.components.pickers.DatePicker
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
+import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
@@ -81,6 +89,96 @@ fun AddTransactionScreen(
     var currentScreen by rememberSaveable { mutableStateOf(AddTransactionScreen.FORM) }
     val snackbarHostState = remember { SnackbarHostState() }
     val uiState = state.uiState
+
+    // Handle navigation to category selection
+    LaunchedEffect(state.navigateToCategorySelection) {
+        if (state.navigateToCategorySelection) {
+            val allSelectableItems = state.allCategories.map { category ->
+                SelectableItem(
+                    id = category.categoryId.toString(),
+                    name = category.name,
+                    isSelected = category.categoryId == state.categoryId
+                )
+            }
+            appNavController.navigate(
+                MainScreens.MultiSelection.passParameters(
+                    Uri.encode(Gson().toJson(allSelectableItems)),
+                    "category",
+                    "selectedCategoryId",
+                    singleSelectionMode = true
+                )
+            )
+            onEvent(AddTransactionEvent.ResetNavigation)
+        }
+    }
+
+    // Handle navigation to person selection
+    LaunchedEffect(state.navigateToPersonSelection) {
+        if (state.navigateToPersonSelection) {
+            // Add "N/A" option for persons
+            val naOption = SelectableItem(
+                id = "-1",
+                name = "N/A",
+                isSelected = state.personId == null
+            )
+            val personSelectableItems = state.allPersons.map { person ->
+                SelectableItem(
+                    id = person.personId.toString(),
+                    name = person.name,
+                    isSelected = person.personId == state.personId
+                )
+            }
+            val allSelectableItems = listOf(naOption) + personSelectableItems
+
+            appNavController.navigate(
+                MainScreens.MultiSelection.passParameters(
+                    Uri.encode(Gson().toJson(allSelectableItems)),
+                    "person",
+                    "selectedPersonId",
+                    singleSelectionMode = true
+                )
+            )
+            onEvent(AddTransactionEvent.ResetNavigation)
+        }
+    }
+
+    // Get selected category ID from navigation result
+    LaunchedEffect(appNavController.currentBackStackEntry) {
+        appNavController.currentBackStackEntry
+            ?.savedStateHandle
+            ?.get<String>("selectedCategoryId")
+            ?.let { idsString ->
+                if (idsString.isNotEmpty()) {
+                    // For single selection, we take the first (and only) ID
+                    val categoryId = idsString.split(",").firstOrNull()?.toLongOrNull()
+                    categoryId?.let {
+                        onEvent(AddTransactionEvent.UpdateSelectedCategory(it))
+                    }
+                }
+                appNavController.currentBackStackEntry?.savedStateHandle?.remove<String>("selectedCategoryId")
+            }
+    }
+
+    // Get selected person ID from navigation result
+    LaunchedEffect(appNavController.currentBackStackEntry) {
+        appNavController.currentBackStackEntry
+            ?.savedStateHandle
+            ?.get<String>("selectedPersonId")
+            ?.let { idsString ->
+                if (idsString.isNotEmpty()) {
+                    // For single selection, we take the first (and only) ID
+                    val personId = idsString.split(",").firstOrNull()?.toLongOrNull()
+                    if (personId == -1L) {
+                        onEvent(AddTransactionEvent.UpdateSelectedPerson(null))
+                    } else {
+                        personId?.let {
+                            onEvent(AddTransactionEvent.UpdateSelectedPerson(it))
+                        }
+                    }
+                }
+                appNavController.currentBackStackEntry?.savedStateHandle?.remove<String>("selectedPersonId")
+            }
+    }
 
     BackHandler(enabled = currentScreen == AddTransactionScreen.CALCULATOR || currentScreen == AddTransactionScreen.SUCCESS) {
         currentScreen = AddTransactionScreen.FORM
@@ -235,44 +333,24 @@ fun AddTransactionFormContent(
 
             if (!isCategoriesEmpty) {
                 val allCategories = state.categories
+                val selectedCategory = allCategories.firstOrNull { it.categoryId == state.categoryId }
 
-                CustomExposedDropDownMenu(
+                SelectionField(
                     modifier = Modifier.fillMaxWidth(),
                     label = "Category",
-                    options = allCategories,
-                    selectedOption = allCategories.first { it.categoryId == state.categoryId },
-                    onOptionSelected = { selected ->
-                        onEvent(AddTransactionEvent.OnCategorySelected(selected.categoryId))
-                    },
-                    optionToString = { it.name }
+                    selectedValue = selectedCategory?.name ?: "Select Category",
+                    onClick = { onEvent(AddTransactionEvent.NavigateToCategorySelection) }
                 )
             }
 
-            var persons = state.persons
-            persons = listOf(
-                PersonUi(
-                    personId = -1L,
-                    name = "N/A",
-                    personType = "DEALER"
-                )
-            ) + persons
+            val selectedPerson = state.persons.firstOrNull { it.personId == state.personId }
+            val personDisplayName = selectedPerson?.name ?: "N/A"
 
-            CustomExposedDropDownMenu(
+            SelectionField(
                 modifier = Modifier.fillMaxWidth(),
                 label = "Person",
-                options = persons,
-                selectedOption = persons.firstOrNull { it.personId == state.personId }
-                    ?: persons.firstOrNull(),
-                onOptionSelected = { selected ->
-                    if (selected.personId == -1L) {
-                        onEvent(AddTransactionEvent.OnPersonSelected(null))
-                        return@CustomExposedDropDownMenu
-                    }
-                    onEvent(AddTransactionEvent.OnPersonSelected(selected.personId))
-                },
-                optionToString = {
-                    it.name
-                }
+                selectedValue = personDisplayName,
+                onClick = { onEvent(AddTransactionEvent.NavigateToPersonSelection) }
             )
 
 
@@ -542,3 +620,51 @@ fun AddTransactionSuccessContentPreview() {
         }
     }
 }
+
+/**
+ * A clickable field that displays a label and selected value, navigating to a selection screen when clicked.
+ * Similar to OutlinedTextField but for navigation-based selection.
+ */
+@Composable
+private fun SelectionField(
+    modifier: Modifier = Modifier,
+    label: String,
+    selectedValue: String,
+    onClick: () -> Unit
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 16.dp, bottom = 4.dp)
+        )
+        OutlinedCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick),
+            shape = MaterialTheme.shapes.extraSmall
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = selectedValue,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = "Select $label",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+

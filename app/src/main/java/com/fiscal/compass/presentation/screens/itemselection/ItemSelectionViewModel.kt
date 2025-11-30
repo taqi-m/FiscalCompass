@@ -29,10 +29,16 @@ class ItemSelectionViewModel @Inject constructor(
             is ItemSelectionEvent.ItemToggled -> {
                 val item = event.item
                 updateState {
-                    val newSelectedItems = if (selectedItems.contains(item)) {
-                        selectedItems - item
+                    val newSelectedItems = if (singleSelectionMode) {
+                        // In single selection mode, replace the selection
+                        setOf(item)
                     } else {
-                        selectedItems + item
+                        // In multi-selection mode, toggle the item
+                        if (selectedItems.contains(item)) {
+                            selectedItems - item
+                        } else {
+                            selectedItems + item
+                        }
                     }
                     copy(selectedItems = newSelectedItems)
                 }
@@ -43,7 +49,8 @@ class ItemSelectionViewModel @Inject constructor(
                     copy(
                         allItems = event.allItems,
                         selectedItems = event.preSelectedItems.toSet(),
-                        searchQuery = ""
+                        searchQuery = "",
+                        singleSelectionMode = event.singleSelectionMode
                     )
                 }
             }

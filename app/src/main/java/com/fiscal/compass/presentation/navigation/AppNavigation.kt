@@ -275,6 +275,7 @@ fun AppNavigation(
         ) { backStackEntry ->
             val navKey = backStackEntry.arguments?.getString("navKey") ?: ""
             val title = backStackEntry.arguments?.getString("title") ?: ""
+            val singleMode = backStackEntry.arguments?.getString("singleMode")?.toBoolean() ?: false
             val allSelectableItemsJson = backStackEntry.arguments?.getString("allIds")
             val decodedJson = allSelectableItemsJson?.let { Uri.decode(it) }
             val allSelectableItems = if (!decodedJson.isNullOrEmpty()) {
@@ -302,7 +303,8 @@ fun AppNavigation(
                 itemSelectionViewModel.onEvent(
                     ItemSelectionEvent.InitializeScreen(
                         allItems = allSelectableItems,
-                        preSelectedItems = preSelectedSelectableItems
+                        preSelectedItems = preSelectedSelectableItems,
+                        singleSelectionMode = singleMode
                     )
                 )
             }
@@ -312,6 +314,7 @@ fun AppNavigation(
                 onEvent = itemSelectionViewModel::onEvent,
                 title = "${title.capitalize(Locale.current)} selection",
                 searchPlaceholder = "Search $title...",
+                singleSelectionMode = singleMode,
                 onConfirm = { selectedCategories ->
                     val selectedIds = selectedCategories.joinToString(",") { it.id }
                     navController.previousBackStackEntry

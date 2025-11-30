@@ -19,4 +19,13 @@ sealed class AddTransactionEvent {
 
     data class DateSelected(val selectedDate: Long) : AddTransactionEvent()
     data class TimeSelected(val selectedTime: Calendar) : AddTransactionEvent()
+
+    // Navigation events for ItemSelectionScreen
+    object NavigateToCategorySelection : AddTransactionEvent()
+    object NavigateToPersonSelection : AddTransactionEvent()
+    object ResetNavigation : AddTransactionEvent()
+
+    // Update events from ItemSelectionScreen
+    data class UpdateSelectedCategory(val categoryId: Long) : AddTransactionEvent()
+    data class UpdateSelectedPerson(val personId: Long?) : AddTransactionEvent()
 }

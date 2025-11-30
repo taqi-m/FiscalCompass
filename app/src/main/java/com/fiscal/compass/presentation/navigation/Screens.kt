@@ -16,9 +16,9 @@ sealed class MainScreens(val route: String) {
     object Jobs : MainScreens("jobs_screen")
     object Search : MainScreens("search_screen")
 
-    object MultiSelection : MainScreens("multi_selection_screen/{allIds}/{title}/{navKey}") {
-        fun passParameters(allIds: String, title: String, navKey: String): String {
-            return "multi_selection_screen/$allIds/$title/$navKey"
+    object MultiSelection : MainScreens("multi_selection_screen/{allIds}/{title}/{navKey}/{singleMode}") {
+        fun passParameters(allIds: String, title: String, navKey: String, singleSelectionMode: Boolean = false): String {
+            return "multi_selection_screen/$allIds/$title/$navKey/$singleSelectionMode"
         }
     }
 

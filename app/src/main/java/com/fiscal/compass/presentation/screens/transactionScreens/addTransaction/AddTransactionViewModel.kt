@@ -49,24 +49,29 @@ class AddTransactionViewModel @Inject constructor(
 
     private var persons = emptyList<PersonUi>()
 
+    // Store domain models for ItemSelectionScreen
+    private var allExpenseCategories = emptyList<com.fiscal.compass.domain.model.base.Category>()
+    private var allIncomeCategories = emptyList<com.fiscal.compass.domain.model.base.Category>()
+    private var allPersons = emptyList<com.fiscal.compass.domain.model.base.Person>()
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
             try {
 
-                expenseCategories = categoryUseCase.getExpenseCategories().map {
-                    it.toUi()
-                }
+                allExpenseCategories = categoryUseCase.getExpenseCategories()
+                expenseCategories = allExpenseCategories.map { it.toUi() }
 
-                incomeCategories = categoryUseCase.getIncomeCategories().map {
-                    it.toUi()
-                }
+                allIncomeCategories = categoryUseCase.getIncomeCategories()
+                incomeCategories = allIncomeCategories.map { it.toUi() }
 
-                persons = getPersonUseCase.getAllPersons().toUiList()
+                allPersons = getPersonUseCase.getAllPersons()
+                persons = allPersons.toUiList()
 
 
 
                 _state.value = _state.value.copy(
-                    persons = persons
+                    persons = persons,
+                    allPersons = allPersons
                 )
 
                 Log.d(
@@ -152,6 +157,41 @@ class AddTransactionViewModel @Inject constructor(
                 }
             }
 
+            AddTransactionEvent.NavigateToCategorySelection -> {
+                updateState { copy(navigateToCategorySelection = true) }
+            }
+
+            AddTransactionEvent.NavigateToPersonSelection -> {
+                updateState { copy(navigateToPersonSelection = true) }
+            }
+
+            AddTransactionEvent.ResetNavigation -> {
+                updateState {
+                    copy(
+                        navigateToCategorySelection = false,
+                        navigateToPersonSelection = false
+                    )
+                }
+            }
+
+            is AddTransactionEvent.UpdateSelectedCategory -> {
+                updateState {
+                    copy(
+                        categoryId = event.categoryId,
+                        navigateToCategorySelection = false
+                    )
+                }
+            }
+
+            is AddTransactionEvent.UpdateSelectedPerson -> {
+                updateState {
+                    copy(
+                        personId = event.personId,
+                        navigateToPersonSelection = false
+                    )
+                }
+            }
+
         }
     }
 
@@ -163,6 +203,7 @@ class AddTransactionViewModel @Inject constructor(
                         copy(
                             categories = expenseCategories,
                             categoryId = expenseCategories.first().categoryId,
+                            allCategories = allExpenseCategories
                         )
                     }
                 }
@@ -171,7 +212,8 @@ class AddTransactionViewModel @Inject constructor(
                     updateState {
                         copy(
                             categories = incomeCategories,
-                            categoryId = incomeCategories.first().categoryId
+                            categoryId = incomeCategories.first().categoryId,
+                            allCategories = allIncomeCategories
                         )
                     }
                 }

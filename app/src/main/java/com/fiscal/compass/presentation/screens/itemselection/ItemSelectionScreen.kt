@@ -44,7 +44,8 @@ fun ItemSelectionScreen(
     onConfirm: (List<SelectableItem>) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
-    searchPlaceholder: String = "Search..."
+    searchPlaceholder: String = "Search...",
+    singleSelectionMode: Boolean = false
 ) {
     // Use derivedStateOf to prevent unnecessary recompositions when filtering
     val filteredItems by remember(state.searchQuery, state.allItems) {
@@ -163,7 +164,8 @@ fun ItemSelectionScreen(
                             SelectableItemRow(
                                 item = item,
                                 isSelected = state.selectedItems.contains(item),
-                                onToggle = { onEvent(ItemSelectionEvent.ItemToggled(item)) }
+                                onToggle = { onEvent(ItemSelectionEvent.ItemToggled(item)) },
+                                singleSelectionMode = singleSelectionMode
                             )
 
                             if (index < filteredItems.lastIndex)
@@ -181,7 +183,8 @@ private fun SelectableItemRow(
     item: SelectableItem,
     isSelected: Boolean,
     onToggle: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    singleSelectionMode: Boolean = false
 ) {
     Row(
         modifier = modifier
@@ -191,10 +194,17 @@ private fun SelectableItemRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Checkbox(
-            checked = isSelected,
-            onCheckedChange = { onToggle() }
-        )
+        if (singleSelectionMode) {
+            androidx.compose.material3.RadioButton(
+                selected = isSelected,
+                onClick = onToggle
+            )
+        } else {
+            Checkbox(
+                checked = isSelected,
+                onCheckedChange = { onToggle() }
+            )
+        }
 
         Text(
             text = item.name,

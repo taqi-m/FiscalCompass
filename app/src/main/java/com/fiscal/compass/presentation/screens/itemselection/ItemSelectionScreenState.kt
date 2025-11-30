@@ -5,7 +5,8 @@ data class ItemSelectionScreenState(
     val allItems: List<SelectableItem> = emptyList(),
     val selectedItems: Set<SelectableItem> = emptySet(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val singleSelectionMode: Boolean = false
 ) {
     /**
      * Computed property for filtered items based on search query

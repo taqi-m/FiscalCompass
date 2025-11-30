@@ -7,7 +7,8 @@ sealed class ItemSelectionEvent {
     data object CancelSelection : ItemSelectionEvent()
     data class InitializeScreen(
         val allItems: List<SelectableItem>,
-        val preSelectedItems: List<SelectableItem>
+        val preSelectedItems: List<SelectableItem>,
+        val singleSelectionMode: Boolean = false
     ) : ItemSelectionEvent()
 }
 
