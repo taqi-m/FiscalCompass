@@ -104,9 +104,6 @@ class CategoriesViewModel @Inject constructor(
                     updateState {
                         copy(
                             currentDialog = CategoriesDialog.AddCategory,
-                            dialogState = CategoryDialogState(
-                                parentId = event.parentId,
-                            )
                         )
                     }
                 }
@@ -159,7 +156,6 @@ class CategoriesViewModel @Inject constructor(
                 viewModelScope.launch(Dispatchers.IO) {
                     val updatedState = addCategoryUseCase.invoke(
                         name = event.name,
-                        parentId = event.parentId,
                         description = event.description,
                         transactionType = _state.value.transactionType,
                         expectedPersonType = event.expectedPersonType

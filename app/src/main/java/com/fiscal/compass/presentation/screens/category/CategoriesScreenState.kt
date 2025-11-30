@@ -13,7 +13,6 @@ sealed class UiState {
 }
 
 data class CategoryDialogState(
-    val parentId: Long? = null,
     val category: CategoryUi? = null
 ) {
     companion object {

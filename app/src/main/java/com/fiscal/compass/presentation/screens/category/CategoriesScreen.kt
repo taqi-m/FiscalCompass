@@ -127,16 +127,7 @@ fun CategoriesScreenContent(
                 )
             }
         } else null,
-        onAddNewCategoryClicked = if (state.canAdd) {
-            { categoryGroup ->
-                onEvent(
-                    CategoriesEvent.OnCategoryDialogToggle(
-                        CategoryDialogToggle.Add(
-                            categoryGroup
-                        )
-                    )
-                )
-            }
+        onAddNewCategoryClicked = if (state.canAdd) { { onEvent(CategoriesEvent.OnCategoryDialogToggle(CategoryDialogToggle.Add)) }
         } else null,
         onTransactionTypeChange = { type ->
             onEvent(
@@ -154,7 +145,7 @@ fun CategoriesList(
     categoriesList: List<CategoryUi>,
     onEditCategoryClicked: ((CategoryUi) -> Unit)? = null,
     onDeleteCategoryClicked: ((CategoryUi) -> Unit)? = null,
-    onAddNewCategoryClicked: ((Long?) -> Unit)? = null,
+    onAddNewCategoryClicked: (() -> Unit)? = null,
     onTransactionTypeChange: (TransactionType) -> Unit,
 ) {
 
@@ -251,7 +242,7 @@ fun CategoriesList(
                                     shape = RoundedCornerShape(4.dp)
                                 ), text = "Add Category",
                             onClick = {
-                                onAddNewCategoryClicked(null)
+                                onAddNewCategoryClicked()
                             })
                     }
                 }
@@ -297,7 +288,6 @@ fun CategoryScreenDialogs(
                 onAddNewCategory = { name, description, expectedPersonType ->
                     onDialogSubmit(
                         CategoryDialogSubmit.Add(
-                            parentId = dialogState.parentId,
                             name = name,
                             description = description,
                             expectedPersonType = expectedPersonType

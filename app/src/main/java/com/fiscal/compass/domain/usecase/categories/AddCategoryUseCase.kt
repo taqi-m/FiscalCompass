@@ -9,7 +9,7 @@ import javax.inject.Inject
 class AddCategoryUseCase @Inject constructor(
     private val categoryRepository: CategoryRepository
 ) {
-    suspend fun invoke(name: String, parentId: Long?, description: String, transactionType: TransactionType, expectedPersonType: String): UiState {
+    suspend fun invoke(name: String, description: String, transactionType: TransactionType, expectedPersonType: String): UiState {
         // Check if the categoryId already exists
         val existingCategory = categoryRepository.getCategoryByName(name)
         if (existingCategory != null) {
@@ -20,7 +20,6 @@ class AddCategoryUseCase @Inject constructor(
 
         // Create a new categoryId
         val newCategory = Category(
-            parentCategoryId = parentId,
             name = name,
             description = description,
             expectedPersonType = expectedPersonType,

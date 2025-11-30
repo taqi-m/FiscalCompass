@@ -6,14 +6,14 @@ import com.fiscal.compass.presentation.model.TransactionType
 
 
 sealed class CategoryDialogToggle {
-    data class Add(val parentId: Long? = null) : CategoryDialogToggle()
+    object Add : CategoryDialogToggle()
     data class Edit(val category: CategoryUi) : CategoryDialogToggle()
     data class Delete(val category: CategoryUi) : CategoryDialogToggle()
     object Hidden : CategoryDialogToggle()
 }
 
 sealed class CategoryDialogSubmit {
-    data class Add(val name: String,val parentId: Long? = null, val description: String, val expectedPersonType: String) : CategoryDialogSubmit()
+    data class Add(val name: String, val description: String, val expectedPersonType: String) : CategoryDialogSubmit()
     data class Edit(val category: Category) : CategoryDialogSubmit()
 
     object Delete : CategoryDialogSubmit()
