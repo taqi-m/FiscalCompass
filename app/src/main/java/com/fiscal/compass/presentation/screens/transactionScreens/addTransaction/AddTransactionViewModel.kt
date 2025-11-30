@@ -99,6 +99,15 @@ class AddTransactionViewModel @Inject constructor(
                 )
             }
 
+            is AddTransactionEvent.OnAmountPaidChange -> {
+                _state.value = _state.value.copy(
+                    amountPaid = InputField(
+                        value = event.amountPaid,
+                        error = if (event.amountPaid.isBlank()) "Amount paid cannot be empty" else ""
+                    )
+                )
+            }
+
             is AddTransactionEvent.OnDescriptionChange -> {
                 _state.value = _state.value.copy(
                     description = InputField(
@@ -223,6 +232,17 @@ class AddTransactionViewModel @Inject constructor(
 
 
     private fun addTransaction() {
+        // Validate amountPaid does not exceed amount
+        val totalAmount = _state.value.amount.value.toDoubleOrNull() ?: 0.0
+        val paidAmount = _state.value.amountPaid.value.toDoubleOrNull() ?: 0.0
+
+        if (paidAmount > totalAmount) {
+            updateState {
+                copy(uiState = UiState.Error("Amount paid cannot exceed total amount"))
+            }
+            return
+        }
+
         // Combine date and time into a single Calendar instance
         val combinedDateTime = Calendar.getInstance().apply {
             _state.value.selectedDate?.let { timeInMillis = it }
@@ -237,6 +257,7 @@ class AddTransactionViewModel @Inject constructor(
         val transaction = TransactionUi(
             transactionId = 0L,
             formatedAmount = _state.value.amount.value,
+            formatedPaidAmount = _state.value.amountPaid.value,
             categoryId = _state.value.categoryId,
             personId = _state.value.personId,
             formatedTime = formatTime(combinedDateTime.time),
@@ -254,7 +275,8 @@ class AddTransactionViewModel @Inject constructor(
                 updateState {
                     copy(
                         uiState = UiState.Success("Transaction added successfully"),
-                        amount = InputField(""),
+                        amount = InputField("0.0"),
+                        amountPaid = InputField("0.0"),
                         description = InputField(""),
                         selectedDate = newDate.timeInMillis,
                         selectedTime = newDate
@@ -274,4 +296,3 @@ class AddTransactionViewModel @Inject constructor(
         _state.value = _state.value.update()
     }
 }
-

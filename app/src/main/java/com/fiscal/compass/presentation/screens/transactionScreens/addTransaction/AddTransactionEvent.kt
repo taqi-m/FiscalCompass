@@ -5,6 +5,7 @@ import java.util.Calendar
 
 sealed class AddTransactionEvent {
     data class OnAmountChange(val amount: String) : AddTransactionEvent()
+    data class OnAmountPaidChange(val amountPaid: String) : AddTransactionEvent()
     data class OnDescriptionChange(val description: String) : AddTransactionEvent()
 
     data class OnPersonSelected(val personId: Long?) : AddTransactionEvent()

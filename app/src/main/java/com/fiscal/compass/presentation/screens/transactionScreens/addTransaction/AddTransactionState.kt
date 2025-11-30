@@ -21,6 +21,9 @@ data class AddTransactionState(
     val amount: InputField = InputField(
         value = "0.0"
     ),
+    val amountPaid: InputField = InputField(
+        value = "0.0"
+    ),
     val transactionType: TransactionType = TransactionType.EXPENSE,
     val description: InputField = InputField(),
     val selectedDate: Long? = null,
