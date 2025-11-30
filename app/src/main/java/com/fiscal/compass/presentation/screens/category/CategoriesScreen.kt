@@ -12,14 +12,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalIconButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
@@ -35,10 +32,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.fiscal.compass.presentation.mappers.toCategory
 import com.fiscal.compass.presentation.model.CategoryUi
-import com.fiscal.compass.presentation.model.GroupedCategoryUi
 import com.fiscal.compass.presentation.model.TransactionType
 import com.fiscal.compass.ui.components.buttons.AddNewButton
-import com.fiscal.compass.ui.components.cards.ExpandableChipCard
+import com.fiscal.compass.ui.components.cards.CategoryItem
 import com.fiscal.compass.ui.components.dialogs.AddCategoryDialog
 import com.fiscal.compass.ui.components.dialogs.DeleteCategoryDialog
 import com.fiscal.compass.ui.components.dialogs.EditCategoryDialog
@@ -116,7 +112,7 @@ fun CategoriesScreenContent(
         modifier = modifier.fillMaxSize(),
         uiState = state.uiState,
         transactionType = state.transactionType,
-        categoriesMap = state.categories,
+        categoriesList = state.categories,
         onEditCategoryClicked = if (state.canEdit) {
             { category ->
                 onEvent(CategoriesEvent.OnCategoryDialogToggle(CategoryDialogToggle.Edit(category)))
@@ -155,7 +151,7 @@ fun CategoriesList(
     modifier: Modifier = Modifier,
     uiState: UiState,
     transactionType: TransactionType,
-    categoriesMap: GroupedCategoryUi,
+    categoriesList: List<CategoryUi>,
     onEditCategoryClicked: ((CategoryUi) -> Unit)? = null,
     onDeleteCategoryClicked: ((CategoryUi) -> Unit)? = null,
     onAddNewCategoryClicked: ((Long?) -> Unit)? = null,
@@ -183,24 +179,24 @@ fun CategoriesList(
             )
         }
         when (uiState) {
-            is UiState.Loading -> {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Loading categories...",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }
-            }
+            is UiState.Loading -> LoadingCategories()
+
 
             else -> {
-                categoriesMap.forEach { (category, categories) ->
+                items(categoriesList, key = { it.categoryId}) {category ->
+                    CategoryItem(
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        categoryName = category.name,
+                        onEditClick = {
+                            onEditCategoryClicked?.invoke(category)
+                        },
+                        onDeleteClicked = {
+                            onDeleteCategoryClicked?.invoke(category)
+                        }
+                    )
+                }
+
+                /*categoriesList.forEach { (category, categories) ->
                     item {
                         ExpandableChipCard(
                             modifier = Modifier
@@ -240,7 +236,7 @@ fun CategoriesList(
                             chipToLabel = { it.name }
                         )
                     }
-                }
+                }*/
 
                 onAddNewCategoryClicked?.let {
                     item {
@@ -268,6 +264,22 @@ fun CategoriesList(
                     )
                 }
             }
+        }
+    }
+}
+
+private fun LazyListScope.LoadingCategories() {
+    item {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Loading categories...",
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }
@@ -338,7 +350,7 @@ fun CategoriesScreenPreview() {
         canAdd = true,
         canEdit = true,
         canDelete = true,
-        categories = CategoryUi.dummyGroup,
+        categories = CategoryUi.dummyList,
         transactionType = TransactionType.EXPENSE,
         currentDialog = CategoriesDialog.Hidden,
         dialogState = CategoryDialogState.Idle
@@ -355,7 +367,7 @@ fun CategoriesScreenNoAddPreview() {
         canAdd = false,
         canEdit = true,
         canDelete = true,
-        categories = CategoryUi.dummyGroup,
+        categories = CategoryUi.dummyList,
         transactionType = TransactionType.EXPENSE,
         currentDialog = CategoriesDialog.Hidden,
         dialogState = CategoryDialogState.Idle

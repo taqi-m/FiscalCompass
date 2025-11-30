@@ -10,6 +10,7 @@ import com.fiscal.compass.domain.usecase.categories.UpdateCategoryUseCase
 import com.fiscal.compass.domain.usecase.rbac.CheckPermissionUseCase
 import com.fiscal.compass.presentation.mappers.toCategory
 import com.fiscal.compass.presentation.mappers.toGroupedCategoryUi
+import com.fiscal.compass.presentation.mappers.toUi
 import com.fiscal.compass.presentation.model.TransactionType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -217,14 +218,14 @@ class CategoriesViewModel @Inject constructor(
             try {
                 val type = _state.value.transactionType
                 val currentFlow = when (type) {
-                    TransactionType.EXPENSE -> getCategoriesUseCase.getExpenseCategoryTreeFlow()
-                    TransactionType.INCOME -> getCategoriesUseCase.getIncomeCategoryTreeFlow()
+                    TransactionType.EXPENSE -> getCategoriesUseCase.getExpenseCategoriesWithFlow()
+                    TransactionType.INCOME -> getCategoriesUseCase.getIncomeCategoriesWithFlow()
                 }
                 currentFlow.collect { updatedCategories ->
                     updateState {
                         copy(
                             uiState = UiState.Idle,
-                            categories = updatedCategories.toGroupedCategoryUi()
+                            categories = updatedCategories.map { it.toUi() }
                         )
                     }
                 }

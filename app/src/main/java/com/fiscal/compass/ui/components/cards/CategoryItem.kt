@@ -1,5 +1,6 @@
 package com.fiscal.compass.ui.components.cards
 
+import android.content.res.Configuration
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,8 +24,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.fiscal.compass.R
+import com.fiscal.compass.ui.theme.FiscalCompassTheme
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -50,7 +53,9 @@ fun CategoryItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            text = categoryName
+            text = categoryName,
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.bodyMedium
         )
         Row(
 
@@ -68,7 +73,8 @@ fun CategoryItem(
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_more_horiz_24),
-                    contentDescription = "Edit"
+                    contentDescription = "Edit",
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -101,5 +107,17 @@ fun CategoryItem(
                 )
             }
         }
+    }
+}
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL)
+@Composable
+fun CategoryItemPreview() {
+    FiscalCompassTheme {
+        CategoryItem(
+            categoryName = "Groceries",
+            onEditClick = {},
+            onDeleteClicked = {}
+        )
     }
 }

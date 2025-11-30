@@ -1,5 +1,6 @@
 package com.fiscal.compass.ui.components.input
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
@@ -9,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.fiscal.compass.ui.theme.FiscalCompassTheme
 
 @Composable
 fun TypeSwitch(
@@ -34,19 +36,25 @@ fun TypeSwitch(
                 },
                 selected = index == selectedTypeIndex,
                 label = {
-                    Text(label)
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelMedium
+                    )
                 }
             )
         }
     }
 }
 
-@Preview
+@Preview(showSystemUi = false, showBackground = true)
 @Composable
 fun TypeSwitchPreview() {
-    TypeSwitch(
-        typeOptions = listOf("Income", "Expense"),
-        selectedTypeIndex = 0,
-        onTypeSelected = {}
-    )
+    FiscalCompassTheme {
+        TypeSwitch(
+            modifier = Modifier.fillMaxWidth(),
+            typeOptions = listOf("Income", "Expense"),
+            selectedTypeIndex = 0,
+            onTypeSelected = {}
+        )
+    }
 }
