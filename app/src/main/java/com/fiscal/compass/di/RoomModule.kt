@@ -30,7 +30,6 @@ object RoomModule {
                 AppDatabase::class.java,
                 "unique-plant-db"
             )
-            .addMigrations(AppDatabase.MIGRATION_1_2)
             .build()
     }
 

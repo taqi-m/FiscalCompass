@@ -1,6 +1,5 @@
 package com.fiscal.compass.ui.components.input
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -21,12 +20,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,187 +33,106 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fiscal.compass.R
 import com.fiscal.compass.presentation.utilities.CurrencyFormater
+import com.fiscal.compass.presentation.utils.AmountInputType
+import com.fiscal.compass.presentation.utils.CalculatorEngine
+import com.fiscal.compass.presentation.utils.CalculatorState
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
 
 
 @Composable
 fun Calculator(
     modifier: Modifier = Modifier,
-    onValueChange: (String) -> Unit = {},
+    initialValue: String = "0",
+    label: String = "",
+    inputType: AmountInputType = AmountInputType.TOTAL_AMOUNT,
+    onValueChange: (String, AmountInputType) -> Unit = { _, _ -> },
     onSaveClick: () -> Unit = {},
 ) {
-    // Calculator state
-    var displayText by remember { mutableStateOf("0") }
-    var firstOperand by remember { mutableDoubleStateOf(0.0) }
-    var operation by remember { mutableStateOf<String?>(null) }
-    var clearOnNextInput by remember { mutableStateOf(false) }
-    var errorState by remember { mutableStateOf(false) }
-
-    val clearDisplay = {
-        displayText = "0"
-        firstOperand = 0.0
-        operation = null
-        clearOnNextInput = false
-        errorState = false
+    // Calculator state using the new CalculatorState class
+    // Use inputType as key to reset state only when switching between amount types
+    var calculatorState by remember(inputType) {
+        mutableStateOf(CalculatorState.withInitialValue(initialValue))
     }
 
+    // Track the last inputType to detect field switches
+    var lastInputType by remember { mutableStateOf(inputType) }
 
-    // Functions for delete and clear operations
-    val deleteLastChar = {
-        if (errorState) {
-            clearDisplay()
-        } else {
-            displayText = if (displayText.length <= 1) "0" else displayText.dropLast(1)
+    // Update display when switching between input types, but preserve calculator operations
+    LaunchedEffect(inputType) {
+        // Only reset when explicitly switching between input types
+        if (lastInputType != inputType) {
+            calculatorState = CalculatorState.withInitialValue(initialValue)
+        }
+        lastInputType = inputType
+    }
+
+    // Initialize the calculator state with initial value only on first composition
+    LaunchedEffect(Unit) {
+        if (calculatorState.displayText == "0" && initialValue != "0") {
+            calculatorState = CalculatorState.withInitialValue(initialValue)
         }
     }
 
-    // Check if value is within Double limits
-    val isValueWithinLimits = { value: Double ->
-        value.isFinite() && value > Double.MIN_VALUE && value < Double.MAX_VALUE
-    }
-
-    // Handle error and return to default state
-    fun handleError(exception: Exception? = null) {
-        displayText = "Error"
-        firstOperand = 0.0
-        operation = null
-        clearOnNextInput = true
-        errorState = true
-        exception?.printStackTrace()
-    }
-
-    LaunchedEffect(displayText) {
-        // Notify parent of display text change
-        if (!errorState) {
-            onValueChange(displayText)
+    // Notify parent of display text change
+    LaunchedEffect(calculatorState.displayText) {
+        if (!calculatorState.errorState) {
+            onValueChange(calculatorState.displayText, inputType)
         }
     }
 
     Column(
-        modifier = modifier
-            .fillMaxWidth(),
-        verticalArrangement = Arrangement.SpaceBetween
-    )
-    {
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(0.6f),
-                    shape = MaterialTheme.shapes.medium
-                )
-                .padding(16.dp),
-            text = CurrencyFormater.formatCalculatorCurrency(
-                displayText
-            ),
-            style = MaterialTheme.typography.titleLarge,
-            textAlign = TextAlign.Left,
-            color = if (errorState) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
-            maxLines = 1,
-        )
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        // Label display
+        if (label.isNotEmpty()) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            )
+        }
+
+        // Calculation display - shows when operation is in progress
+        if (calculatorState.operation != null && !calculatorState.errorState) {
+            CalculationDisplay(
+                firstOperand = calculatorState.firstOperand,
+                operation = calculatorState.operation,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            )
+        }
 
         // Number pad
         NumberBoard(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             onNumberClick = { number ->
-                if (errorState) {
-                    clearDisplay()
-                    displayText = number.toString()
-                } else if (clearOnNextInput) {
-                    displayText = number.toString()
-                    clearOnNextInput = false
-                } else {
-                    // Check if we already have 2 decimal places
-                    val decimalIndex = displayText.indexOf('.')
-                    if (decimalIndex != -1 && displayText.length - decimalIndex > 2) {
-                        // Already have 2 decimal places, don't add more digits
-                        return@NumberBoard
-                    }
-
-                    displayText =
-                        if (displayText == "0") number.toString() else displayText + number
-                }
+                calculatorState = CalculatorEngine.handleNumberInput(calculatorState, number)
             },
-            onOperatorClick = { op ->
-                if (errorState) {
-                    clearDisplay()
-                } else {
-                    try {
-                        val value = displayText.toDouble()
-                        if (isValueWithinLimits(value)) {
-                            firstOperand = value
-                            operation = op
-                            clearOnNextInput = true
-                        } else {
-                            handleError()
-                        }
-                    } catch (e: NumberFormatException) {
-                        handleError(e)
-                    }
-                }
+            onOperatorClick = { operator ->
+                calculatorState = CalculatorEngine.handleOperatorInput(calculatorState, operator)
             },
             onEqualsClick = {
-                if (errorState) {
-                    clearDisplay()
-                } else {
-                    try {
-                        val secondOperand = displayText.toDouble()
-
-                        if (!isValueWithinLimits(secondOperand)) {
-                            handleError()
-                            return@NumberBoard
-                        }
-
-                        val result = when (operation) {
-                            "+" -> firstOperand + secondOperand
-                            "-" -> firstOperand - secondOperand
-                            "*" -> firstOperand * secondOperand
-                            "÷" -> if (secondOperand != 0.0) firstOperand / secondOperand else Double.NaN
-                            else -> secondOperand
-                        }
-
-                        if (result.isNaN() || result.isInfinite() || !isValueWithinLimits(result)) {
-                            handleError()
-                            return@NumberBoard
-                        }
-
-                        // Format the result with max 3 decimal places
-                        displayText = if (result == result.toInt().toDouble()) {
-                            // If it's a whole number, show as integer
-                            result.toInt().toString()
-                        } else {
-                            // Round to 3 decimal places
-                            "%.2f".format(result).trimEnd('0').trimEnd('.')
-                        }
-
-                        operation = null
-                        clearOnNextInput = true
-                    } catch (e: NumberFormatException) {
-                        handleError(e)
-                    } catch (e: Exception) {
-                        handleError(e)
-                    }
-                }
+                calculatorState = CalculatorEngine.handleEqualsInput(calculatorState)
             },
-            onClearClick = clearDisplay,
-            onDeleteLastChar = deleteLastChar,
+            onClearClick = {
+                calculatorState = CalculatorEngine.handleClearInput()
+            },
+            onDeleteLastChar = {
+                calculatorState = CalculatorEngine.handleDeleteInput(calculatorState)
+            },
             onDecimalClick = {
-                if (errorState) {
-                    clearDisplay()
-                    displayText = "0."
-                } else if (clearOnNextInput) {
-                    displayText = "0."
-                    clearOnNextInput = false
-                } else if (!displayText.contains(".")) {
-                    displayText = "$displayText."
-                }
+                calculatorState = CalculatorEngine.handleDecimalInput(calculatorState)
             },
             onSaveClick = {
-                if (!errorState) {
+                if (!calculatorState.errorState) {
                     onSaveClick()
                 }
-            },
+            }
         )
     }
 
@@ -233,7 +151,9 @@ fun CalculatorPreview() {
         Calculator(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp)
+                .padding(8.dp),
+            label = "Total Amount",
+            inputType = AmountInputType.TOTAL_AMOUNT
         )
     }
 }
@@ -554,6 +474,94 @@ private fun SaveButton(
         Text(
             text = "OK",
             fontSize = 18.sp
+        )
+    }
+}
+
+/**
+ * Displays the current calculation in progress
+ * Shows the first operand and the selected operator
+ */
+@Composable
+private fun CalculationDisplay(
+    firstOperand: Double,
+    operation: String?,
+    modifier: Modifier = Modifier
+) {
+    androidx.compose.material3.Card(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.small,
+        colors = androidx.compose.material3.CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "Calculating",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = CurrencyFormater.formatCurrency(firstOperand),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                    )
+                    if (operation != null) {
+                        androidx.compose.material3.Surface(
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        ) {
+                            Text(
+                                text = operation,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            Icon(
+                painter = painterResource(R.drawable.ic_keyboard_backspace_24),
+                contentDescription = "Calculation in progress",
+                tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.5f),
+                modifier = Modifier
+                    .graphicsLayer {
+                        rotationZ = 180f
+                    }
+            )
+        }
+    }
+}
+
+
+@Preview(
+    showBackground = true, backgroundColor = 0xFFFFFFFF, name = "CalculationDisplay Preview"
+)
+@Composable
+fun CalculationDisplayPreview() {
+    FiscalCompassTheme {
+        CalculationDisplay(
+            firstOperand = 1234.56,
+            operation = "+",
+            modifier = Modifier.wrapContentSize()
         )
     }
 }

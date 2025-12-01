@@ -18,6 +18,7 @@ import com.fiscal.compass.presentation.model.PersonUi
 import com.fiscal.compass.presentation.model.TransactionType
 import com.fiscal.compass.presentation.model.TransactionUi
 import com.fiscal.compass.presentation.screens.category.UiState
+import com.fiscal.compass.presentation.utils.AmountInputType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -91,19 +92,65 @@ class AddTransactionViewModel @Inject constructor(
     fun onEvent(event: AddTransactionEvent) {
         when (event) {
             is AddTransactionEvent.OnAmountChange -> {
-                _state.value = _state.value.copy(
-                    amount = InputField(
-                        value = event.amount,
-                        error = if (event.amount.isBlank()) "Amount cannot be empty" else ""
-                    )
-                )
+                Log.d("AddTransactionViewModel", "onEvent: amount: ${event.amount} inputType: ${event.inputType}")
+                when (event.inputType) {
+                    AmountInputType.TOTAL_AMOUNT -> {
+                        val totalAmount = event.amount.toDoubleOrNull() ?: 0.0
+                        val currentPaidAmount = _state.value.paidAmount.value.toDoubleOrNull() ?: 0.0
+
+                        _state.value = _state.value.copy(
+                            totalAmount = InputField(
+                                value = event.amount,
+                                error = when {
+                                    event.amount.isBlank() -> "Amount cannot be empty"
+                                    totalAmount <= 0 -> "Amount must be greater than zero"
+                                    currentPaidAmount > totalAmount -> "Total amount cannot be less than amount paid"
+                                    else -> ""
+                                }
+                            ),
+                            // Update amountPaid validation if needed
+                            paidAmount = if (currentPaidAmount > totalAmount && totalAmount > 0) {
+                                _state.value.paidAmount.copy(
+                                    error = "Amount paid cannot exceed total amount"
+                                )
+                            } else {
+                                _state.value.paidAmount.copy(error = "")
+                            }
+                        )
+                    }
+
+                    AmountInputType.AMOUNT_PAID -> {
+                        val paidAmount = event.amount.toDoubleOrNull() ?: 0.0
+                        val currentTotalAmount = _state.value.totalAmount.value.toDoubleOrNull() ?: 0.0
+
+                        _state.value = _state.value.copy(
+                            paidAmount = InputField(
+                                value = event.amount,
+                                error = when {
+                                    event.amount.isBlank() -> "Amount paid cannot be empty"
+                                    paidAmount < 0 -> "Amount paid cannot be negative"
+                                    paidAmount > currentTotalAmount -> "Amount paid cannot exceed total amount"
+                                    else -> ""
+                                }
+                            )
+                        )
+                    }
+                }
             }
 
             is AddTransactionEvent.OnAmountPaidChange -> {
+                val paidAmount = event.amountPaid.toDoubleOrNull() ?: 0.0
+                val currentTotalAmount = _state.value.totalAmount.value.toDoubleOrNull() ?: 0.0
+
                 _state.value = _state.value.copy(
-                    amountPaid = InputField(
+                    paidAmount = InputField(
                         value = event.amountPaid,
-                        error = if (event.amountPaid.isBlank()) "Amount paid cannot be empty" else ""
+                        error = when {
+                            event.amountPaid.isBlank() -> "Amount paid cannot be empty"
+                            paidAmount < 0 -> "Amount paid cannot be negative"
+                            paidAmount > currentTotalAmount -> "Amount paid cannot exceed total amount"
+                            else -> ""
+                        }
                     )
                 )
             }
@@ -233,8 +280,8 @@ class AddTransactionViewModel @Inject constructor(
 
     private fun addTransaction() {
         // Validate amountPaid does not exceed amount
-        val totalAmount = _state.value.amount.value.toDoubleOrNull() ?: 0.0
-        val paidAmount = _state.value.amountPaid.value.toDoubleOrNull() ?: 0.0
+        val totalAmount = _state.value.totalAmount.value.toDoubleOrNull() ?: 0.0
+        val paidAmount = _state.value.paidAmount.value.toDoubleOrNull() ?: 0.0
 
         if (paidAmount > totalAmount) {
             updateState {
@@ -256,8 +303,8 @@ class AddTransactionViewModel @Inject constructor(
 
         val transaction = TransactionUi(
             transactionId = 0L,
-            formatedAmount = _state.value.amount.value,
-            formatedPaidAmount = _state.value.amountPaid.value,
+            formatedAmount = _state.value.totalAmount.value,
+            formatedPaidAmount = _state.value.paidAmount.value,
             categoryId = _state.value.categoryId,
             personId = _state.value.personId,
             formatedTime = formatTime(combinedDateTime.time),
@@ -275,8 +322,8 @@ class AddTransactionViewModel @Inject constructor(
                 updateState {
                     copy(
                         uiState = UiState.Success("Transaction added successfully"),
-                        amount = InputField("0.0"),
-                        amountPaid = InputField("0.0"),
+                        totalAmount = InputField("0.0"),
+                        paidAmount = InputField("0.0"),
                         description = InputField(""),
                         selectedDate = newDate.timeInMillis,
                         selectedTime = newDate

@@ -2,9 +2,11 @@ package com.fiscal.compass.presentation.screens.transactionScreens.addTransactio
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -62,10 +64,13 @@ import com.fiscal.compass.presentation.model.TransactionType
 import com.fiscal.compass.presentation.navigation.MainScreens
 import com.fiscal.compass.presentation.screens.category.UiState
 import com.fiscal.compass.presentation.screens.itemselection.SelectableItem
+import com.fiscal.compass.presentation.utilities.CurrencyFormater
+import com.fiscal.compass.presentation.utils.AmountInputType
 import com.fiscal.compass.ui.components.input.Calculator
 import com.fiscal.compass.ui.components.input.DataEntryTextField
 import com.fiscal.compass.ui.components.input.TypeSwitch
 import com.fiscal.compass.ui.components.pickers.DatePicker
+import com.fiscal.compass.ui.components.pickers.TimePicker
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
 import com.google.gson.Gson
 import kotlinx.coroutines.delay
@@ -364,7 +369,7 @@ fun AddTransactionFormContent(
                 }
             )
 
-            com.fiscal.compass.ui.components.pickers.TimePicker(
+            TimePicker(
                 modifier = Modifier.fillMaxWidth(),
                 label = "Time",
                 selectedTime = state.selectedTime,
@@ -373,29 +378,6 @@ fun AddTransactionFormContent(
                 }
             )
 
-            /*Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "Note",
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
-                TextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.outline,
-                            shape = MaterialTheme.shapes.extraSmall
-                        ),
-                    value = state.description.value,
-                    onValueChange = { onEvent(AddTransactionEvent.OnDescriptionChange(it)) },
-                    placeholder = { Text(text = "Add a short note") },
-                    minLines = 4,
-                    maxLines = 4,
-                    shape = MaterialTheme.shapes.extraSmall,
-                    colors = OutlinedTextFieldDefaults.colors()
-                )
-            }*/
             DataEntryTextField(
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -436,13 +418,19 @@ fun AddTransactionCalculatorContent(
     var activeField by rememberSaveable { mutableStateOf<AmountField>(AmountField.TOTAL_AMOUNT) }
 
     // Calculate remaining amount and progress
-    val totalAmount = state.amount.value.toDoubleOrNull() ?: 0.0
-    val paidAmount = state.amountPaid.value.toDoubleOrNull() ?: 0.0
+    val totalAmount = state.totalAmount.value.toDoubleOrNull() ?: 0.0
+    val paidAmount = state.paidAmount.value.toDoubleOrNull() ?: 0.0
     val remainingAmount = (totalAmount - paidAmount).coerceAtLeast(0.0)
     val progressPercentage = if (totalAmount > 0) {
         ((paidAmount / totalAmount) * 100).coerceIn(0.0, 100.0)
     } else {
         0.0
+    }
+
+    // Get the current value to pass to Calculator based on active field
+    val currentDisplayValue = when (activeField) {
+        AmountField.TOTAL_AMOUNT -> state.totalAmount.value.ifBlank { "0" }
+        AmountField.AMOUNT_PAID -> state.paidAmount.value.ifBlank { "0" }
     }
 
     Column(
@@ -509,7 +497,7 @@ fun AddTransactionCalculatorContent(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = com.fiscal.compass.presentation.utilities.CurrencyFormater.formatCurrency(remainingAmount),
+                        text = CurrencyFormater.formatCurrency(remainingAmount),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                         color = if (remainingAmount > 0)
@@ -522,19 +510,19 @@ fun AddTransactionCalculatorContent(
         }
 
         // Field selector tabs with auto-fill button
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // Total Amount Card
             OutlinedCard(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.fillMaxWidth(),
                 onClick = { activeField = AmountField.TOTAL_AMOUNT },
-                shape = RoundedCornerShape(12.dp),
-                border = androidx.compose.foundation.BorderStroke(
+                shape = MaterialTheme.shapes.small,
+                border = BorderStroke(
                     width = if (activeField == AmountField.TOTAL_AMOUNT) 2.dp else 1.dp,
                     color = if (activeField == AmountField.TOTAL_AMOUNT)
                         MaterialTheme.colorScheme.primary
@@ -544,7 +532,8 @@ fun AddTransactionCalculatorContent(
             ) {
                 Column(
                     modifier = Modifier.padding(12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
                         text = "Total Amount",
@@ -555,7 +544,7 @@ fun AddTransactionCalculatorContent(
                             MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = state.amount.value.ifBlank { "0.0" },
+                        text = CurrencyFormater.formatCalculatorCurrency(state.totalAmount.value.ifBlank { "0" }),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                         color = if (activeField == AmountField.TOTAL_AMOUNT)
@@ -568,10 +557,10 @@ fun AddTransactionCalculatorContent(
 
             // Amount Paid Card
             OutlinedCard(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.fillMaxWidth(),
                 onClick = { activeField = AmountField.AMOUNT_PAID },
-                shape = RoundedCornerShape(12.dp),
-                border = androidx.compose.foundation.BorderStroke(
+                shape = MaterialTheme.shapes.small,
+                border = BorderStroke(
                     width = if (activeField == AmountField.AMOUNT_PAID) 2.dp else 1.dp,
                     color = if (activeField == AmountField.AMOUNT_PAID)
                         MaterialTheme.colorScheme.primary
@@ -581,7 +570,8 @@ fun AddTransactionCalculatorContent(
             ) {
                 Column(
                     modifier = Modifier.padding(12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
                         text = "Amount Paid",
@@ -592,7 +582,7 @@ fun AddTransactionCalculatorContent(
                             MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = state.amountPaid.value.ifBlank { "0.0" },
+                        text = CurrencyFormater.formatCalculatorCurrency(state.paidAmount.value.ifBlank { "0" }),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                         color = if (activeField == AmountField.AMOUNT_PAID)
@@ -608,7 +598,7 @@ fun AddTransactionCalculatorContent(
         if (totalAmount > 0 && paidAmount < totalAmount) {
             Button(
                 onClick = {
-                    onEvent(AddTransactionEvent.OnAmountPaidChange(state.amount.value))
+                    onEvent(AddTransactionEvent.OnAmountPaidChange(state.totalAmount.value))
                     activeField = AmountField.AMOUNT_PAID
                 },
                 modifier = Modifier
@@ -632,13 +622,25 @@ fun AddTransactionCalculatorContent(
             }
         }
 
-        // Single Calculator that switches based on activeField
+        // Calculator with direct value binding - receives initialValue from state
+        // No TextField inside Calculator - values come from parent state
         Calculator(
             modifier = Modifier.fillMaxSize(),
-            onValueChange = { value ->
-                when (activeField) {
-                    AmountField.TOTAL_AMOUNT -> onEvent(AddTransactionEvent.OnAmountChange(value))
-                    AmountField.AMOUNT_PAID -> onEvent(AddTransactionEvent.OnAmountPaidChange(value))
+            initialValue = currentDisplayValue,
+            label = when (activeField) {
+                AmountField.TOTAL_AMOUNT -> "Total Amount"
+                AmountField.AMOUNT_PAID -> "Amount Paid"
+            },
+            inputType = when (activeField) {
+                AmountField.TOTAL_AMOUNT -> AmountInputType.TOTAL_AMOUNT
+                AmountField.AMOUNT_PAID -> AmountInputType.AMOUNT_PAID
+            },
+            onValueChange = { value, inputType ->
+                Log.d("AddTransactionScreen", "onValueChange: $value, $inputType")
+                // Update the appropriate field based on inputType
+                when (inputType) {
+                    AmountInputType.TOTAL_AMOUNT -> onEvent(AddTransactionEvent.OnAmountChange(value, inputType))
+                    AmountInputType.AMOUNT_PAID -> onEvent(AddTransactionEvent.OnAmountPaidChange(value))
                 }
             },
             onSaveClick = {
@@ -760,7 +762,7 @@ fun AddTransactionFormContentPreview() {
             AddTransactionFormContent(
                 modifier = Modifier.padding(it),
                 state = AddTransactionState(
-                    amount = InputField(
+                    totalAmount = InputField(
                         value = "",
                         error = ""
                     ),
@@ -803,8 +805,8 @@ fun AddTransactionCalculatorContentPreview() {
                 modifier = Modifier.padding(it),
                 onEvent = {},
                 state = AddTransactionState(
-                    amount = InputField(value = "1000.0"),
-                    amountPaid = InputField(value = "600.0"),
+                    totalAmount = InputField(value = "1000.0"),
+                    paidAmount = InputField(value = "600.0"),
                     categoryId = 1L
                 )
             )
@@ -876,4 +878,3 @@ private fun SelectionField(
         }
     }
 }
-
