@@ -1,5 +1,5 @@
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.8.0-8E24AA?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
-[![Android](https://img.shields.io/badge/Android-API%2021+-43A047?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.1.21-8E24AA?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Android](https://img.shields.io/badge/Android-API%2025+-43A047?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com)
 [![License](https://img.shields.io/badge/License-MIT-FFC107?style=for-the-badge)](LICENSE)
 
 # Fiscal Compass
