@@ -1,6 +1,6 @@
 package com.fiscal.compass.domain.model.base
 
-import com.fiscal.compass.domain.model.PersonType
+import com.fiscal.compass.domain.util.PersonType
 
 data class Person(
     val personId: Long = 0,

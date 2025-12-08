@@ -14,7 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.fiscal.compass.domain.model.PersonType
+import com.fiscal.compass.domain.util.PersonType
 import com.fiscal.compass.domain.model.base.Person
 import com.fiscal.compass.ui.components.input.DataEntryTextField
 import com.fiscal.compass.ui.components.input.GenericExposedDropDownMenu

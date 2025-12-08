@@ -1,4 +1,4 @@
-package com.fiscal.compass.domain.model
+package com.fiscal.compass.domain.util
 
 enum class PersonType {
     CUSTOMER,
