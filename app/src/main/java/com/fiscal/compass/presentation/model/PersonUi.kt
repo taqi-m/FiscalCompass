@@ -1,6 +1,6 @@
 package com.fiscal.compass.presentation.model
 
-import com.fiscal.compass.domain.model.PersonType
+import com.fiscal.compass.domain.util.PersonType
 
 data class PersonUi(
     val personId: Long = 0,

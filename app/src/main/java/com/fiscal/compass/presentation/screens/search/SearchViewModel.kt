@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.fiscal.compass.domain.usecase.categories.GetCategoriesUseCase
 import com.fiscal.compass.domain.usecase.person.GetAllPersonsUseCase
 import com.fiscal.compass.domain.usecase.transaction.SearchTransactionUC
+import com.fiscal.compass.domain.util.DateRange
 import com.fiscal.compass.presentation.mappers.toUi
 import com.fiscal.compass.presentation.screens.category.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -44,34 +45,57 @@ class SearchViewModel @Inject constructor(
                 updateState { copy(showFilterDialog = false) }
             }
             is SearchEvent.UpdateFilterType -> {
-                updateState { copy(filterType = event.type) }
+                val updatedCriteria = state.value.searchCriteria.apply {
+                    setTransactionType(event.type)
+                }
+                updateState { copy(searchCriteria = updatedCriteria) }
             }
             is SearchEvent.SubmitFilterCategory -> {
-                val currentCategories = state.value.filterCategories ?: mutableListOf()
-                if (currentCategories.contains(event.categoryId)) {
-                    currentCategories.remove(event.categoryId)
-                } else {
-                    currentCategories.add(event.categoryId)
+                val updatedCriteria = state.value.searchCriteria.apply {
+                    val category = state.value.allCategories.find { it.categoryId == event.categoryId }
+                    if (category != null) {
+                        val currentCategories = getCategories() ?: emptyList()
+                        if (currentCategories.any { it.categoryId == event.categoryId }) {
+                            setCategories(currentCategories.filter { it.categoryId != event.categoryId })
+                        } else {
+                            addCategory(category)
+                        }
+                    }
                 }
-                updateState { copy(filterCategories = currentCategories) }
+                updateState { copy(searchCriteria = updatedCriteria) }
             }
 
             is SearchEvent.SubmitFilterPerson -> {
-                val currentPersons = state.value.filterPersons ?: mutableListOf()
-                if (currentPersons.contains(event.personId)) {
-                    currentPersons.remove(event.personId)
-                } else {
-                    currentPersons.add(event.personId)
+                val updatedCriteria = state.value.searchCriteria.apply {
+                    val person = state.value.allPersons.find { it.personId == event.personId }
+                    if (person != null) {
+                        val currentPersons = getPersons() ?: emptyList()
+                        if (currentPersons.any { it.personId == event.personId }) {
+                            setPersons(currentPersons.filter { it.personId != event.personId })
+                        } else {
+                            addPerson(person)
+                        }
+                    }
                 }
-                updateState { copy(filterPersons = currentPersons) }
+                updateState { copy(searchCriteria = updatedCriteria) }
             }
 
             is SearchEvent.StartDateSelected -> {
-                updateState { copy(filterStartDate = event.startDate) }
+                val currentDateRange = state.value.searchCriteria.getDateRange()
+                val newDateRange = DateRange.from(event.startDate, currentDateRange?.endDate)
+                val updatedCriteria = state.value.searchCriteria.apply {
+                    setDateRange(newDateRange)
+                }
+                updateState { copy(searchCriteria = updatedCriteria) }
             }
 
             is SearchEvent.EndDateSelected -> {
-                updateState { copy(filterEndDate = event.endDate) }
+                val currentDateRange = state.value.searchCriteria.getDateRange()
+                val newDateRange = DateRange.from(currentDateRange?.startDate, event.endDate)
+                val updatedCriteria = state.value.searchCriteria.apply {
+                    setDateRange(newDateRange)
+                }
+                updateState { copy(searchCriteria = updatedCriteria) }
             }
 
             SearchEvent.NavigateToCategorySelection -> {
@@ -92,18 +116,30 @@ class SearchViewModel @Inject constructor(
             }
 
             is SearchEvent.UpdateSelectedCategories -> {
+                val selectedCategories = state.value.allCategories.filter {
+                    event.categoryIds.contains(it.categoryId)
+                }
+                val updatedCriteria = state.value.searchCriteria.apply {
+                    setCategories(selectedCategories)
+                }
                 updateState {
                     copy(
-                        filterCategories = event.categoryIds.toMutableList(),
+                        searchCriteria = updatedCriteria,
                         navigateToCategorySelection = false
                     )
                 }
             }
 
             is SearchEvent.UpdateSelectedPersons -> {
+                val selectedPersons = state.value.allPersons.filter {
+                    event.personIds.contains(it.personId)
+                }
+                val updatedCriteria = state.value.searchCriteria.apply {
+                    setPersons(selectedPersons)
+                }
                 updateState {
                     copy(
-                        filterPersons = event.personIds.toMutableList(),
+                        searchCriteria = updatedCriteria,
                         navigateToPersonSelection = false
                     )
                 }
@@ -115,15 +151,15 @@ class SearchViewModel @Inject constructor(
             }
             SearchEvent.ClearFilters -> {
                 updateState {
-                    copy(
-                        filterType = null,
-                        filterCategories = mutableListOf(),
-                        filterPersons = mutableListOf(),
-                        filterStartDate = null,
-                        filterEndDate = null
-                    )
+                    copy(searchCriteria = com.fiscal.compass.domain.util.SearchCriteria())
                 }
                 fetchTransactions()
+            }
+            is SearchEvent.UpdateDateRange -> {
+                val updatedCriteria = state.value.searchCriteria.apply {
+                    setDateRange(event.dateRange)
+                }
+                updateState { copy(searchCriteria = updatedCriteria) }
             }
         }
     }
@@ -133,12 +169,13 @@ class SearchViewModel @Inject constructor(
         searchJob = viewModelScope.launch(Dispatchers.IO) {
             updateState { copy(uiState = UiState.Loading) }
             try {
+                val criteria = state.value.searchCriteria
                 val results = searchTransactionUC(
-                    personIds = state.value.filterPersons,
-                    categoryIds = state.value.filterCategories,
-                    startDate = state.value.filterStartDate,
-                    endDate = state.value.filterEndDate,
-                    filterType = state.value.filterType
+                    personIds = criteria.getPersonIds(),
+                    categoryIds = criteria.getCategoryIds(),
+                    startDate = criteria.getDateRange()?.startDate,
+                    endDate = criteria.getDateRange()?.endDate,
+                    filterType = criteria.getTransactionType()?.name
                 ).mapValues {
                     it.value.map { transaction -> transaction.toUi() }
                 }
