@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fiscal.compass.domain.usecase.categories.GetCategoriesUseCase
 import com.fiscal.compass.domain.usecase.person.GetAllPersonsUseCase
-import com.fiscal.compass.domain.usecase.transaction.AddTransactionUC
+import com.fiscal.compass.domain.usecase.transaction.TransactionService
 import com.fiscal.compass.presentation.mappers.formatDate
 import com.fiscal.compass.presentation.mappers.formatTime
 import com.fiscal.compass.presentation.mappers.toTransaction
@@ -30,7 +30,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddTransactionViewModel @Inject constructor(
-    private val addTransactionUC: AddTransactionUC,
+    private val transactionService: TransactionService,
     private val categoryUseCase: GetCategoriesUseCase,
     private val getPersonUseCase: GetAllPersonsUseCase
 ) : ViewModel() {
@@ -316,7 +316,7 @@ class AddTransactionViewModel @Inject constructor(
 
         viewModelScope.launch(Dispatchers.IO) {
             updateState { copy(uiState = UiState.Loading) }
-            val result = addTransactionUC(transaction)
+            val result = transactionService.addTransaction(transaction)
             result.onSuccess {
                 val newDate = Calendar.getInstance()
                 updateState {

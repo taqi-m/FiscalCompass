@@ -50,6 +50,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.fiscal.compass.R
+import com.fiscal.compass.domain.util.DateRange
+import com.fiscal.compass.domain.util.TransactionTypes
 import com.fiscal.compass.presentation.model.TransactionUi
 import com.fiscal.compass.presentation.navigation.MainScreens
 import com.fiscal.compass.presentation.screens.category.UiState
@@ -61,6 +63,7 @@ import com.fiscal.compass.ui.components.pickers.DatePicker
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
 import com.google.gson.Gson
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 
@@ -85,7 +88,7 @@ fun SearchScreen(
                 SelectableItem(
                     id = category.categoryId.toString(),
                     name = category.name,
-                    isSelected = state.filterCategories?.contains(category.categoryId) == true
+                    isSelected = state.searchCriteria.getCategoryIds().contains(category.categoryId)
                 )
             }
             appNavController.navigate(
@@ -108,7 +111,7 @@ fun SearchScreen(
                 SelectableItem(
                     id = person.personId.toString(),
                     name = person.name,
-                    isSelected = state.filterPersons?.contains(person.personId) == true
+                    isSelected = state.searchCriteria.getPersonIds().contains(person.personId)
                 )
             }
             appNavController.navigate(
@@ -247,6 +250,37 @@ fun ResultsScreen(
     {
         if (state.uiState is UiState.Loading) {
             CircularProgressIndicator(modifier = Modifier.padding(vertical = 16.dp))
+        } else if (state.searchCriteria.areAnyFiltersActive()) {
+            // Create a list of active filter strings
+            val activeFilters = mutableListOf<String>()
+            state.searchCriteria.getTransactionType()?.let { activeFilters.add(it.name) }
+            
+            val selectedCategoryNames = state.searchCriteria.getCategories()?.map { it.name } ?: emptyList()
+            activeFilters.addAll(selectedCategoryNames)
+
+            val selectedPersonNames = state.searchCriteria.getPersons()?.map { it.name } ?: emptyList()
+            activeFilters.addAll(selectedPersonNames)
+
+            val dateFormatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+            state.searchCriteria.getDateRange()?.startDate?.let { 
+                activeFilters.add("From: ${dateFormatter.format(Date(it))}") 
+            }
+            state.searchCriteria.getDateRange()?.endDate?.let { 
+                activeFilters.add("To: ${dateFormatter.format(Date(it))}") 
+            }
+
+            if (activeFilters.isNotEmpty()) {
+                ChipFlow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                        .horizontalScroll(rememberScrollState()),
+                    chips = activeFilters,
+                    maxLines = 1,
+                    onChipClick = {},
+                    chipToLabel = { it }
+                )
+            }
         }
 
         if (state.uiState is UiState.Error) {
@@ -261,9 +295,7 @@ fun ResultsScreen(
             Text("No results found.", modifier = Modifier.padding(vertical = 16.dp))
         }
 
-
         val transactions = state.searchResults
-
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -307,14 +339,12 @@ fun FilterScreen(
     onEvent: (SearchEvent) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
-    var tempFilterType by remember { mutableStateOf(state.filterType ?: "") }
+    var tempFilterType by remember { 
+        mutableStateOf(state.searchCriteria.getTransactionType()?.name ?: "") 
+    }
 
-    val selectedCategories = state.allCategories.filter {
-        state.filterCategories?.contains(it.categoryId) == true
-    }
-    val selectedPersons = state.allPersons.filter {
-        state.filterPersons?.contains(it.personId) == true
-    }
+    val selectedCategories = state.searchCriteria.getCategories() ?: emptyList()
+    val selectedPersons = state.searchCriteria.getPersons() ?: emptyList()
 
     Column(
         modifier = modifier
@@ -342,20 +372,20 @@ fun FilterScreen(
                     Text("All")
                 }
                 SegmentedButton(
-                    selected = tempFilterType == "Income",
+                    selected = tempFilterType == "INCOME",
                     onClick = {
-                        tempFilterType = "Income"
-                        onEvent(SearchEvent.UpdateFilterType("Income"))
+                        tempFilterType = "INCOME"
+                        onEvent(SearchEvent.UpdateFilterType(TransactionTypes.INCOME))
                     },
                     shape = SegmentedButtonDefaults.itemShape(index = 1, count = 3)
                 ) {
                     Text("Income")
                 }
                 SegmentedButton(
-                    selected = tempFilterType == "Expense",
+                    selected = tempFilterType == "EXPENSE",
                     onClick = {
-                        tempFilterType = "Expense"
-                        onEvent(SearchEvent.UpdateFilterType("Expense"))
+                        tempFilterType = "EXPENSE"
+                        onEvent(SearchEvent.UpdateFilterType(TransactionTypes.EXPENSE))
                     },
                     shape = SegmentedButtonDefaults.itemShape(index = 2, count = 3)
                 ) {
@@ -479,7 +509,7 @@ fun FilterScreen(
             DatePicker(
                 modifier = Modifier.fillMaxWidth(),
                 label = "Start Date",
-                selectedDate = state.filterStartDate,
+                selectedDate = state.searchCriteria.getDateRange()?.startDate,
                 onDateSelected = { date ->
                     onEvent(SearchEvent.StartDateSelected(date))
                 }
@@ -487,7 +517,7 @@ fun FilterScreen(
             DatePicker(
                 modifier = Modifier.fillMaxWidth(),
                 label = "End Date",
-                selectedDate = state.filterEndDate,
+                selectedDate = state.searchCriteria.getDateRange()?.endDate,
                 onDateSelected = { date ->
                     onEvent(SearchEvent.EndDateSelected(date))
                 }
@@ -527,7 +557,15 @@ fun FilterScreen(
 fun SearchScreenPreview() {
     FiscalCompassTheme { // Ensure a MaterialTheme is applied for previews
         SearchScreen(
-            state = SearchScreenState(),
+            state = SearchScreenState(
+                searchResults = mapOf(
+                    Date(System.currentTimeMillis()) to TransactionUi.dummyList
+                ),
+                searchCriteria = com.fiscal.compass.domain.util.SearchCriteria().apply {
+                    setTransactionType(TransactionTypes.INCOME)
+                    setDateRange(DateRange(System.currentTimeMillis(), null))
+                }
+            ),
             onEvent = {},
             appNavController = rememberNavController()
         )

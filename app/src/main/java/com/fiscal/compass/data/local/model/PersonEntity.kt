@@ -3,7 +3,7 @@ package com.fiscal.compass.data.local.model
 import androidx.annotation.Keep
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.fiscal.compass.domain.model.PersonType
+import com.fiscal.compass.domain.util.PersonType
 import java.util.UUID
 
 @Keep

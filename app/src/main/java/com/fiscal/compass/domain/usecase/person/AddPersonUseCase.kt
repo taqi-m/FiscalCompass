@@ -1,6 +1,6 @@
 package com.fiscal.compass.domain.usecase.person
 
-import com.fiscal.compass.domain.model.PersonType
+import com.fiscal.compass.domain.util.PersonType
 import com.fiscal.compass.domain.model.base.Person
 import com.fiscal.compass.domain.repository.PersonRepository
 import com.fiscal.compass.presentation.screens.category.UiState

@@ -1,7 +1,7 @@
 package com.fiscal.compass.data.mappers
 
 import com.fiscal.compass.data.local.model.PersonEntity
-import com.fiscal.compass.domain.model.PersonType
+import com.fiscal.compass.domain.util.PersonType
 import com.fiscal.compass.data.remote.model.PersonDto
 import com.fiscal.compass.domain.model.base.Person
 import com.google.firebase.Timestamp
