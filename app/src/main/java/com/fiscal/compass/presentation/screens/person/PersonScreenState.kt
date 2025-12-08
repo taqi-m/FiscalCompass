@@ -1,6 +1,6 @@
 package com.fiscal.compass.presentation.screens.person
 
-import com.fiscal.compass.domain.model.PersonType
+import com.fiscal.compass.domain.util.PersonType
 import com.fiscal.compass.domain.model.base.Person
 import com.fiscal.compass.presentation.screens.category.UiState
 

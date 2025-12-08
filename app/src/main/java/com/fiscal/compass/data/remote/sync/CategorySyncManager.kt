@@ -4,7 +4,7 @@ import android.util.Log
 import com.fiscal.compass.data.local.dao.CategoryDao
 import com.fiscal.compass.data.local.model.CategoryEntity
 import com.fiscal.compass.data.local.model.PersonEntity
-import com.fiscal.compass.domain.model.PersonType
+import com.fiscal.compass.domain.util.PersonType
 import com.fiscal.compass.data.managers.SyncTimestampManager
 import com.fiscal.compass.data.managers.SyncType
 import com.fiscal.compass.data.mappers.toCategoryEntity

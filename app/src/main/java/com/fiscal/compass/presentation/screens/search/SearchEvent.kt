@@ -1,9 +1,13 @@
 package com.fiscal.compass.presentation.screens.search
 
+import com.fiscal.compass.domain.util.DateRange
+import com.fiscal.compass.domain.util.TransactionTypes
+
 sealed class SearchEvent {
     object OnFilterIconClicked : SearchEvent()
     object OnDismissFilterDialog : SearchEvent()
-    data class UpdateFilterType(val type: String?) : SearchEvent()
+    data class UpdateFilterType(val type: TransactionTypes?) : SearchEvent()
+    data class UpdateDateRange(val dateRange: DateRange?) : SearchEvent()
     data class SubmitFilterCategory(val categoryId: Long) : SearchEvent()
     data class SubmitFilterPerson(val personId: Long) : SearchEvent()
     data class StartDateSelected(val startDate: Long) : SearchEvent()

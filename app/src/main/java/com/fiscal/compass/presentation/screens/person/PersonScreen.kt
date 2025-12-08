@@ -34,7 +34,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.fiscal.compass.R
-import com.fiscal.compass.domain.model.PersonType
+import com.fiscal.compass.domain.util.PersonType
 import com.fiscal.compass.domain.model.base.Person
 import com.fiscal.compass.presentation.screens.category.UiState
 import com.fiscal.compass.ui.components.LoadingProgress
