@@ -66,6 +66,7 @@ import com.fiscal.compass.presentation.screens.category.UiState
 import com.fiscal.compass.presentation.screens.itemselection.SelectableItem
 import com.fiscal.compass.presentation.utilities.CurrencyFormater
 import com.fiscal.compass.presentation.utils.AmountInputType
+import com.fiscal.compass.ui.components.input.AmountField
 import com.fiscal.compass.ui.components.input.Calculator
 import com.fiscal.compass.ui.components.input.DataEntryTextField
 import com.fiscal.compass.ui.components.input.TypeSwitch
@@ -339,7 +340,8 @@ fun AddTransactionFormContent(
 
             if (!isCategoriesEmpty) {
                 val allCategories = state.categories
-                val selectedCategory = allCategories.firstOrNull { it.categoryId == state.categoryId }
+                val selectedCategory =
+                    allCategories.firstOrNull { it.categoryId == state.categoryId }
 
                 SelectionField(
                     modifier = Modifier.fillMaxWidth(),
@@ -421,11 +423,15 @@ fun AddTransactionCalculatorContent(
     val totalAmount = state.totalAmount.value.toDoubleOrNull() ?: 0.0
     val paidAmount = state.paidAmount.value.toDoubleOrNull() ?: 0.0
     val remainingAmount = (totalAmount - paidAmount).coerceAtLeast(0.0)
-    val progressPercentage = if (totalAmount > 0) {
-        ((paidAmount / totalAmount) * 100).coerceIn(0.0, 100.0)
+    val targetProgress = if (totalAmount > 0) {
+        ((paidAmount / totalAmount) * 100).coerceIn(0.0, 100.0).toFloat()
     } else {
-        0.0
+        0f
     }
+    val progressPercentage by animateFloatAsState(
+        targetValue = targetProgress,
+        label = "progressPercentage"
+    )
 
     // Get the current value to pass to Calculator based on active field
     val currentDisplayValue = when (activeField) {
@@ -464,12 +470,12 @@ fun AddTransactionCalculatorContent(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "${progressPercentage.toInt()}%",
+                        text = "${targetProgress.toInt()}%",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                         color = when {
-                            progressPercentage >= 100 -> MaterialTheme.colorScheme.primary
-                            progressPercentage > 0 -> MaterialTheme.colorScheme.tertiary
+                            targetProgress >= 100 -> MaterialTheme.colorScheme.primary
+                            targetProgress > 0 -> MaterialTheme.colorScheme.tertiary
                             else -> MaterialTheme.colorScheme.onSurfaceVariant
                         }
                     )
@@ -477,7 +483,7 @@ fun AddTransactionCalculatorContent(
 
                 // Progress indicator
                 LinearProgressIndicator(
-                    progress = { (progressPercentage / 100).toFloat() },
+                    progress = { (progressPercentage / 100) },
                     modifier = Modifier.fillMaxWidth(),
                     color = when {
                         progressPercentage >= 100 -> MaterialTheme.colorScheme.primary
@@ -533,7 +539,7 @@ fun AddTransactionCalculatorContent(
                 Column(
                     modifier = Modifier.padding(12.dp),
                     horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
                         text = "Total Amount",
@@ -571,7 +577,7 @@ fun AddTransactionCalculatorContent(
                 Column(
                     modifier = Modifier.padding(12.dp),
                     horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
                         text = "Amount Paid",
@@ -639,8 +645,18 @@ fun AddTransactionCalculatorContent(
                 Log.d("AddTransactionScreen", "onValueChange: $value, $inputType")
                 // Update the appropriate field based on inputType
                 when (inputType) {
-                    AmountInputType.TOTAL_AMOUNT -> onEvent(AddTransactionEvent.OnAmountChange(value, inputType))
-                    AmountInputType.AMOUNT_PAID -> onEvent(AddTransactionEvent.OnAmountPaidChange(value))
+                    AmountInputType.TOTAL_AMOUNT -> onEvent(
+                        AddTransactionEvent.OnAmountChange(
+                            value,
+                            inputType
+                        )
+                    )
+
+                    AmountInputType.AMOUNT_PAID -> onEvent(
+                        AddTransactionEvent.OnAmountPaidChange(
+                            value
+                        )
+                    )
                 }
             },
             onSaveClick = {
