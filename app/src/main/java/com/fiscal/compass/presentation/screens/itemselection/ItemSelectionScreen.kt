@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.fiscal.compass.ui.components.input.SearchField
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -92,7 +93,7 @@ fun ItemSelectionScreen(
                 .padding(paddingValues)
         ) {
             // Search field
-            OutlinedTextField(
+            /*OutlinedTextField(
                 value = state.searchQuery,
                 onValueChange = { query ->
                     onEvent(ItemSelectionEvent.SearchQueryChanged(query))
@@ -102,6 +103,15 @@ fun ItemSelectionScreen(
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 placeholder = { Text(searchPlaceholder) },
                 singleLine = true
+            )*/
+            SearchField(
+                modifier = Modifier.fillMaxWidth()
+                    .padding(8.dp),
+                value = state.searchQuery,
+                onValueChange = { query ->
+                    onEvent(ItemSelectionEvent.SearchQueryChanged(query))
+                },
+                placeholder = searchPlaceholder
             )
 
             // Selected items count
