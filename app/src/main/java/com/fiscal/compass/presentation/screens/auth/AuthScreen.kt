@@ -64,7 +64,9 @@ import com.fiscal.compass.R
 import com.fiscal.compass.data.managers.InitializationStatus
 import com.fiscal.compass.ui.components.drawings.MountainSpikes
 import com.fiscal.compass.ui.components.drawings.RelativeCircle
+import com.fiscal.compass.ui.components.input.EmailField
 import com.fiscal.compass.ui.components.input.FormTextField
+import com.fiscal.compass.ui.components.input.PasswordField
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
 
 @Composable
@@ -235,39 +237,14 @@ private fun AuthContent(
                     }
                 }
 
-
-                FormTextField(
+                EmailField(
                     value = state.email,
-                    label = stringResource(R.string.email_label),
-                    placeholder = stringResource(R.string.email_placeholder),
                     onValueChange = { onEvent(AuthEvent.EmailChanged(it)) },
-                    keyboardType = KeyboardType.Email,
-                    leadingIcon = {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_email_24),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    },
-                    imeAction = ImeAction.Next
                 )
 
-
-                FormTextField(
+                PasswordField(
                     value = state.password,
-                    label = stringResource(R.string.password_label),
-                    placeholder = stringResource(R.string.password_placeholder),
                     onValueChange = { onEvent(AuthEvent.PasswordChanged(it)) },
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done,
-                    isPassword = true,
-                    leadingIcon = {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_password_24),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
                 )
             }
 
@@ -357,9 +334,9 @@ fun AuthScreenPreview() {
     FiscalCompassTheme {
         AuthScreen(
             state = AuthScreenState(
-                email = "secret@s.com",
-                password = "11",
-                isSignUp = true
+                email = "",
+                password = "",
+                isSignUp = false
             ),
             onEvent = {},
             appNavController = rememberNavController(),
