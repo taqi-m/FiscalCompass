@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -15,29 +18,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
 
+/**
+ * A specialized text field for email input with built-in validation.
+ * Automatically sets keyboard type to Email and validates email format.
+ */
 @Composable
-fun FormTextField(
+fun EmailField(
     modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
-    label: String,
-    placeholder: String,
-    leadingIcon: @Composable (() -> Unit)? = null,
-    keyboardType: KeyboardType = KeyboardType.Text,
+    label: String = "Email",
+    placeholder: String = "Enter your email",
     imeAction: ImeAction = ImeAction.Next,
-    isPassword: Boolean = false,
     error: String? = null,
     required: Boolean = false,
-    helperText: String? = null,
     enabled: Boolean = true,
-    readOnly: Boolean = false
+    readOnly: Boolean = false,
+    showIcon: Boolean = true,
+    helperText: String? = null
 ) {
+    // Email validation
+    val emailPattern = android.util.Patterns.EMAIL_ADDRESS
+    val isValidEmail = value.isEmpty() || emailPattern.matcher(value).matches()
+    val displayError = error ?: if (!isValidEmail && value.isNotEmpty()) "Invalid email address" else null
+
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.Start,
@@ -50,22 +58,26 @@ fun FormTextField(
         )
         OutlinedTextField(
             value = value,
-            onValueChange = { onValueChange(it) },
+            onValueChange = { onValueChange(it.trim()) },
             placeholder = { Text(placeholder) },
             modifier = Modifier
                 .fillMaxWidth()
                 .widthIn(max = 500.dp),
             singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
-            leadingIcon = leadingIcon,
-            visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
-            isError = error != null,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = imeAction
+            ),
+            leadingIcon = if (showIcon) {
+                { Icon(Icons.Default.Email, contentDescription = "Email") }
+            } else null,
+            isError = displayError != null,
             enabled = enabled,
             readOnly = readOnly
         )
-        if (error != null) {
+        if (displayError != null) {
             Text(
-                text = error,
+                text = displayError,
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Red,
                 modifier = Modifier.padding(start = 4.dp)
@@ -83,15 +95,24 @@ fun FormTextField(
 
 @Preview(showBackground = true)
 @Composable
-fun FormTextFieldPreview() {
+fun EmailFieldPreview() {
     FiscalCompassTheme {
-        FormTextField(
-            modifier = Modifier.padding(16.dp),
-            value = "",
-            onValueChange = {},
-            label = "Username",
-            placeholder = "Enter your username",
-            required = false
-        )
+        Column(modifier = Modifier.padding(16.dp)) {
+            EmailField(
+                value = "",
+                onValueChange = {},
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            EmailField(
+                value = "test@example.com",
+                onValueChange = {},
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            EmailField(
+                value = "invalid-email",
+                onValueChange = {},
+            )
+        }
     }
 }
+
