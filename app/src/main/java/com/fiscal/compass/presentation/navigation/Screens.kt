@@ -8,7 +8,21 @@ sealed class MainScreens(val route: String) {
     object Home : MainScreens("home_screen")
     object EmployeeHome : MainScreens("employee_screen")
     object AdminHome : MainScreens("admin_home_screen")
-    object AddTransaction : MainScreens("add_transaction_screen")
+    object AddTransaction : MainScreens("add_transaction_screen?transactionId={transactionId}") {
+        fun passTransactionId(transactionId: Long): String {
+            return "add_transaction_screen?transactionId=$transactionId"
+        }
+    }
+
+    object Amount : MainScreens("amount_screen/{transaction}/{edit}") {
+        fun passTransaction(transaction: String): String {
+            return "amount_screen/$transaction/${false}"
+        }
+
+        fun editTransaction(transaction: String): String {
+            return "amount_screen/$transaction/${true}"
+        }
+    }
     object Settings : MainScreens("settings_screen")
     object Sync : MainScreens("sync_screen")
     object Categories : MainScreens("categories_screen")
