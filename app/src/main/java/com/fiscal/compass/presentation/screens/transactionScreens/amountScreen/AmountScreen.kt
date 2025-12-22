@@ -44,6 +44,7 @@ import com.fiscal.compass.R
 import com.fiscal.compass.domain.model.Transaction
 import com.fiscal.compass.presentation.model.InputField
 import com.fiscal.compass.presentation.model.TransactionUi
+import com.fiscal.compass.presentation.navigation.MainScreens
 import com.fiscal.compass.presentation.screens.category.UiState
 import com.fiscal.compass.presentation.utilities.CurrencyFormater
 import com.fiscal.compass.presentation.utils.AmountInputType
@@ -106,6 +107,19 @@ fun AmountScreen(
         val message: String? = when (uiState) {
             is UiState.Error -> uiState.message
             is UiState.Success -> {
+                // Check if Search screen exists in back stack
+                val searchScreenExists = appNavController.currentBackStack.value.any { 
+                    it.destination.route == MainScreens.TransactionDetail.route
+                }
+                Log.d("AmountScreen", "Search screen exists: $searchScreenExists")
+                
+                if (searchScreenExists) {
+                    // Pop back to Search screen
+                    appNavController.popBackStack(route = MainScreens.TransactionDetail.route, inclusive = false)
+                } else {
+                    // Pop back to Home screen
+                    appNavController.popBackStack(route = MainScreens.AddTransaction.route, inclusive = true)
+                }
                 null
             }
 
