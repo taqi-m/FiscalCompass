@@ -1,5 +1,7 @@
 package com.fiscal.compass.presentation.screens.transactionScreens.transactionDetails
 
+import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,63 +26,119 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.fiscal.compass.R
+import com.fiscal.compass.domain.model.Transaction
 import com.fiscal.compass.presentation.model.CategoryUi
 import com.fiscal.compass.presentation.model.PersonUi
 import com.fiscal.compass.presentation.model.TransactionUi
+import com.fiscal.compass.presentation.navigation.MainScreens
 import com.fiscal.compass.presentation.screens.category.UiState
+import com.fiscal.compass.presentation.screens.transactionScreens.amountScreen.AmountEvent
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
+import com.google.gson.Gson
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionDetailsScreen(
+    appNavController: NavHostController,
     state: TransactionDetailsScreenState,
     onEvent: (TransactionDetailsEvent) -> Unit,
-    transactionUi: TransactionUi,
-    onBackPressed: () -> Unit,
 ) {
-    LaunchedEffect(true) {
-        onEvent(
-            TransactionDetailsEvent.OnScreenLoad(
-                transactionUi.transactionId,
-                transactionUi.isExpense
-            )
-        )
+    val uiState = state.uiState
+
+    val transactionJson = remember {
+        val encodedJsonTransaction = appNavController.currentBackStackEntry
+            ?.arguments?.getString("transaction")
+        Uri.decode(encodedJsonTransaction ?: "")
     }
+
+    // Load transaction once when the screen is first composed
+    LaunchedEffect(transactionJson) {
+        val transaction = Gson().fromJson(transactionJson, Transaction::class.java)
+        Log.d("DetailsScreen", "Transaction: $transaction")
+        onEvent(TransactionDetailsEvent.LoadTransaction(transaction))
+    }
+
+
     Scaffold(
         topBar = {
-            TransactionDetailsTopBar(
-                onBackClick = {
-                    onBackPressed()
+            TopAppBar(
+                title = { Text(text = "Transaction Details") },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        appNavController.popBackStack()
+                    }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                actions = {
+                    if (state.canEdit) {
+                        IconButton(
+                            onClick = {
+                                val encodedJsonTransaction = Uri.encode(transactionJson)
+                                appNavController.navigate(MainScreens.Amount.editTransaction(encodedJsonTransaction))
+                            }) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_edit_24),
+                                contentDescription = "Edit"
+                            )
+                        }
+                    }
                 }
             )
         }
     ) { paddingValues ->
-        DetailsContent(
-            modifier = Modifier.background(MaterialTheme.colorScheme.background).padding(paddingValues),
-            state = state,
-            uiState = state.uiState,
-            onEvent = onEvent
-        )
-    }
-}
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TransactionDetailsTopBar(onBackClick: () -> Unit) {
-    TopAppBar(
-        title = { Text(text = "Transaction Details") },
-        navigationIcon = {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back"
+        when (uiState) {
+            is UiState.Loading -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+
+            is UiState.Idle, is UiState.Success -> {
+                DetailsContent(
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(paddingValues),
+                    state = state,
                 )
             }
+
+            is UiState.Error -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "An error occurred while loading the transaction details.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
         }
-    )
+    }
 }
 
 
@@ -88,56 +146,22 @@ private fun TransactionDetailsTopBar(onBackClick: () -> Unit) {
 private fun DetailsContent(
     modifier: Modifier = Modifier,
     state: TransactionDetailsScreenState,
-    uiState: UiState,
-    onEvent: (TransactionDetailsEvent) -> Unit,
 ) {
-    when (uiState) {
-        is UiState.Idle, is UiState.Loading -> {
-            Column(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                CircularProgressIndicator()
-            }
-        }
-
-        is UiState.Success -> {
-            Card(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 8.dp)
-                    .padding(bottom = 8.dp),
-                colors = CardDefaults.cardColors().copy(
-                    containerColor = CardDefaults.cardColors().containerColor.copy(alpha = 0.5f)
-                )
-            ) {
-                TransactionCardContent(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(8.dp),
-                    state = state
-                )
-            }
-        }
-
-        is UiState.Error -> {
-            Column(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "An error occurred while loading the transaction details.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
-        }
+    Card(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 8.dp)
+            .padding(bottom = 8.dp),
+        colors = CardDefaults.cardColors().copy(
+            containerColor = CardDefaults.cardColors().containerColor.copy(alpha = 0.5f)
+        )
+    ) {
+        TransactionCardContent(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp),
+            state = state
+        )
     }
 }
 
@@ -165,7 +189,7 @@ private fun HeaderContent(
         return
     }
     var amount = transactionUi.formatedAmount
-    if (transactionUi.isExpense){
+    if (transactionUi.isExpense) {
         amount = "- $amount"
     }
     Column(
@@ -253,7 +277,7 @@ private fun CardRow(
 private fun CardColumn(
     label: String,
     value: String
-){
+) {
     Card(
         shape = RoundedCornerShape(15),
         colors = CardDefaults.cardColors().copy(
@@ -262,7 +286,7 @@ private fun CardColumn(
         ),
         modifier = Modifier
             .fillMaxWidth()
-    ){
+    ) {
         Column(
             modifier = Modifier
                 .padding(16.dp)
@@ -293,6 +317,7 @@ private fun CardRowDivider() {
 fun TransactionDetailsScreenPreview() {
     FiscalCompassTheme {
         TransactionDetailsScreen(
+            appNavController = rememberNavController(),
             state = TransactionDetailsScreenState(
                 uiState = UiState.Success("Transaction Loaded"),
                 transaction = TransactionUi.dummy,
@@ -301,8 +326,6 @@ fun TransactionDetailsScreenPreview() {
 
             ),
             onEvent = {},
-            onBackPressed = {},
-            transactionUi = TransactionUi.dummy,
         )
     }
 }

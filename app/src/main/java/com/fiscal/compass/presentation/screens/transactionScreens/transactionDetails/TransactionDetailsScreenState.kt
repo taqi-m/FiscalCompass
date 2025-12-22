@@ -7,6 +7,7 @@ import com.fiscal.compass.presentation.screens.category.UiState
 
 data class TransactionDetailsScreenState(
     val uiState: UiState = UiState.Idle,
+    val canEdit: Boolean = true,
     val transaction: TransactionUi? = null,
     val category: CategoryUi? = null,
     val person: PersonUi? = null,

@@ -24,7 +24,7 @@ interface IncomeRepository {
 
     suspend fun getIncomesWithCategory(userId: String): Flow<List<IncomeWithCategory>>
 
-    suspend fun getSingleFullIncomeById(id: Long): IncomeFull
+    suspend fun getSingleFullIncomeById(id: Long): IncomeFull?
 
     suspend fun getAllFiltered(
         userIds: List<String>? = emptyList() ,

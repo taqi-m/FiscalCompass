@@ -39,7 +39,7 @@ interface ExpenseDao {
 
     @Transaction
     @Query("SELECT * FROM expenses WHERE expenseId = :id AND isDeleted = 0 ORDER BY date DESC LIMIT 1")
-    suspend fun getSingleFullExpense(id: Long): ExpenseFullDbo
+    suspend fun getSingleFullExpense(id: Long): ExpenseFullDbo?
 
     @Query(
         """

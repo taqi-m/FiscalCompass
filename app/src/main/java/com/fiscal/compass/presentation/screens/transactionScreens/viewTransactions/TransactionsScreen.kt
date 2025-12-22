@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import com.fiscal.compass.presentation.utilities.CurrencyFormater
 import com.fiscal.compass.presentation.model.TransactionUi
 import com.fiscal.compass.presentation.screens.category.UiState
+import com.fiscal.compass.presentation.screens.search.DateHeader
+import com.fiscal.compass.presentation.screens.search.TransactionHeading
 import com.fiscal.compass.ui.components.ErrorContainer
 import com.fiscal.compass.ui.components.LoadingContainer
 import com.fiscal.compass.ui.components.cards.TransactionCard
@@ -122,7 +124,8 @@ fun TransactionsScreen(
                             )
                         }
 
-                        items(transactionsForDate.size) { index ->
+                        //TODO: Refactor to use TransactionCard composable
+                        /*items(transactionsForDate.size) { index ->
                             TransactionCard(
                                 transaction = transactionsForDate[index],
                                 onClicked = {
@@ -143,7 +146,7 @@ fun TransactionsScreen(
                                     )
                                 },
                             )
-                        }
+                        }*/
                     }
                 }
             }
@@ -169,114 +172,10 @@ fun TransactionsScreen(
 }
 
 
-@Composable
-fun DateHeader(modifier: Modifier = Modifier, date: String) {
-    Card(
-        modifier = modifier, colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-        ), shape = MaterialTheme.shapes.small
-    ) {
-        Text(
-            text = date,
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-        )
-    }
-}
 
 
-@Composable
-fun TransactionHeading(
-    modifier: Modifier = Modifier, currentBalance: String, incoming: String, outgoing: String
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.large,
-            colors = CardDefaults.cardColors().copy(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
-                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-            )
-        ) {
-            val textColor = MaterialTheme.colorScheme.onSecondaryContainer
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "Total Balance",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = textColor
-                )
-                Text(
-                    text = currentBalance,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = textColor
-                )
-                HorizontalDivider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp),
-                    thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
-                Row {
-                    BalanceView(
-                        label = "Incoming",
-                        amount = incoming,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(8.dp),
-                        textAlign = TextAlign.Start
-                    )
-                    BalanceView(
-                        label = "Outgoing",
-                        amount = outgoing,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(8.dp),
-                        textAlign = TextAlign.End
-                    )
-                }
-            }
-        }
-    }
-}
 
 
-@Composable
-private fun BalanceView(
-    label: String,
-    amount: String,
-    modifier: Modifier = Modifier,
-    textAlign: TextAlign = TextAlign.Start
-) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = label,
-            style = MaterialTheme.typography.labelLarge,
-            textAlign = textAlign
-        )
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = amount,
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = textAlign
-        )
-    }
-}
 
 
 @Preview(showBackground = true, showSystemUi = false)

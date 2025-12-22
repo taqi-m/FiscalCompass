@@ -65,7 +65,7 @@ interface IncomeDao {
 
     @Transaction
     @Query("SELECT * FROM incomes WHERE incomeId = :id AND isDeleted = 0 ORDER BY date DESC LIMIT 1")
-    suspend fun getSingleFullIncome(id: Long): IncomeFullDbo
+    suspend fun getSingleFullIncome(id: Long): IncomeFullDbo?
 
     @Query(
         """

@@ -3,6 +3,7 @@ package com.fiscal.compass.data.repositories
 import com.fiscal.compass.data.local.dao.PersonDao
 import com.fiscal.compass.data.managers.AutoSyncManager
 import com.fiscal.compass.data.managers.SyncType
+import com.fiscal.compass.data.mappers.toDomain
 import com.fiscal.compass.data.mappers.toEntity
 import com.fiscal.compass.domain.model.base.Person
 import com.fiscal.compass.domain.repository.PersonRepository
@@ -14,6 +15,13 @@ class PersonRepositoryImpl @Inject constructor(
 ) : PersonRepository {
     override suspend fun getPersonId(id: Long): String {
         TODO("Not yet implemented")
+    }
+    override suspend fun getAllPersons(): List<Person> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getPersonById(id: Long): Person? {
+        return personDao.getPersonById(id)?.toDomain()
     }
 
     override suspend fun addPerson(person: Person): Long {
@@ -43,11 +51,4 @@ class PersonRepositoryImpl @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    override suspend fun getAllPersons(): List<Person> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getPersonById(id: Long): Person? {
-        TODO("Not yet implemented")
-    }
 }

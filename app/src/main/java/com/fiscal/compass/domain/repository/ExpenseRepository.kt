@@ -26,7 +26,7 @@ interface ExpenseRepository {
 
     suspend fun getExpensesWithCategory(userId: String): Flow<List<ExpenseWithCategory>>
 
-    suspend fun getSingleFulExpenseById(id: Long): ExpenseFull
+    suspend fun getSingleFulExpenseById(id: Long): ExpenseFull?
 
     suspend fun getAllFiltered(
         userIds: List<String>? = emptyList() ,

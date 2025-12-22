@@ -14,6 +14,8 @@ object RolePermissions {
             Permission.VIEW_ALL_TRANSACTIONS,
             Permission.VIEW_OWN_TRANSACTIONS,
             Permission.ADD_TRANSACTION,
+            Permission.EDIT_TRANSACTION,
+            Permission.DELETE_TRANSACTION,
             Permission.VIEW_ALL_ANALYTICS,
             Permission.VIEW_OWN_ANALYTICS
         ),

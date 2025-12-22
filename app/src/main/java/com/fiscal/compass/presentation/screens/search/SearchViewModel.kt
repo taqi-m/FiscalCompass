@@ -2,6 +2,7 @@ package com.fiscal.compass.presentation.screens.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fiscal.compass.domain.service.TransactionService
 import com.fiscal.compass.domain.usecase.categories.GetCategoriesUseCase
 import com.fiscal.compass.domain.usecase.person.GetAllPersonsUseCase
 import com.fiscal.compass.domain.usecase.transaction.SearchTransactionUC
@@ -22,6 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val searchTransactionUC: SearchTransactionUC,
+    private val transactionService: TransactionService,
     private val getCategoriesUseCase: GetCategoriesUseCase,
     private val getAllPersonsUseCase: GetAllPersonsUseCase
 ) : ViewModel() {
@@ -170,15 +172,13 @@ class SearchViewModel @Inject constructor(
             updateState { copy(uiState = UiState.Loading) }
             try {
                 val criteria = state.value.searchCriteria
-                val results = searchTransactionUC(
+                val results = transactionService.searchTransactions(
                     personIds = criteria.getPersonIds(),
                     categoryIds = criteria.getCategoryIds(),
                     startDate = criteria.getDateRange()?.startDate,
                     endDate = criteria.getDateRange()?.endDate,
                     filterType = criteria.getTransactionType()?.name
-                ).mapValues {
-                    it.value.map { transaction -> transaction.toUi() }
-                }
+                )
                 updateState { copy(uiState = UiState.Idle, searchResults = results) }
             } catch (e: Exception) {
                 updateState { copy(uiState = UiState.Error(e.message ?: "An unexpected error occurred")) }
