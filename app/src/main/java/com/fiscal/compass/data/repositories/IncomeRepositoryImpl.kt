@@ -32,6 +32,10 @@ class IncomeRepositoryImpl @Inject constructor(
             updatedAt = System.currentTimeMillis(),
             needsSync = true
         )
+        val doesIncomeExist = incomeDao.getById(income.incomeId) != null
+        if (!doesIncomeExist) {
+            throw IllegalArgumentException("Income with id ${income.incomeId} not found")
+        }
         incomeDao.update(updatedIncome)
         autoSyncManager.triggerSync(SyncType.INCOMES)
     }
@@ -79,8 +83,8 @@ class IncomeRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getSingleFullIncomeById(id: Long): IncomeFull {
-        return incomeDao.getSingleFullIncome(id).toDomain()
+    override suspend fun getSingleFullIncomeById(id: Long): IncomeFull? {
+        return incomeDao.getSingleFullIncome(id)?.toDomain()
     }
 
     override suspend fun getAllFiltered(userIds: List<String>? ,personIds: List<Long>?, categoryIds: List<Long>?, startDate: Long?, endDate: Long?): Flow<List<Income>> {

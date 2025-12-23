@@ -31,6 +31,10 @@ class ExpenseRepositoryImpl @Inject constructor(
             updatedAt = System.currentTimeMillis(),
             needsSync = true
         )
+        val doesExpenseExist = expenseDao.getExpenseById(expense.expenseId) != null
+        if (!doesExpenseExist) {
+            throw IllegalArgumentException("Expense with id ${expense.expenseId} not found")
+        }
         expenseDao.update(updatedExpense)
         autoSyncManager.triggerSync(SyncType.EXPENSES)
     }
@@ -100,8 +104,8 @@ class ExpenseRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getSingleFulExpenseById(id: Long): ExpenseFull {
-        return expenseDao.getSingleFullExpense(id).toDomain()
+    override suspend fun getSingleFulExpenseById(id: Long): ExpenseFull? {
+        return expenseDao.getSingleFullExpense(id)?.toDomain()
     }
 
     override suspend fun getAllFiltered(

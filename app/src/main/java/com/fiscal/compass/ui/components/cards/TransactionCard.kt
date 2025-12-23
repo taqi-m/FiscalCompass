@@ -20,17 +20,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.fiscal.compass.R
+import com.fiscal.compass.domain.model.Transaction
 import com.fiscal.compass.presentation.utilities.CurrencyFormater
-import com.fiscal.compass.presentation.model.TransactionType
-import com.fiscal.compass.presentation.model.TransactionUi
-import java.text.SimpleDateFormat
+import com.fiscal.compass.presentation.utilities.DateFormatter
 import java.util.Date
-import java.util.Locale
 
 @Composable
 fun TransactionCard(
     modifier: Modifier = Modifier,
-    transaction: TransactionUi,
+    transaction: Transaction,
     onClicked: () -> Unit,
     onEditClicked: () -> Unit,
     onDeleteClicked: () -> Unit
@@ -61,7 +59,7 @@ fun TransactionCard(
 @Composable
 fun TransactionCardContent(
     modifier: Modifier,
-    transaction: TransactionUi,
+    transaction: Transaction,
     onEditClicked: () -> Unit,
     onDeleteClicked: () -> Unit
 ) {
@@ -87,8 +85,8 @@ fun TransactionCardContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            income = transaction.formatedAmount,
-            time = transaction.formatedTime
+            amount = transaction.amount,
+            date = transaction.date
         )
         /*TransactionCardOptions(
             onEditClicked = onEditClicked,
@@ -101,20 +99,22 @@ fun TransactionCardContent(
 @Composable
 fun TransactionCardText(
     modifier: Modifier = Modifier,
-    income: String,
-    time: String
+    amount: Double,
+    date: Date
 ) {
+    val parsedAmount = CurrencyFormater.formatCurrency(amount)
+    val formattedTime = DateFormatter.provideFormattedTime(date)
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = income,
+            text = parsedAmount,
             style = MaterialTheme.typography.bodyLarge
         )
         Text(
-            text = time,
+            text = formattedTime,
             style = MaterialTheme.typography.bodySmall
         )
     }
@@ -125,17 +125,7 @@ fun TransactionCardText(
 @Composable
 fun TransactionCardPreview() {
     TransactionCard(
-        transaction = TransactionUi(
-            transactionId = 1L,
-            categoryId = 0L,
-            personId = 0L,
-            formatedAmount = CurrencyFormater.formatCurrency(100.0),
-            formatedDate = SimpleDateFormat("dd MM, yyyy", Locale.getDefault()).format(Date()),
-            formatedTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
-            description = "Sample Transaction",
-            isExpense = true,
-            transactionType = TransactionType.INCOME.name
-        ),
+        transaction = Transaction.sampleExpense(),
         onClicked = {},
         onEditClicked = {},
         onDeleteClicked = {},

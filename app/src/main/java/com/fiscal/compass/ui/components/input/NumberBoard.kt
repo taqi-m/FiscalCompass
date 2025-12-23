@@ -42,10 +42,10 @@ import com.fiscal.compass.ui.theme.FiscalCompassTheme
 @Composable
 fun Calculator(
     modifier: Modifier = Modifier,
-    initialValue: String = "0",
+    initialValue: Double = 0.0,
     label: String = "",
     inputType: AmountInputType = AmountInputType.TOTAL_AMOUNT,
-    onValueChange: (String, AmountInputType) -> Unit = { _, _ -> },
+    onValueChange: (Double, AmountInputType) -> Unit = { _, _ -> },
     onSaveClick: () -> Unit = {},
 ) {
     // Calculator state using the new CalculatorState class
@@ -68,15 +68,15 @@ fun Calculator(
 
     // Initialize the calculator state with initial value only on first composition
     LaunchedEffect(Unit) {
-        if (calculatorState.displayText == "0" && initialValue != "0") {
+        if (calculatorState.value == 0.0 && initialValue != 0.0) {
             calculatorState = CalculatorState.withInitialValue(initialValue)
         }
     }
 
     // Notify parent of display text change
-    LaunchedEffect(calculatorState.displayText) {
+    LaunchedEffect(calculatorState.value) {
         if (!calculatorState.errorState) {
-            onValueChange(calculatorState.displayText, inputType)
+            onValueChange(calculatorState.value, inputType)
         }
     }
 
@@ -350,7 +350,7 @@ private fun CalcButton(
         modifier = modifier
             .heightIn(min = 36.dp, max = 56.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.75f),
         )
     ) {
         Text(

@@ -45,18 +45,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.fiscal.compass.R
+import com.fiscal.compass.domain.model.Transaction
 import com.fiscal.compass.domain.util.DateRange
 import com.fiscal.compass.domain.util.TransactionTypes
 import com.fiscal.compass.presentation.model.TransactionUi
 import com.fiscal.compass.presentation.navigation.MainScreens
 import com.fiscal.compass.presentation.screens.category.UiState
 import com.fiscal.compass.presentation.screens.itemselection.SelectableItem
-import com.fiscal.compass.presentation.screens.transactionScreens.viewTransactions.DateHeader
+import com.fiscal.compass.presentation.utilities.CurrencyFormater
 import com.fiscal.compass.ui.components.cards.ChipFlow
 import com.fiscal.compass.ui.components.cards.TransactionCard
 import com.fiscal.compass.ui.components.pickers.DatePicker
@@ -241,20 +243,20 @@ fun SearchScreen(
 fun ResultsScreen(
     modifier: Modifier = Modifier,
     state: SearchScreenState,
-    onTransactionSelected: (TransactionUi) -> Unit,
+    onTransactionSelected: (Transaction) -> Unit,
 ) {
+    val searchCriteria = state.searchCriteria
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
-    )
-    {
+    ) {
         if (state.uiState is UiState.Loading) {
             CircularProgressIndicator(modifier = Modifier.padding(vertical = 16.dp))
         } else if (state.searchCriteria.areAnyFiltersActive()) {
             // Create a list of active filter strings
             val activeFilters = mutableListOf<String>()
             state.searchCriteria.getTransactionType()?.let { activeFilters.add(it.name) }
-            
+
             val selectedCategoryNames = state.searchCriteria.getCategories()?.map { it.name } ?: emptyList()
             activeFilters.addAll(selectedCategoryNames)
 
@@ -262,11 +264,11 @@ fun ResultsScreen(
             activeFilters.addAll(selectedPersonNames)
 
             val dateFormatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-            state.searchCriteria.getDateRange()?.startDate?.let { 
-                activeFilters.add("From: ${dateFormatter.format(Date(it))}") 
+            state.searchCriteria.getDateRange()?.startDate?.let {
+                activeFilters.add("From: ${dateFormatter.format(Date(it))}")
             }
-            state.searchCriteria.getDateRange()?.endDate?.let { 
-                activeFilters.add("To: ${dateFormatter.format(Date(it))}") 
+            state.searchCriteria.getDateRange()?.endDate?.let {
+                activeFilters.add("To: ${dateFormatter.format(Date(it))}")
             }
 
             if (activeFilters.isNotEmpty()) {
@@ -296,6 +298,15 @@ fun ResultsScreen(
         }
 
         val transactions = state.searchResults
+
+
+/*        TransactionHeading(
+            currentBalance = "0",
+            incoming = "0",
+            outgoing = "0"
+        )*/
+
+
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -331,6 +342,98 @@ fun ResultsScreen(
     }
 }
 
+@Composable
+fun TransactionHeading(
+    modifier: Modifier = Modifier, currentBalance: String, incoming: String, outgoing: String
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.large,
+            colors = CardDefaults.cardColors().copy(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+        ) {
+            val textColor = MaterialTheme.colorScheme.onSecondaryContainer
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Total Balance",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = textColor
+                )
+                Text(
+                    text = currentBalance,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = textColor
+                )
+                HorizontalDivider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    thickness = 1.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+                Row {
+                    BalanceView(
+                        label = "Incoming",
+                        amount = incoming,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(8.dp),
+                        textAlign = TextAlign.Start
+                    )
+                    BalanceView(
+                        label = "Outgoing",
+                        amount = outgoing,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(8.dp),
+                        textAlign = TextAlign.End
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun BalanceView(
+    label: String,
+    amount: String,
+    modifier: Modifier = Modifier,
+    textAlign: TextAlign = TextAlign.Start
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            textAlign = textAlign
+        )
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = amount,
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = textAlign
+        )
+    }
+}
 
 @Composable
 fun FilterScreen(
@@ -339,8 +442,8 @@ fun FilterScreen(
     onEvent: (SearchEvent) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
-    var tempFilterType by remember { 
-        mutableStateOf(state.searchCriteria.getTransactionType()?.name ?: "") 
+    var tempFilterType by remember {
+        mutableStateOf(state.searchCriteria.getTransactionType()?.name ?: "")
     }
 
     val selectedCategories = state.searchCriteria.getCategories() ?: emptyList()
@@ -552,6 +655,22 @@ fun FilterScreen(
 }
 
 
+@Composable
+fun DateHeader(modifier: Modifier = Modifier, date: String) {
+    Card(
+        modifier = modifier, colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ), shape = MaterialTheme.shapes.small
+    ) {
+        Text(
+            text = date,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+    }
+}
+
+
 @Preview(showBackground = true)
 @Composable
 fun SearchScreenPreview() {
@@ -559,7 +678,7 @@ fun SearchScreenPreview() {
         SearchScreen(
             state = SearchScreenState(
                 searchResults = mapOf(
-                    Date(System.currentTimeMillis()) to TransactionUi.dummyList
+                    Date(System.currentTimeMillis()) to Transaction.sampleList()
                 ),
                 searchCriteria = com.fiscal.compass.domain.util.SearchCriteria().apply {
                     setTransactionType(TransactionTypes.INCOME)

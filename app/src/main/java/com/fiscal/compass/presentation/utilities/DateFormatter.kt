@@ -8,6 +8,9 @@ object DateFormatter {
     const val DEFAULT_DATE_FORMAT = "dd MMMM yyyy"
     const val API_DATE_FORMAT = "yyyy-MM-dd"
     const val DAY_MONTH_YEAR_FORMAT = "dd/MM/yyyy"
+    const val DEFAULT_TIME_FORMAT = "hh:mm a"
+    const val API_TIME_FORMAT = "HH:mm:ss"
+
 
     /**
      * Formats a Date object into a string based on the provided format pattern.
@@ -19,6 +22,11 @@ object DateFormatter {
      */
     fun formatDate(date: Date, format: String = DEFAULT_DATE_FORMAT, locale: Locale = Locale.getDefault()): String {
         val sdf = SimpleDateFormat(format, locale)
+        return sdf.format(date)
+    }
+
+    fun provideFormattedTime(date: Date, format: String = DEFAULT_TIME_FORMAT): String {
+        val sdf = SimpleDateFormat(format, Locale.getDefault())
         return sdf.format(date)
     }
 }

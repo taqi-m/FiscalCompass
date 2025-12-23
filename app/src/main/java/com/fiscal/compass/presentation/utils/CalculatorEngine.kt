@@ -17,31 +17,42 @@ object CalculatorEngine {
         return when {
             state.errorState -> {
                 // Reset from error state and start with the new number
-                CalculatorState(displayText = number.toString())
+                CalculatorState(value = number.toDouble())
             }
+
             state.clearOnNextInput -> {
                 // Start new number after operation or equals
                 // Preserve operation and firstOperand if they exist (after operator selection)
                 state.copy(
-                    displayText = number.toString(),
+                    value = number.toDouble(),
                     clearOnNextInput = false
                 )
             }
+
             else -> {
+                // Convert current value to string for manipulation
+                val currentValueStr = formatToTwoDecimals(state.value)
+
                 // Check if we already have 2 decimal places
-                val decimalIndex = state.displayText.indexOf('.')
-                if (decimalIndex != -1 && state.displayText.length - decimalIndex > 2) {
+                val decimalIndex = currentValueStr.indexOf('.')
+                if (decimalIndex != -1 && currentValueStr.length - decimalIndex > 2) {
                     // Already have 2 decimal places, don't add more digits
                     return state
                 }
 
-                // Append number to current display
-                val newDisplayText = if (state.displayText == "0") {
+                // Always append number to the left of decimal point
+                val newDisplayText = if (currentValueStr == "0" || currentValueStr == "0.0" || currentValueStr == "0.00") {
                     number.toString()
+                } else if (currentValueStr.contains(".")) {
+                    // Insert number before the decimal point
+                    val decimalPosition = currentValueStr.indexOf('.')
+                    currentValueStr.take(decimalPosition) + number + currentValueStr.substring(decimalPosition)
                 } else {
-                    state.displayText + number
+                    currentValueStr + number
                 }
-                state.copy(displayText = newDisplayText)
+
+                val newValue = newDisplayText.toDoubleOrNull() ?: state.value
+                state.copy(value = roundToTwoDecimals(newValue))
             }
         }
     }
@@ -58,19 +69,21 @@ object CalculatorEngine {
                 // Reset from error state
                 CalculatorState()
             }
+
             else -> {
                 try {
-                    val value = state.displayText.toDouble()
+                    val value = roundToTwoDecimals(state.value)
                     if (isValueWithinLimits(value)) {
                         state.copy(
                             firstOperand = value,
                             operation = operator,
-                            clearOnNextInput = true
+                            clearOnNextInput = true,
+                            value = value
                         )
                     } else {
                         createErrorState()
                     }
-                } catch (e: NumberFormatException) {
+                } catch (_: NumberFormatException) {
                     createErrorState()
                 }
             }
@@ -88,19 +101,21 @@ object CalculatorEngine {
                 // Reset from error state
                 CalculatorState()
             }
+
             state.operation == null -> {
                 // No operation to perform, just clear on next input
                 state.copy(clearOnNextInput = true)
             }
+
             else -> {
                 try {
-                    val secondOperand = state.displayText.toDouble()
+                    val secondOperand = roundToTwoDecimals(state.value)
 
                     if (!isValueWithinLimits(secondOperand)) {
                         return createErrorState()
                     }
 
-                    val result = when (state.operation) {
+                    val rawResult = when (state.operation) {
                         "+" -> state.firstOperand + secondOperand
                         "-" -> state.firstOperand - secondOperand
                         "*" -> state.firstOperand * secondOperand
@@ -109,25 +124,26 @@ object CalculatorEngine {
                         } else {
                             Double.NaN
                         }
+
                         else -> secondOperand
                     }
 
-                    if (result.isNaN() || result.isInfinite() || !isValueWithinLimits(result)) {
+                    if (rawResult.isNaN() || rawResult.isInfinite() || !isValueWithinLimits(rawResult)) {
                         return createErrorState()
                     }
 
-                    // Format the result
-                    val formattedResult = formatResult(result)
+                    // Round result to 2 decimal places
+                    val result = roundToTwoDecimals(rawResult)
 
                     state.copy(
-                        displayText = formattedResult,
+                        value = result,
                         operation = null,
                         clearOnNextInput = true
                     )
 
-                } catch (e: NumberFormatException) {
+                } catch (_: NumberFormatException) {
                     createErrorState()
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     createErrorState()
                 }
             }
@@ -143,22 +159,27 @@ object CalculatorEngine {
         return when {
             state.errorState -> {
                 // Reset from error state and start with "0."
-                CalculatorState(displayText = "0.")
+                CalculatorState(value = 0.0)
             }
+
             state.clearOnNextInput -> {
                 // Start with "0." after operation or equals
                 state.copy(
-                    displayText = "0.",
+                    value = 0.0,
                     clearOnNextInput = false
                 )
             }
-            state.displayText.contains(".") -> {
-                // Already has decimal point, no change
-                state
-            }
+
             else -> {
-                // Add decimal point to current number
-                state.copy(displayText = "${state.displayText}.")
+                val currentStr = formatToTwoDecimals(state.value)
+                // If already has decimal point, no change
+                if (currentStr.contains(".")) {
+                    state
+                } else {
+                    // Add decimal point to current number
+                    val newValue = "$currentStr.".toDoubleOrNull() ?: state.value
+                    state.copy(value = newValue)
+                }
             }
         }
     }
@@ -174,13 +195,19 @@ object CalculatorEngine {
                 // Reset from error state
                 CalculatorState()
             }
-            state.displayText.length <= 1 -> {
-                // Only one character left, replace with "0"
-                state.copy(displayText = "0")
-            }
+
             else -> {
-                // Remove last character
-                state.copy(displayText = state.displayText.dropLast(1))
+                val currentStr = formatToTwoDecimals(state.value)
+                
+                if (currentStr.length <= 1 || currentStr == "0.0" || currentStr == "0.00") {
+                    // Only one character left or at zero, replace with "0"
+                    state.copy(value = 0.0)
+                } else {
+                    // Remove last character
+                    val newStr = currentStr.dropLast(1)
+                    val newValue = newStr.toDoubleOrNull() ?: 0.0
+                    state.copy(value = roundToTwoDecimals(newValue))
+                }
             }
         }
     }
@@ -208,7 +235,7 @@ object CalculatorEngine {
      */
     private fun createErrorState(): CalculatorState {
         return CalculatorState(
-            displayText = "Error",
+            value = Double.NaN,
             firstOperand = 0.0,
             operation = null,
             clearOnNextInput = true,
@@ -217,17 +244,23 @@ object CalculatorEngine {
     }
 
     /**
-     * Formats a calculation result for display
-     * @param result The result to format
-     * @return Formatted string representation of the result
+     * Rounds a value to 2 decimal places
+     * @param value The value to round
+     * @return Value rounded to 2 decimal places
      */
-    private fun formatResult(result: Double): String {
-        return if (result == result.toInt().toDouble()) {
-            // If it's a whole number, show as integer
-            result.toInt().toString()
-        } else {
-            // Round to 2 decimal places and remove trailing zeros
-            "%.2f".format(result).trimEnd('0').trimEnd('.')
-        }
+    private fun roundToTwoDecimals(value: Double): Double {
+        return kotlin.math.round(value * 100) / 100
+    }
+
+    /**
+     * Formats a value to string with up to 2 decimal places
+     * @param value The value to format
+     * @return Formatted string representation
+     */
+    private fun formatToTwoDecimals(value: Double): String {
+        val rounded = roundToTwoDecimals(value)
+        // Format with 2 decimal places, then remove trailing zeros
+        val formatted = "%.2f".format(rounded).trimEnd('0').trimEnd('.')
+        return formatted
     }
 }
