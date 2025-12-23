@@ -206,6 +206,14 @@ private fun HeaderContent(
             color = if (transactionUi.isExpense) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onPrimaryContainer
         )
         Spacer(
+            modifier = Modifier.padding(vertical = 4.dp)
+        )
+        Text(
+            text = transactionUi.formatedPaidAmount,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+        Spacer(
             modifier = Modifier.padding(vertical = 8.dp)
         )
         Text(

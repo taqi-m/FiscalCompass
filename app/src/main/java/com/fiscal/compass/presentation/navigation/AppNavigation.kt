@@ -2,6 +2,7 @@ package com.fiscal.compass.presentation.navigation
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -11,6 +12,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -20,6 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.fiscal.compass.domain.model.Transaction
 import com.fiscal.compass.domain.repository.AppPreferenceRepository
 import com.fiscal.compass.presentation.model.TransactionUi
 import com.fiscal.compass.presentation.screens.auth.AuthScreen
@@ -44,6 +47,7 @@ import com.fiscal.compass.presentation.screens.sync.SyncScreen
 import com.fiscal.compass.presentation.screens.sync.SyncViewModel
 import com.fiscal.compass.presentation.screens.transactionScreens.addTransaction.AddTransactionScreen
 import com.fiscal.compass.presentation.screens.transactionScreens.addTransaction.AddTransactionViewModel
+import com.fiscal.compass.presentation.screens.transactionScreens.amountScreen.AmountEvent
 import com.fiscal.compass.presentation.screens.transactionScreens.amountScreen.AmountScreen
 import com.fiscal.compass.presentation.screens.transactionScreens.amountScreen.AmountViewModel
 import com.fiscal.compass.presentation.screens.transactionScreens.transactionDetails.TransactionDetailsScreen
@@ -162,14 +166,48 @@ fun AppNavigation(
             enterTransition = { fadeIn },
             exitTransition = { fadeOut }
         ) {
-            
             val amountViewModel: AmountViewModel = hiltViewModel()
             val state by amountViewModel.state.collectAsState()
+
+            // Retrieve and decode transaction JSON from navigation arguments
+            val transactionJson = remember {
+                val encodedJsonTransaction = navController.currentBackStackEntry
+                    ?.arguments?.getString("transaction")
+                Uri.decode(encodedJsonTransaction ?: "")
+            }
+
+            val editMode = remember {
+                val editModeArg = navController.currentBackStackEntry?.arguments?.getString("edit")
+                Log.d("AmountScreen", "editModeArg: $editModeArg")
+                editModeArg?.toBoolean() ?: false
+            }
+
+            // Load transaction once when the screen is first composed
+            LaunchedEffect(transactionJson, editMode) {
+                val transaction = Gson().fromJson(transactionJson, Transaction::class.java)
+                amountViewModel.onEvent(AmountEvent.LoadTransaction(transaction, editMode))
+            }
             
             AmountScreen(
-                appNavController = navController,
                 state = state,
-                onEvent = amountViewModel::onEvent
+                onEvent = amountViewModel::onEvent,
+                onBack ={
+                    navController.popBackStack()
+                },
+                onSuccess = {
+                    // Check if Search screen exists in back stack
+                    val searchScreenExists = navController.currentBackStack.value.any {
+                        it.destination.route == MainScreens.Search.route
+                    }
+
+                    if (searchScreenExists) {
+                        // Pop back to Search screen
+                        navController.popBackStack(route = MainScreens.Search.route, inclusive = false)
+                    } else {
+                        // Pop back to Home screen
+                        navController.popBackStack(route = MainScreens.AddTransaction.route, inclusive = true)
+                    }
+                }
             )
         }
 
