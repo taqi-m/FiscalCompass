@@ -2,11 +2,8 @@ package com.fiscal.compass.presentation.screens.transactionScreens.transactionDe
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fiscal.compass.data.mappers.toTransaction
-import com.fiscal.compass.domain.model.ExpenseFull
-import com.fiscal.compass.domain.model.IncomeFull
-import com.fiscal.compass.domain.usecase.expense.GetExpenseWithCategoryAndPerson
-import com.fiscal.compass.domain.usecase.income.GetSingleFullIncomeById
+import com.fiscal.compass.domain.model.Transaction
+import com.fiscal.compass.domain.service.TransactionService
 import com.fiscal.compass.presentation.mappers.toUi
 import com.fiscal.compass.presentation.screens.category.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,68 +15,39 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TransactionDetailsViewModel @Inject constructor(
-    private val getSingleFullIncomeById: GetSingleFullIncomeById,
-    private val expenseUseCase: GetExpenseWithCategoryAndPerson
+    private val transactionService: TransactionService
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(TransactionDetailsScreenState())
+    private val _state = MutableStateFlow(TransactionDetailsScreenState(uiState = UiState.Loading))
     val state: StateFlow<TransactionDetailsScreenState> = _state.asStateFlow()
 
     private val coroutineScope = viewModelScope
 
     fun onEvent(event: TransactionDetailsEvent) {
         when (event) {
-            is TransactionDetailsEvent.OnScreenLoad -> {
-                loadData(event.transactionId, event.isExpense)
+            is TransactionDetailsEvent.LoadTransaction -> {
+                loadTransaction(event.transaction)
             }
         }
     }
 
 
-    private fun loadData(id: Long, isExpense: Boolean) {
-        updateState {
-            copy(
-                uiState = UiState.Loading
-            )
-        }
+    private fun loadTransaction(transaction: Transaction?) {
+        updateState { copy(uiState = UiState.Loading) }
 
         coroutineScope.launch {
-            if (isExpense){
-                val data: ExpenseFull? = expenseUseCase(id)
-                data?.let {
-                    updateState {
-                        copy(
-                            transaction = it.expense.toTransaction().toUi(),
-                            category = it.category?.toUi(),
-                            person = it.person?.toUi(),
-                            uiState = UiState.Success("")
-                        )
-                    }
-                } ?: run {
-                    updateState {
-                        copy(
-                            uiState = UiState.Error("No data found")
-                        )
-                    }
+            try {
+
+                if (transaction == null) {
+                    updateState { copy(uiState = UiState.Error("Transaction not found")) }
+                    return@launch
                 }
-            } else {
-                val data: IncomeFull? = getSingleFullIncomeById(id)
-                data?.let {
-                    updateState {
-                        copy(
-                            transaction = it.income.toTransaction().toUi(),
-                            category = it.category?.toUi(),
-                            person = it.person?.toUi(),
-                            uiState = UiState.Success("")
-                        )
-                    }
-                } ?: run {
-                    updateState {
-                        copy(
-                            uiState = UiState.Error("No data found")
-                        )
-                    }
-                }
+
+                val category = transaction.category?.toUi()
+                val person = transaction.person?.toUi()
+                updateState { copy(transaction = transaction.toUi(), category = category, person = person, uiState = UiState.Success("Transaction Loaded")) }
+            } catch (e: Exception) {
+                updateState { copy(uiState = UiState.Error(e.message ?: "Unknown error")) }
             }
         }
 

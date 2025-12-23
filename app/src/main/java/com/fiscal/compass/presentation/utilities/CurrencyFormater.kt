@@ -47,6 +47,47 @@ object CurrencyFormater {
      * @return The parsed Double value, or 0.0 if parsing fails.
      */
     fun parseCurrency(formattedAmount: String): Double {
-        return formattedAmount.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 0.0
+        val numberRegex = Regex("""-?\d+(?:,\d{3})*(?:\.\d+)?""")
+        val match = numberRegex.find(formattedAmount)
+        val raw = match?.value?.replace(",", "") ?: ""
+        return raw.toDoubleOrNull() ?: 0.0
     }
+
+
+
+/**
+ * Extracts the first numeric substring (allows thousands separators and optional decimal part) from [input].
+ *
+ * Examples:
+ * - Input: "Total: Rs. 1,234.56" -> returns "1,234.56"
+ * - Input: "-¥2,000" -> returns "-2,000"
+ * - Input: "no digits" -> returns "0"
+ *
+ * @param input Source string to extract the numeric value from.
+ * @return The matched numeric substring or `"0"` if none found.
+ */
+fun cleanString(input: String): String {
+    val numberRegex = Regex("""-?\d+(?:,\d{3})*(?:\.\d+)?""")
+    val match = numberRegex.find(input)
+    val raw = match?.value ?: "0"
+    return raw
+}
+
+/**
+ * Extracts the first integer-like numeric substring (allows thousands separators, no decimal part) from [input].
+ *
+ * Examples:
+ * - Input: "Balance: 5,000.75" -> returns "5,000" (decimal part ignored)
+ * - Input: "(-1,234)" -> returns "-1,234"
+ * - Input: "abc" -> returns "0"
+ *
+ * @param input Source string to extract the integer numeric value from.
+ * @return The matched integer numeric substring or `"0"` if none found.
+ */
+fun cleanNumericString(input: String): String {
+    val numberRegex = Regex("""-?\d+(?:,\d{3})*""")
+    val match = numberRegex.find(input)
+    val raw = match?.value ?: "0"
+    return raw
+}
 }

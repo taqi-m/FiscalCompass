@@ -2,6 +2,8 @@ package com.fiscal.compass.presentation.navigation
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.util.Log
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -10,6 +12,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -19,6 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.fiscal.compass.domain.model.Transaction
 import com.fiscal.compass.domain.repository.AppPreferenceRepository
 import com.fiscal.compass.presentation.model.TransactionUi
 import com.fiscal.compass.presentation.screens.auth.AuthScreen
@@ -43,14 +47,21 @@ import com.fiscal.compass.presentation.screens.sync.SyncScreen
 import com.fiscal.compass.presentation.screens.sync.SyncViewModel
 import com.fiscal.compass.presentation.screens.transactionScreens.addTransaction.AddTransactionScreen
 import com.fiscal.compass.presentation.screens.transactionScreens.addTransaction.AddTransactionViewModel
+import com.fiscal.compass.presentation.screens.transactionScreens.amountScreen.AmountEvent
+import com.fiscal.compass.presentation.screens.transactionScreens.amountScreen.AmountScreen
+import com.fiscal.compass.presentation.screens.transactionScreens.amountScreen.AmountViewModel
 import com.fiscal.compass.presentation.screens.transactionScreens.transactionDetails.TransactionDetailsScreen
 import com.fiscal.compass.presentation.screens.transactionScreens.transactionDetails.TransactionDetailsViewModel
 import com.google.gson.Gson
 
 
 // Animation duration constant for consistent transitions
-private const val TRANSITION_DURATION = 400
+private const val TRANSITION_DURATION = 200
 private const val FADE_TRANSITION_DURATION = (TRANSITION_DURATION * 1.5).toInt()
+
+private val fadeIn = fadeIn(animationSpec = tween(FADE_TRANSITION_DURATION))
+private val fadeOut = fadeOut(animationSpec = tween(FADE_TRANSITION_DURATION))
+
 
 // Pre-defined transition animations
 private val enterFromLeft = fadeIn(animationSpec = tween(FADE_TRANSITION_DURATION)) +
@@ -138,16 +149,65 @@ fun AppNavigation(
 
         composable(
             route = MainScreens.AddTransaction.route,
-            enterTransition = { enterFromRight },
-            exitTransition = { exitToRight },
-            popEnterTransition = { enterFromRight },
-            popExitTransition = { exitToRight }) { backStackEntry ->
+            enterTransition = { fadeIn },
+            exitTransition = { fadeOut }
+        ) { backStackEntry ->
             val addTransactionViewModel: AddTransactionViewModel = hiltViewModel(backStackEntry)
             val addTransactionState by addTransactionViewModel.state.collectAsState()
             AddTransactionScreen(
                 appNavController = navController,
                 state = addTransactionState,
                 onEvent = addTransactionViewModel::onEvent
+            )
+        }
+
+        composable(
+            route = MainScreens.Amount.route,
+            enterTransition = { fadeIn },
+            exitTransition = { fadeOut }
+        ) {
+            val amountViewModel: AmountViewModel = hiltViewModel()
+            val state by amountViewModel.state.collectAsState()
+
+            // Retrieve and decode transaction JSON from navigation arguments
+            val transactionJson = remember {
+                val encodedJsonTransaction = navController.currentBackStackEntry
+                    ?.arguments?.getString("transaction")
+                Uri.decode(encodedJsonTransaction ?: "")
+            }
+
+            val editMode = remember {
+                val editModeArg = navController.currentBackStackEntry?.arguments?.getString("edit")
+                Log.d("AmountScreen", "editModeArg: $editModeArg")
+                editModeArg?.toBoolean() ?: false
+            }
+
+            // Load transaction once when the screen is first composed
+            LaunchedEffect(transactionJson, editMode) {
+                val transaction = Gson().fromJson(transactionJson, Transaction::class.java)
+                amountViewModel.onEvent(AmountEvent.LoadTransaction(transaction, editMode))
+            }
+            
+            AmountScreen(
+                state = state,
+                onEvent = amountViewModel::onEvent,
+                onBack ={
+                    navController.popBackStack()
+                },
+                onSuccess = {
+                    // Check if Search screen exists in back stack
+                    val searchScreenExists = navController.currentBackStack.value.any {
+                        it.destination.route == MainScreens.Search.route
+                    }
+
+                    if (searchScreenExists) {
+                        // Pop back to Search screen
+                        navController.popBackStack(route = MainScreens.Search.route, inclusive = false)
+                    } else {
+                        // Pop back to Home screen
+                        navController.popBackStack(route = MainScreens.AddTransaction.route, inclusive = true)
+                    }
+                }
             )
         }
 
@@ -231,31 +291,22 @@ fun AppNavigation(
 
         composable(
             route = MainScreens.TransactionDetail.route,
-            enterTransition = { enterFromLeft },
-            exitTransition = { exitToLeft },
-            popEnterTransition = { enterFromLeft },
-            popExitTransition = { exitToLeft }
+            enterTransition = { fadeIn },
+            exitTransition = { fadeOut }
         ) { backstackEntry ->
-            val transactionJson = backstackEntry.arguments?.getString("transaction")
-            val transactionUi = Gson().fromJson(transactionJson, TransactionUi::class.java)
             val transactionDetailsViewModel: TransactionDetailsViewModel = hiltViewModel()
             val state by transactionDetailsViewModel.state.collectAsState()
             TransactionDetailsScreen(
+                appNavController = navController,
                 state = state,
-                onEvent = transactionDetailsViewModel::onEvent,
-                onBackPressed = {
-                    navController.popBackStack()
-                },
-                transactionUi = transactionUi,
+                onEvent = transactionDetailsViewModel::onEvent
             )
         }
 
         composable(
             route = MainScreens.Search.route,
-            enterTransition = { enterFromRight },
-            exitTransition = { exitToRight },
-            popEnterTransition = { enterFromRight },
-            popExitTransition = { exitToRight }
+            enterTransition = { fadeIn },
+            exitTransition = { fadeOut }
         ) {
             val searchViewModel: SearchViewModel = hiltViewModel()
             val state by searchViewModel.state.collectAsState()

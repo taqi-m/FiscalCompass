@@ -3,10 +3,8 @@ package com.fiscal.compass.presentation.screens.transactionScreens.addTransactio
 import android.annotation.SuppressLint
 import android.net.Uri
 import android.util.Log
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -45,7 +43,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -57,17 +54,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.fiscal.compass.R
-import com.fiscal.compass.presentation.model.CategoryUi
-import com.fiscal.compass.presentation.model.InputField
-import com.fiscal.compass.presentation.model.PersonUi
 import com.fiscal.compass.presentation.model.TransactionType
 import com.fiscal.compass.presentation.navigation.MainScreens
 import com.fiscal.compass.presentation.screens.category.UiState
 import com.fiscal.compass.presentation.screens.itemselection.SelectableItem
-import com.fiscal.compass.presentation.utilities.CurrencyFormater
-import com.fiscal.compass.presentation.utils.AmountInputType
-import com.fiscal.compass.ui.components.input.AmountField
-import com.fiscal.compass.ui.components.input.Calculator
 import com.fiscal.compass.ui.components.input.DataEntryTextField
 import com.fiscal.compass.ui.components.input.TypeSwitch
 import com.fiscal.compass.ui.components.pickers.DatePicker
@@ -76,12 +66,8 @@ import com.fiscal.compass.ui.theme.FiscalCompassTheme
 import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import java.util.Calendar
 
-private enum class AddTransactionScreen {
-    FORM,
-    SUCCESS,
-    CALCULATOR
-}
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,24 +77,26 @@ fun AddTransactionScreen(
     state: AddTransactionState,
     onEvent: (AddTransactionEvent) -> Unit,
 ) {
-
-    var currentScreen by rememberSaveable { mutableStateOf(AddTransactionScreen.FORM) }
     val snackbarHostState = remember { SnackbarHostState() }
     val uiState = state.uiState
 
     // Handle navigation to category selection
     LaunchedEffect(state.navigateToCategorySelection) {
+        Log.d("AddTransactionScreen", "navigateToCategorySelection: ${state.navigateToCategorySelection}")
         if (state.navigateToCategorySelection) {
+            Log.d("AddTransactionScreen", "Navigating to category selection")
             val allSelectableItems = state.allCategories.map { category ->
                 SelectableItem(
                     id = category.categoryId.toString(),
                     name = category.name,
-                    isSelected = category.categoryId == state.categoryId
+                    isSelected = category.categoryId == state.transaction.categoryId
                 )
             }
+            val itemsJson = Gson().toJson(allSelectableItems)
+            val itemsEncoded = Uri.encode(itemsJson)
             appNavController.navigate(
                 MainScreens.MultiSelection.passParameters(
-                    Uri.encode(Gson().toJson(allSelectableItems)),
+                    itemsEncoded,
                     "category",
                     "selectedCategoryId",
                     singleSelectionMode = true
@@ -120,32 +108,44 @@ fun AddTransactionScreen(
 
     // Handle navigation to person selection
     LaunchedEffect(state.navigateToPersonSelection) {
-        if (state.navigateToPersonSelection) {
-            // Add "N/A" option for persons
-            val naOption = SelectableItem(
-                id = "-1",
-                name = "N/A",
-                isSelected = state.personId == null
-            )
-            val personSelectableItems = state.allPersons.map { person ->
-                SelectableItem(
-                    id = person.personId.toString(),
-                    name = person.name,
-                    isSelected = person.personId == state.personId
-                )
-            }
-            val allSelectableItems = listOf(naOption) + personSelectableItems
-
-            appNavController.navigate(
-                MainScreens.MultiSelection.passParameters(
-                    Uri.encode(Gson().toJson(allSelectableItems)),
-                    "person",
-                    "selectedPersonId",
-                    singleSelectionMode = true
-                )
-            )
-            onEvent(AddTransactionEvent.ResetNavigation)
+        if (!state.navigateToPersonSelection) {
+            return@LaunchedEffect
         }
+        // Add "N/A" option for persons
+        val naOption = SelectableItem(
+            id = "-1",
+            name = "N/A",
+            isSelected = state.transaction.personId == null
+        )
+        val personSelectableItems = state.allPersons.map { person ->
+            SelectableItem(
+                id = person.personId.toString(),
+                name = person.name,
+                isSelected = person.personId == state.transaction.personId
+            )
+        }
+        val allSelectableItems = listOf(naOption) + personSelectableItems
+
+        appNavController.navigate(
+            MainScreens.MultiSelection.passParameters(
+                Uri.encode(Gson().toJson(allSelectableItems)),
+                "person",
+                "selectedPersonId",
+                singleSelectionMode = true
+            )
+        )
+        onEvent(AddTransactionEvent.ResetNavigation)
+    }
+
+    // Handle navigation to amount screen
+    LaunchedEffect(state.navigateToAmountScreen) {
+        if (!state.navigateToAmountScreen) {
+            return@LaunchedEffect
+        }
+        val jsonTransaction = Gson().toJson(state.transaction)
+        val encodedTransaction = Uri.encode(jsonTransaction)
+        appNavController.navigate(MainScreens.Amount.passTransaction(encodedTransaction))
+        onEvent(AddTransactionEvent.ResetNavigation)
     }
 
     // Get selected category ID from navigation result
@@ -186,42 +186,20 @@ fun AddTransactionScreen(
             }
     }
 
-    BackHandler(enabled = currentScreen == AddTransactionScreen.CALCULATOR || currentScreen == AddTransactionScreen.SUCCESS) {
-        currentScreen = AddTransactionScreen.FORM
-    }
-
     var titleText by remember { mutableStateOf("Add Transaction") }
 
 
     LaunchedEffect(uiState) {
         val message: String? = when (uiState) {
             is UiState.Error -> uiState.message
-            is UiState.Success -> {
-                currentScreen = AddTransactionScreen.SUCCESS
-                null
-            }
-
             else -> null
         }
-        if (uiState !is UiState.Success) {
-            message?.let { msg ->
-                if (msg.isNotEmpty()) {
-                    snackbarHostState.showSnackbar(
-                        message = msg,
-                        duration = SnackbarDuration.Short,
-                        actionLabel = "Dismiss"
-                    )
-                    onEvent(AddTransactionEvent.OnUiReset)
-                }
-            }
-        }
-    }
-
-    LaunchedEffect(currentScreen) {
-        titleText = when (currentScreen) {
-            AddTransactionScreen.FORM -> "Add Transaction"
-            AddTransactionScreen.CALCULATOR -> "Enter Amount"
-            AddTransactionScreen.SUCCESS -> ""
+        message?.let {
+            snackbarHostState.showSnackbar(
+                message = it,
+                duration = SnackbarDuration.Short,
+                actionLabel = "Dismiss"
+            )
         }
     }
 
@@ -233,28 +211,21 @@ fun AddTransactionScreen(
             )
         },
         topBar = {
-            if (currentScreen != AddTransactionScreen.SUCCESS) {
-                TopAppBar(
-                    title = {
-                        Text(text = titleText)
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            when (currentScreen) {
-                                AddTransactionScreen.SUCCESS -> appNavController.navigateUp()
-                                AddTransactionScreen.FORM -> appNavController.navigateUp()
-                                AddTransactionScreen.CALCULATOR -> currentScreen =
-                                    AddTransactionScreen.FORM
-                            }
-                        }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_arrow_back_24),
-                                contentDescription = "Back"
-                            )
-                        }
+            TopAppBar(
+                title = {
+                    Text(text = titleText)
+                },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        appNavController.navigateUp()
+                    }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_arrow_back_24),
+                            contentDescription = "Back"
+                        )
                     }
-                )
-            }
+                }
+            )
         },
         content = { paddingValues ->
             Box(
@@ -262,31 +233,14 @@ fun AddTransactionScreen(
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
             ) {
-                when (currentScreen) {
-                    AddTransactionScreen.FORM -> {
-                        AddTransactionFormContent(
-                            modifier = Modifier.padding(paddingValues),
-                            state = state,
-                            onEvent = onEvent,
-                            onNextClick = { currentScreen = AddTransactionScreen.CALCULATOR }
-                        )
+                AddTransactionFormContent(
+                    modifier = Modifier.padding(paddingValues),
+                    state = state,
+                    onEvent = onEvent,
+                    onNextClick = {
+                        onEvent(AddTransactionEvent.NavigateToAmountScreen)
                     }
-
-                    AddTransactionScreen.CALCULATOR -> {
-                        AddTransactionCalculatorContent(
-                            modifier = Modifier.padding(paddingValues),
-                            onEvent = onEvent,
-                            state = state
-                        )
-                    }
-
-                    AddTransactionScreen.SUCCESS -> {
-                        AddTransactionSuccessContent(
-                            modifier = Modifier.padding(paddingValues),
-                            onGoToHomeClick = { appNavController.navigateUp() }
-                        )
-                    }
-                }
+                )
             }
         }
     )
@@ -300,12 +254,7 @@ fun AddTransactionFormContent(
     onEvent: (AddTransactionEvent) -> Unit,
     onNextClick: () -> Unit
 ) {
-    var isCategoriesEmpty by remember { mutableStateOf(state.categories.isEmpty()) }
-    LaunchedEffect(state.categories, state.persons) {
-        isCategoriesEmpty = state.categories.isEmpty()
-
-
-    }
+    val isCategoriesEmpty = state.allCategories.isEmpty()
 
     Column(
         modifier = modifier
@@ -321,8 +270,8 @@ fun AddTransactionFormContent(
                 .weight(1f),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-
-            val selectedIndex = TransactionType.entries.indexOf(state.transactionType)
+            val selectedIndex =
+                TransactionType.entries.indexOf(TransactionType.fromString(state.transaction.transactionType))
             TypeSwitch(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -339,9 +288,9 @@ fun AddTransactionFormContent(
             )
 
             if (!isCategoriesEmpty) {
-                val allCategories = state.categories
+                val allCategories = state.allCategories
                 val selectedCategory =
-                    allCategories.firstOrNull { it.categoryId == state.categoryId }
+                    allCategories.firstOrNull { it.categoryId == state.transaction.categoryId }
 
                 SelectionField(
                     modifier = Modifier.fillMaxWidth(),
@@ -351,7 +300,8 @@ fun AddTransactionFormContent(
                 )
             }
 
-            val selectedPerson = state.persons.firstOrNull { it.personId == state.personId }
+            val selectedPerson =
+                state.allPersons.firstOrNull { it.personId == state.transaction.personId }
             val personDisplayName = selectedPerson?.name ?: "N/A"
 
             SelectionField(
@@ -365,7 +315,7 @@ fun AddTransactionFormContent(
             DatePicker(
                 modifier = Modifier.fillMaxWidth(),
                 label = "Date",
-                selectedDate = state.selectedDate,
+                selectedDate = state.transaction.date.time,
                 onDateSelected = { date ->
                     onEvent(AddTransactionEvent.DateSelected(date))
                 }
@@ -374,7 +324,8 @@ fun AddTransactionFormContent(
             TimePicker(
                 modifier = Modifier.fillMaxWidth(),
                 label = "Time",
-                selectedTime = state.selectedTime,
+                selectedTime = Calendar.getInstance()
+                    .apply { timeInMillis = state.transaction.date.time },
                 onTimeSelected = { time ->
                     onEvent(AddTransactionEvent.TimeSelected(time))
                 }
@@ -385,7 +336,7 @@ fun AddTransactionFormContent(
                     .fillMaxWidth(),
                 label = "Note",
                 placeholder = "Add a short note",
-                value = state.description.value,
+                value = state.transaction.description ?: "",
                 onValueChange = { onEvent(AddTransactionEvent.OnDescriptionChange(it)) },
                 maxLines = 4,
                 singleLine = false,
@@ -410,267 +361,6 @@ fun AddTransactionFormContent(
     }
 }
 
-@Composable
-fun AddTransactionCalculatorContent(
-    modifier: Modifier = Modifier,
-    onEvent: (AddTransactionEvent) -> Unit,
-    state: AddTransactionState
-) {
-    // Persistent field selection - remembers last active field
-    var activeField by rememberSaveable { mutableStateOf<AmountField>(AmountField.TOTAL_AMOUNT) }
-
-    // Calculate remaining amount and progress
-    val totalAmount = state.totalAmount.value.toDoubleOrNull() ?: 0.0
-    val paidAmount = state.paidAmount.value.toDoubleOrNull() ?: 0.0
-    val remainingAmount = (totalAmount - paidAmount).coerceAtLeast(0.0)
-    val targetProgress = if (totalAmount > 0) {
-        ((paidAmount / totalAmount) * 100).coerceIn(0.0, 100.0).toFloat()
-    } else {
-        0f
-    }
-    val progressPercentage by animateFloatAsState(
-        targetValue = targetProgress,
-        label = "progressPercentage"
-    )
-
-    // Get the current value to pass to Calculator based on active field
-    val currentDisplayValue = when (activeField) {
-        AmountField.TOTAL_AMOUNT -> state.totalAmount.value.ifBlank { "0" }
-        AmountField.AMOUNT_PAID -> state.paidAmount.value.ifBlank { "0" }
-    }
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 8.dp)
-            .padding(bottom = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        // Payment Progress Card
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Payment Progress",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "${targetProgress.toInt()}%",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                        color = when {
-                            targetProgress >= 100 -> MaterialTheme.colorScheme.primary
-                            targetProgress > 0 -> MaterialTheme.colorScheme.tertiary
-                            else -> MaterialTheme.colorScheme.onSurfaceVariant
-                        }
-                    )
-                }
-
-                // Progress indicator
-                LinearProgressIndicator(
-                    progress = { (progressPercentage / 100) },
-                    modifier = Modifier.fillMaxWidth(),
-                    color = when {
-                        progressPercentage >= 100 -> MaterialTheme.colorScheme.primary
-                        progressPercentage > 50 -> MaterialTheme.colorScheme.tertiary
-                        else -> MaterialTheme.colorScheme.secondary
-                    },
-                )
-
-                // Remaining amount display
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Remaining:",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = CurrencyFormater.formatCurrency(remainingAmount),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                        color = if (remainingAmount > 0)
-                            MaterialTheme.colorScheme.error
-                        else
-                            MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-        }
-
-        // Field selector tabs with auto-fill button
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            // Total Amount Card
-            OutlinedCard(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = { activeField = AmountField.TOTAL_AMOUNT },
-                shape = MaterialTheme.shapes.small,
-                border = BorderStroke(
-                    width = if (activeField == AmountField.TOTAL_AMOUNT) 2.dp else 1.dp,
-                    color = if (activeField == AmountField.TOTAL_AMOUNT)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.outline
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(12.dp),
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Total Amount",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (activeField == AmountField.TOTAL_AMOUNT)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = CurrencyFormater.formatCalculatorCurrency(state.totalAmount.value.ifBlank { "0" }),
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                        color = if (activeField == AmountField.TOTAL_AMOUNT)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-
-            // Amount Paid Card
-            OutlinedCard(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = { activeField = AmountField.AMOUNT_PAID },
-                shape = MaterialTheme.shapes.small,
-                border = BorderStroke(
-                    width = if (activeField == AmountField.AMOUNT_PAID) 2.dp else 1.dp,
-                    color = if (activeField == AmountField.AMOUNT_PAID)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.outline
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(12.dp),
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Amount Paid",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (activeField == AmountField.AMOUNT_PAID)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = CurrencyFormater.formatCalculatorCurrency(state.paidAmount.value.ifBlank { "0" }),
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                        color = if (activeField == AmountField.AMOUNT_PAID)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-        }
-
-        // Auto-fill button for full payment
-        if (totalAmount > 0 && paidAmount < totalAmount) {
-            Button(
-                onClick = {
-                    onEvent(AddTransactionEvent.OnAmountPaidChange(state.totalAmount.value))
-                    activeField = AmountField.AMOUNT_PAID
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                shape = RoundedCornerShape(8.dp),
-                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                )
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_check_24),
-                    contentDescription = "Mark as Fully Paid",
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Text(
-                    text = "Mark as Fully Paid",
-                    style = MaterialTheme.typography.labelMedium
-                )
-            }
-        }
-
-        // Calculator with direct value binding - receives initialValue from state
-        // No TextField inside Calculator - values come from parent state
-        Calculator(
-            modifier = Modifier.fillMaxSize(),
-            initialValue = currentDisplayValue,
-            label = when (activeField) {
-                AmountField.TOTAL_AMOUNT -> "Total Amount"
-                AmountField.AMOUNT_PAID -> "Amount Paid"
-            },
-            inputType = when (activeField) {
-                AmountField.TOTAL_AMOUNT -> AmountInputType.TOTAL_AMOUNT
-                AmountField.AMOUNT_PAID -> AmountInputType.AMOUNT_PAID
-            },
-            onValueChange = { value, inputType ->
-                Log.d("AddTransactionScreen", "onValueChange: $value, $inputType")
-                // Update the appropriate field based on inputType
-                when (inputType) {
-                    AmountInputType.TOTAL_AMOUNT -> onEvent(
-                        AddTransactionEvent.OnAmountChange(
-                            value,
-                            inputType
-                        )
-                    )
-
-                    AmountInputType.AMOUNT_PAID -> onEvent(
-                        AddTransactionEvent.OnAmountPaidChange(
-                            value
-                        )
-                    )
-                }
-            },
-            onSaveClick = {
-                onEvent(AddTransactionEvent.OnSaveClicked)
-            },
-        )
-    }
-}
-
-// Enum for field selection
-private enum class AmountField {
-    TOTAL_AMOUNT,
-    AMOUNT_PAID
-}
 
 @Composable
 fun AddTransactionSuccessContent(
@@ -777,28 +467,7 @@ fun AddTransactionFormContentPreview() {
         Scaffold {
             AddTransactionFormContent(
                 modifier = Modifier.padding(it),
-                state = AddTransactionState(
-                    totalAmount = InputField(
-                        value = "",
-                        error = ""
-                    ),
-                    description = InputField(
-                        value = "",
-                        error = ""
-                    ),
-                    personId = 1L,
-                    categoryId = 1L,
-                    selectedDate = System.currentTimeMillis(),
-                    selectedTime = java.util.Calendar.getInstance(),
-                    categories = CategoryUi.dummyList,
-                    persons = listOf(
-                        PersonUi(
-                            personId = 1L,
-                            name = "Alice",
-                            personType = "DEALER"
-                        )
-                    ),
-                ),
+                state = AddTransactionState(),
                 onEvent = {},
                 onNextClick = {}
             )
@@ -806,31 +475,7 @@ fun AddTransactionFormContentPreview() {
     }
 }
 
-@Preview(
-    showSystemUi = true,
-    showBackground = true,
-    name = "Form Screen - Pixel 7a",
-    device = "id:pixel_7a"
-)
-//@Preview(showSystemUi = true, showBackground = true, name = "Calculator Screen - Nexus 7", device = Devices.NEXUS_7)
-@Composable
-fun AddTransactionCalculatorContentPreview() {
-    FiscalCompassTheme {
-        Scaffold {
-            AddTransactionCalculatorContent(
-                modifier = Modifier.padding(it),
-                onEvent = {},
-                state = AddTransactionState(
-                    totalAmount = InputField(value = "1000.0"),
-                    paidAmount = InputField(value = "600.0"),
-                    categoryId = 1L
-                )
-            )
-        }
-    }
-}
-
-@Preview(
+/*@Preview(
     showSystemUi = true,
     showBackground = true,
     name = "Form Screen - Pixel 7a",
@@ -846,7 +491,7 @@ fun AddTransactionSuccessContentPreview() {
             )
         }
     }
-}
+}*/
 
 /**
  * A clickable field that displays a label and selected value, navigating to a selection screen when clicked.
