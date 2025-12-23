@@ -62,64 +62,19 @@ private enum class AmountField {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AmountScreen(
-    appNavController: NavHostController,
     onEvent: (AmountEvent) -> Unit,
-    state: AmountScreenState
+    state: AmountScreenState,
+    onBack: () -> Unit,
+    onSuccess: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val uiState = state.uiState
-
-    // Retrieve and decode transaction JSON from navigation arguments
-    val transactionJson = remember {
-        val encodedJsonTransaction = appNavController.currentBackStackEntry
-            ?.arguments?.getString("transaction")
-        Uri.decode(encodedJsonTransaction ?: "")
-    }
-
-    val editMode = remember {
-        val editModeArg = appNavController.currentBackStackEntry?.arguments?.getString("edit")
-        Log.d("AmountScreen", "editModeArg: $editModeArg")
-        editModeArg?.toBoolean() ?: false
-    }
-
-
-    // Load transaction once when the screen is first composed
-    LaunchedEffect(transactionJson, editMode) {
-        Log.d("AmountScreen", "=== LaunchedEffect FIRED ===")
-        Log.d("AmountScreen", "editMode: $editMode")
-        Log.d("AmountScreen", "transactionJson: $transactionJson")
-        
-        val transaction = Gson().fromJson(transactionJson, Transaction::class.java)
-        
-        Log.d("AmountScreen", "Parsed Transaction:")
-        Log.d("AmountScreen", "  - transactionId: ${transaction.transactionId}")
-        Log.d("AmountScreen", "  - amount: ${transaction.amount}")
-        Log.d("AmountScreen", "  - amountPaid: ${transaction.amountPaid}")
-        Log.d("AmountScreen", "  - categoryId: ${transaction.categoryId}")
-        Log.d("AmountScreen", "  - description: ${transaction.description}")
-        
-        onEvent(AmountEvent.LoadTransaction(transaction, editMode))
-        
-        Log.d("AmountScreen", "LoadTransaction event dispatched")
-    }
 
     LaunchedEffect(uiState) {
         val message: String? = when (uiState) {
             is UiState.Error -> uiState.message
             is UiState.Success -> {
-                // Check if Search screen exists in back stack
-                val searchScreenExists = appNavController.currentBackStack.value.any { 
-                    it.destination.route == MainScreens.TransactionDetail.route
-                }
-                Log.d("AmountScreen", "Search screen exists: $searchScreenExists")
-                
-                if (searchScreenExists) {
-                    // Pop back to Search screen
-                    appNavController.popBackStack(route = MainScreens.TransactionDetail.route, inclusive = false)
-                } else {
-                    // Pop back to Home screen
-                    appNavController.popBackStack(route = MainScreens.AddTransaction.route, inclusive = true)
-                }
+                onSuccess()
                 null
             }
 
@@ -148,7 +103,7 @@ fun AmountScreen(
                 title = { Text(text = "Enter amount") },
                 navigationIcon = {
                     IconButton(
-                        onClick = { appNavController.popBackStack() }
+                        onClick = onBack
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_arrow_back_24),
@@ -455,16 +410,15 @@ fun AmountScreenContent(
 @Composable
 fun AmountScreenPreview() {
     FiscalCompassTheme {
-        Scaffold {
-            AmountScreen(
-                appNavController = rememberNavController(),
-                onEvent = {},
-                state = AmountScreenState(
-                    editMode = true,
-                    totalAmount = 1000.0,
-                    paidAmount = 600.0,
-                )
-            )
-        }
+        AmountScreen(
+            onEvent = {},
+            state = AmountScreenState(
+                editMode = true,
+                totalAmount = 1000.0,
+                paidAmount = 600.0,
+            ),
+            onBack = {},
+            onSuccess = {}
+        )
     }
 }
