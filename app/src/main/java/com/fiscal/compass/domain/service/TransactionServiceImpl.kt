@@ -16,10 +16,12 @@ import com.fiscal.compass.domain.usecase.rbac.CheckPermissionUseCase
 import com.fiscal.compass.domain.util.DateRange
 import com.fiscal.compass.domain.validation.PaymentValidation
 import com.fiscal.compass.presentation.model.TransactionType
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -394,21 +396,35 @@ class TransactionServiceImpl @Inject constructor(
         return ""
     }
 
-    private fun mergeAndGroupTransactions(
+    private suspend fun mergeAndGroupTransactions(
         expenses: List<Expense>,
         incomes: List<Income>
-    ): Map<Date, List<Transaction>> {
+    ): Map<Date, List<Transaction>> = coroutineScope {
         val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        
+        // Process expenses and incomes in parallel
+        val expenseTransactionsDeferred = async {
+            expenses.map { expense ->
+                async {
+                    bindCategoryAndPerson(expense.toTransaction())
+                }
+            }.awaitAll()
+        }
+        
+        val incomeTransactionsDeferred = async {
+            incomes.map { income ->
+                async {
+                    bindCategoryAndPerson(income.toTransaction())
+                }
+            }.awaitAll()
+        }
+        
+        // Await both expense and income processing
+        val expenseTransactions = expenseTransactionsDeferred.await()
+        val incomeTransactions = incomeTransactionsDeferred.await()
 
-        val expenseTransactions = expenses.map { it.toTransaction() }
-            .map { bindCategory(it) }
-            .map { bindPerson(it) }
-
-        val incomeTransactions = incomes.map { it.toTransaction() }
-            .map { bindCategory(it) }
-            .map { bindPerson(it) }
-
-        return (expenseTransactions + incomeTransactions)
+        // Merge, sort and group
+        (expenseTransactions + incomeTransactions)
             .sortedByDescending { it.date }
             .groupBy { transaction ->
                 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
@@ -416,18 +432,22 @@ class TransactionServiceImpl @Inject constructor(
             }
     }
 
-
-    private fun bindCategory(transaction: Transaction): Transaction {
-        val category = runBlocking { categoryRepository.getCategoryById(transaction.categoryId) }
-            ?: return transaction
-
-        return transaction.copy(category = category)
-    }
-
-    private fun bindPerson(transaction: Transaction): Transaction {
-        val personId = transaction.personId ?: return transaction
-        val person = runBlocking { personRepository.getPersonById(personId) }
-            ?: return transaction
-        return transaction.copy(person = person)
+    private suspend fun bindCategoryAndPerson(transaction: Transaction): Transaction = coroutineScope {
+        // Bind category and person in parallel
+        val categoryDeferred = async {
+            categoryRepository.getCategoryById(transaction.categoryId)
+        }
+        
+        val personDeferred = async {
+            transaction.personId?.let { personRepository.getPersonById(it) }
+        }
+        
+        val category = categoryDeferred.await()
+        val person = personDeferred.await()
+        
+        transaction.copy(
+            category = category,
+            person = person
+        )
     }
 }

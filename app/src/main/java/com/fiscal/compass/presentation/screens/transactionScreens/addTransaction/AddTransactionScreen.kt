@@ -2,7 +2,6 @@ package com.fiscal.compass.presentation.screens.transactionScreens.addTransactio
 
 import android.annotation.SuppressLint
 import android.net.Uri
-import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -82,9 +81,7 @@ fun AddTransactionScreen(
 
     // Handle navigation to category selection
     LaunchedEffect(state.navigateToCategorySelection) {
-        Log.d("AddTransactionScreen", "navigateToCategorySelection: ${state.navigateToCategorySelection}")
         if (state.navigateToCategorySelection) {
-            Log.d("AddTransactionScreen", "Navigating to category selection")
             val allSelectableItems = state.allCategories.map { category ->
                 SelectableItem(
                     id = category.categoryId.toString(),
@@ -200,6 +197,7 @@ fun AddTransactionScreen(
                 duration = SnackbarDuration.Short,
                 actionLabel = "Dismiss"
             )
+            onEvent(AddTransactionEvent.OnUiReset)
         }
     }
 
@@ -254,7 +252,15 @@ fun AddTransactionFormContent(
     onEvent: (AddTransactionEvent) -> Unit,
     onNextClick: () -> Unit
 ) {
-    val isCategoriesEmpty = state.allCategories.isEmpty()
+    // Derive selected category directly from state - no delay
+    val selectedCategory = remember(state.transaction.categoryId, state.allCategories) {
+        state.allCategories.firstOrNull { it.categoryId == state.transaction.categoryId }
+    }
+
+    // Derive selected person directly from state - no delay
+    val selectedPerson = remember(state.transaction.personId, state.allPersons) {
+        state.allPersons.firstOrNull { it.personId == state.transaction.personId }
+    }
 
     Column(
         modifier = modifier
@@ -287,27 +293,17 @@ fun AddTransactionFormContent(
                 }
             )
 
-            if (!isCategoriesEmpty) {
-                val allCategories = state.allCategories
-                val selectedCategory =
-                    allCategories.firstOrNull { it.categoryId == state.transaction.categoryId }
-
-                SelectionField(
-                    modifier = Modifier.fillMaxWidth(),
-                    label = "Category",
-                    selectedValue = selectedCategory?.name ?: "Select Category",
-                    onClick = { onEvent(AddTransactionEvent.NavigateToCategorySelection) }
-                )
-            }
-
-            val selectedPerson =
-                state.allPersons.firstOrNull { it.personId == state.transaction.personId }
-            val personDisplayName = selectedPerson?.name ?: "N/A"
+            SelectionField(
+                modifier = Modifier.fillMaxWidth(),
+                label = "Category",
+                selectedValue = selectedCategory?.name ?: "Select Category",
+                onClick = { onEvent(AddTransactionEvent.NavigateToCategorySelection) }
+            )
 
             SelectionField(
                 modifier = Modifier.fillMaxWidth(),
                 label = "Person",
-                selectedValue = personDisplayName,
+                selectedValue = selectedPerson?.name ?: "Select Person",
                 onClick = { onEvent(AddTransactionEvent.NavigateToPersonSelection) }
             )
 
