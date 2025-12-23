@@ -4,6 +4,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +18,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,7 +31,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -87,7 +91,11 @@ fun TransactionDetailsScreen(
                         IconButton(
                             onClick = {
                                 val encodedJsonTransaction = Uri.encode(transactionJson)
-                                appNavController.navigate(MainScreens.Amount.editTransaction(encodedJsonTransaction))
+                                appNavController.navigate(
+                                    MainScreens.Amount.editTransaction(
+                                        encodedJsonTransaction
+                                    )
+                                )
                             }) {
                             Icon(
                                 painter = painterResource(R.drawable.ic_edit_24),
@@ -147,22 +155,11 @@ private fun DetailsContent(
     modifier: Modifier = Modifier,
     state: TransactionDetailsScreenState,
 ) {
-    Card(
+    TransactionCardContent(
         modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 8.dp)
-            .padding(bottom = 8.dp),
-        colors = CardDefaults.cardColors().copy(
-            containerColor = CardDefaults.cardColors().containerColor.copy(alpha = 0.5f)
-        )
-    ) {
-        TransactionCardContent(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp),
-            state = state
-        )
-    }
+            .fillMaxSize(),
+        state = state
+    )
 }
 
 @Composable
@@ -170,15 +167,19 @@ private fun TransactionCardContent(
     modifier: Modifier = Modifier,
     state: TransactionDetailsScreenState
 ) {
-    HeaderContent(
-        transactionUi = state.transaction
-    )
-    RowContent(
-        modifier = modifier,
-        transaction = state.transaction,
-        category = state.category,
-        personUi = state.person
-    )
+    Column(
+        modifier = modifier.padding(horizontal = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        HeaderContent(
+            transactionUi = state.transaction
+        )
+        RowContent(
+            transaction = state.transaction,
+            category = state.category,
+            personUi = state.person
+        )
+    }
 }
 
 @Composable
@@ -195,6 +196,7 @@ private fun HeaderContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(MaterialTheme.shapes.small)
             .background(MaterialTheme.colorScheme.primaryContainer)
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -240,43 +242,67 @@ private fun RowContent(
     ) {
         CardRow(
             label = "Category",
-            value = category?.name ?: "N/A"
+            value = category?.name ?: "N/A",
+            description = category?.description
         )
         CardRowDivider()
         CardRow(
             label = "Person",
-            value = personUi?.name ?: "N/A"
+            value = personUi?.name ?: "N/A",
+            description = personUi?.contact
         )
         CardRowDivider()
-        CardColumn(
-            label = "Description",
-            value = if (transaction.description.isNullOrEmpty()) "N/A" else transaction.description
+        CardRow(
+            label = "Note",
+            value = "",
+            description = if (transaction.description.isNullOrEmpty()) "N/A" else transaction.description,
         )
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun CardRow(
     label: String,
-    value: String
+    value: String,
+    description: String? = ""
 ) {
-    Card(
-        shape = RoundedCornerShape(15),
-        colors = CardDefaults.cardColors().copy(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-        ),
+
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalAlignment = Alignment.Start
     ) {
-        Row(
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+        )
+        Card(
+            shape = RoundedCornerShape(15),
+            colors = CardDefaults.cardColors().copy(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(0.5f),
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+            ),
             modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+                .fillMaxWidth()
         ) {
-            Text(text = label, style = MaterialTheme.typography.bodyLarge)
-            Text(text = value, style = MaterialTheme.typography.bodyMedium)
+            Column(
+                modifier = Modifier
+                    .padding(12.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                value?.let {
+                    if (value.isNotEmpty())
+                        Text(text = value, style = MaterialTheme.typography.bodyLarge)
+                }
+                description?.let {
+                    if (description.isNotEmpty())
+                        Text(text = it, style = MaterialTheme.typography.bodyMedium)
+                }
+            }
         }
     }
 }
