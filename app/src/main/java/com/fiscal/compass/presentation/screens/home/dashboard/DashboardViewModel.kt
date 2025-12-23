@@ -2,9 +2,9 @@ package com.fiscal.compass.presentation.screens.home.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fiscal.compass.domain.service.TransactionService
 import com.fiscal.compass.domain.usecase.analytics.GetUserInfoUseCase
 import com.fiscal.compass.domain.usecase.rbac.CheckPermissionUseCase
-import com.fiscal.compass.domain.usecase.transaction.GetCurrentMonthBalanceUC
 import com.fiscal.compass.presentation.navigation.MainScreens
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -20,8 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     private val getUserInfo: GetUserInfoUseCase,
-    private val currentMonthBalance: GetCurrentMonthBalanceUC,
-    private val checkPermissionUseCase: CheckPermissionUseCase
+    private val transactionService: TransactionService,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DashboardScreenState())
@@ -46,7 +45,7 @@ class DashboardViewModel @Inject constructor(
             }
             _state.update { it.copy(userInfo = it.userInfo.copy(name = userInfo.userName, profilePictureUrl = userInfo.profilePicUrl)) }
 
-            currentMonthBalance().collect { balance ->
+            transactionService.getCurrentMonthBalance().collect { balance ->
                 _state.update { it.copy(userInfo = it.userInfo.copy(balance = balance)) }
             }
         }

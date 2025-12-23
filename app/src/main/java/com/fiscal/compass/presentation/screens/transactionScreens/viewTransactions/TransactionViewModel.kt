@@ -3,7 +3,7 @@ package com.fiscal.compass.presentation.screens.transactionScreens.viewTransacti
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fiscal.compass.domain.usecase.transaction.LoadTransactionsUC
+import com.fiscal.compass.domain.service.TransactionService
 import com.fiscal.compass.presentation.mappers.toUi
 import com.fiscal.compass.presentation.screens.category.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TransactionViewModel @Inject constructor(
-    private val loadTransactionsUC: LoadTransactionsUC,
+    private val transactionService: TransactionService
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(TransactionScreenState(
@@ -148,7 +148,7 @@ class TransactionViewModel @Inject constructor(
                 }
                 viewModelScope.launch(Dispatchers.IO) {
                     try {
-                        loadTransactionsUC.deleteTransaction(transaction.transactionId, transaction.isExpense)
+                        transactionService.deleteTransaction(transaction.transactionId, transaction.isExpense)
                         updateState {
                             copy(uiState = UiState.Success("Transaction deleted successfully"), currentDialog = TransactionScreenDialog.Hidden, dialogState = TransactionDialogState.Idle)
                         }
@@ -167,9 +167,9 @@ class TransactionViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             // Combine the three flows into a single flow that emits a Triple
             val combinedFlow = combine(
-                loadTransactionsUC.currentMonthTransactions(_state.value.currentDate),
-                loadTransactionsUC.getCurrentMonthIncome(_state.value.currentDate),
-                loadTransactionsUC.getCurrentMonthExpense(_state.value.currentDate)
+                transactionService.loadCurrentMonthTransactions(_state.value.currentDate),
+                transactionService.getCurrentMonthIncome(_state.value.currentDate),
+                transactionService.getCurrentMonthExpense(_state.value.currentDate)
             ) { transactions, income, expense ->
                 // This lambda is called when any of the flows emit a new value.
                 // It provides the latest value from each.
