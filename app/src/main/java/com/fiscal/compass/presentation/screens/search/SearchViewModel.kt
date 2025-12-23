@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.fiscal.compass.domain.service.TransactionService
 import com.fiscal.compass.domain.usecase.categories.GetCategoriesUseCase
 import com.fiscal.compass.domain.usecase.person.GetAllPersonsUseCase
-import com.fiscal.compass.domain.usecase.transaction.SearchTransactionUC
 import com.fiscal.compass.domain.util.DateRange
 import com.fiscal.compass.presentation.mappers.toUi
 import com.fiscal.compass.presentation.screens.category.UiState
@@ -22,7 +21,6 @@ import javax.inject.Inject
 @OptIn(FlowPreview::class)
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val searchTransactionUC: SearchTransactionUC,
     private val transactionService: TransactionService,
     private val getCategoriesUseCase: GetCategoriesUseCase,
     private val getAllPersonsUseCase: GetAllPersonsUseCase
