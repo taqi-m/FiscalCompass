@@ -1,6 +1,5 @@
 package com.fiscal.compass.domain.service
 
-import android.util.Log
 import com.fiscal.compass.data.mappers.toTransaction
 import com.fiscal.compass.data.rbac.Permission
 import com.fiscal.compass.domain.model.Transaction
@@ -138,9 +137,6 @@ class TransactionServiceImpl @Inject constructor(
                 ?: return Result.failure(IllegalStateException("User is not logged in"))
 
             val isExpense = transaction.transactionType.equals(TransactionType.EXPENSE.name, ignoreCase = true)
-            Log.d("TransactionServiceImpl", "isExpense: $isExpense")
-            Log.d("TransactionServiceImpl", "Updating transaction: $transaction")
-
 
             val category = categoryRepository.getCategoryById(transaction.categoryId)
                 ?: return Result.failure(IllegalArgumentException("Invalid category ID"))

@@ -62,7 +62,7 @@ class CategoryRepositoryImpl @Inject constructor(
             localDb.expenseDao().markExpensesAsDeletedByCategory(categoryId)
             localDb.incomeDao().markIncomesAsDeletedByCategory(categoryId)
         }
-        autoSyncManager.triggerSync(SyncType.ALL)
+        autoSyncManager.triggerSync(SyncType.CATEGORIES)
         return 1
     }
 
