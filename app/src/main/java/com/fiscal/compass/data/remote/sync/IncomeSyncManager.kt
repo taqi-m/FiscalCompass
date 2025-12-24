@@ -45,12 +45,14 @@ class IncomeSyncManager @Inject constructor(
 
         val currentSyncTime = Timestamp.now().toDate().time
 
-        unsyncedIncomes.forEach { income ->
+        unsyncedIncomes.forEachIndexed { index, income ->
+            Log.d(TAG, "Processing income ${index + 1}/${unsyncedIncomes.size}: incomeId=${income.incomeId}, localId=${income.localId}, firestoreId=${income.firestoreId}, needsSync=${income.needsSync}, isSynced=${income.isSynced}")
+            
             val categoryFirestoreId = categoryDao.getCategoryById(income.categoryId)?.firestoreId
             if (categoryFirestoreId == null) {
                 // Skip if category isn't synced yet
                 Log.d(TAG, "Skipping income ${income.incomeId} as category isn't synced")
-                return@forEach
+                return@forEachIndexed
             }
 
             var personFirestoreId: String? = null
@@ -59,15 +61,21 @@ class IncomeSyncManager @Inject constructor(
                 if (personFirestoreId == null) {
                     // Skip if linked person isn't synced yet
                     Log.d(TAG, "Skipping income ${income.incomeId} as linked person isn't synced")
-                    return@forEach
+                    return@forEachIndexed
                 }
             }
 
             var firestoreDocId = income.firestoreId
-            if (firestoreDocId == null) {
+            Log.d(TAG, "  firestoreDocId from income object: $firestoreDocId")
+            
+            if (firestoreDocId.isNullOrBlank()) {
                 firestoreDocId = userIncomesRef.document().id
+                Log.d(TAG, "  Generated NEW firestoreDocId: $firestoreDocId (this will CREATE a new document)")
+            } else {
+                Log.d(TAG, "  Using EXISTING firestoreDocId: $firestoreDocId (this will UPDATE existing document)")
             }
 
+            Log.d(TAG, "  Updating local sync status: isSynced=true, needsSync=false")
             incomeDao.updateSyncStatus(
                 incomeId = income.incomeId,
                 firestoreId = firestoreDocId,
@@ -80,6 +88,7 @@ class IncomeSyncManager @Inject constructor(
                 personFirestoreId = personFirestoreId
             ).toFirestoreMap(firestoreDocId, currentSyncTime)
 
+            Log.d(TAG, "  Adding to batch: users/$userId/incomes/$firestoreDocId")
             val docRef = userIncomesRef.document(firestoreDocId)
             batch.set(docRef, incomeData)
             batchCount++
@@ -122,56 +131,80 @@ class IncomeSyncManager @Inject constructor(
         var processedCount = 0
         var latestRemoteTimestamp = lastSyncTime
 
-        snapshot.documents.forEach { doc ->
+        snapshot.documents.forEachIndexed { index, doc ->
+            Log.d(TAG, "Processing income ${index + 1}/${snapshot.documents.size}: docId=${doc.id}")
+            
             val categoryFirestoreId = doc.getString("categoryFirestoreId")
+            Log.d(TAG, "  categoryFirestoreId from Firestore: $categoryFirestoreId")
+            
             if (categoryFirestoreId.isNullOrEmpty()) {
-                // Skip documents without a valid localId
-                return@forEach
+                Log.d(TAG, "  SKIPPED: categoryFirestoreId is null or empty")
+                return@forEachIndexed
             }
-            val categoryId = categoryDao.getCategoryByFirestoreId(categoryFirestoreId)?.categoryId
+            
+            val localCategory = categoryDao.getCategoryByFirestoreId(categoryFirestoreId)
+            val categoryId = localCategory?.categoryId
+            Log.d(TAG, "  Local category lookup: categoryId=$categoryId (found=${localCategory != null})")
+            
             if (categoryId == 0L || categoryId == null) {
-                Log.d(TAG, "Skipping income ${doc.id} as category is missing locally")
-                return@forEach
+                Log.d(TAG, "  SKIPPED: category missing locally (firestoreId=$categoryFirestoreId)")
+                return@forEachIndexed
             }
 
             var personId: Long? = null
             val personFirestoreId = doc.getString("personFirestoreId")
+            Log.d(TAG, "  personFirestoreId from Firestore: $personFirestoreId")
+            
             if (!personFirestoreId.isNullOrBlank()) {
                 val localPerson = personDao.getPersonByFirestoreId(personFirestoreId)
+                personId = localPerson?.personId
+                Log.d(TAG, "  Local person lookup: personId=$personId (found=${localPerson != null})")
+                
                 if (localPerson == null) {
-                    Log.d(TAG, "Skipping expense ${doc.id} as linked person is missing locally")
-                    return@forEach
+                    Log.d(TAG, "  SKIPPED: linked person missing locally (firestoreId=$personFirestoreId)")
+                    return@forEachIndexed
                 }
-                personId = localPerson.personId
             }
 
-            val remoteIncome = doc.toIncomeDto()?.toEntity()?.copy(
+            val remoteIncomeDto = doc.toIncomeDto()
+            Log.d(TAG, "  Income DTO created: ${remoteIncomeDto != null}")
+            
+            val remoteIncome = remoteIncomeDto?.toEntity()?.copy(
                 categoryId = categoryId,
                 personId = personId
             )
 
             if (remoteIncome == null) {
-                Log.d(TAG, "Skipping invalid income document: ${doc.id}")
-                return@forEach
+                Log.d(TAG, "  SKIPPED: invalid income document")
+                return@forEachIndexed
             }
-
+            
+            Log.d(TAG, "  Remote income: localId=${remoteIncome.localId}, categoryId=${remoteIncome.categoryId}, personId=${remoteIncome.personId}, userId=${remoteIncome.userId}")
 
             // Track the latest timestamp for incremental sync
             latestRemoteTimestamp = maxOf(latestRemoteTimestamp, remoteIncome.updatedAt)
 
             // Check if income already exists locally
             val existingIncome = incomeDao.getIncomeByLocalId(remoteIncome.localId)
+            Log.d(TAG, "  Existing income: ${if (existingIncome != null) "found (id=${existingIncome.incomeId})" else "not found"}")
 
-            if (existingIncome != null) {
-                // Update existing income
-                val resolvedIncome = resolveConflict(existingIncome, remoteIncome)
-                incomeDao.update(resolvedIncome)
-            } else {
-                // Insert new income
-                incomeDao.insert(remoteIncome)
+            try {
+                if (existingIncome != null) {
+                    Log.d(TAG, "  Updating existing income...")
+                    val resolvedIncome = resolveConflict(existingIncome, remoteIncome)
+                    incomeDao.update(resolvedIncome)
+                    Log.d(TAG, "  Updated successfully")
+                } else {
+                    Log.d(TAG, "  Inserting new income...")
+                    incomeDao.insert(remoteIncome)
+                    Log.d(TAG, "  Inserted successfully")
+                }
+                processedCount++
+            } catch (e: Exception) {
+                Log.e(TAG, "  FAILED to insert/update income: ${e.message}")
+                Log.e(TAG, "  Income details: categoryId=$categoryId, personId=$personId, userId=${remoteIncome.userId}")
+                throw e
             }
-
-            processedCount++
         }
 
         Log.d(TAG, "Processed $processedCount remote incomes")
@@ -187,11 +220,22 @@ class IncomeSyncManager @Inject constructor(
         remote: IncomeEntity
     ): IncomeEntity {
         return if (local.updatedAt >= remote.updatedAt) {
-            // Local is newer or same, keep local
-            local
+            // Local is newer or same, keep local but ensure sync status is correct
+            local.copy(
+                firestoreId = local.firestoreId ?: remote.firestoreId, // Preserve firestoreId
+                isSynced = true,
+                needsSync = false,
+                lastSyncedAt = System.currentTimeMillis()
+            )
         } else {
-            // Remote is newer, use remote
-            remote.copy(incomeId = local.incomeId) // Preserve local primary key
+            // Remote is newer, use remote data but preserve local keys
+            remote.copy(
+                incomeId = local.incomeId, // Preserve local primary key
+                firestoreId = local.firestoreId ?: remote.firestoreId, // Preserve firestoreId
+                isSynced = true,
+                needsSync = false,
+                lastSyncedAt = System.currentTimeMillis()
+            )
         }
     }
 

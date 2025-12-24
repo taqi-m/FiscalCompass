@@ -1,7 +1,5 @@
 package com.fiscal.compass.presentation.screens.transactionScreens.amountScreen
 
-import android.net.Uri
-import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -38,19 +36,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.fiscal.compass.R
-import com.fiscal.compass.domain.model.Transaction
-import com.fiscal.compass.presentation.model.InputField
-import com.fiscal.compass.presentation.model.TransactionUi
-import com.fiscal.compass.presentation.navigation.MainScreens
 import com.fiscal.compass.presentation.screens.category.UiState
 import com.fiscal.compass.presentation.utilities.CurrencyFormater
 import com.fiscal.compass.presentation.utils.AmountInputType
 import com.fiscal.compass.ui.components.input.Calculator
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
-import com.google.gson.Gson
 
 
 // Enum for field selection
@@ -142,8 +133,6 @@ fun AmountScreenContent(
     // Calculate remaining amount and progress
     val totalAmount = state.totalAmount
     val paidAmount = state.paidAmount
-    
-    Log.d("AmountScreenContent", "Rendering - editMode: ${state.editMode}, totalAmount: $totalAmount, paidAmount: $paidAmount, activeField: $activeField")
     val remainingAmount = (totalAmount - paidAmount).coerceAtLeast(0.0)
     val targetProgress = if (totalAmount > 0) {
         ((paidAmount / totalAmount) * 100).coerceIn(0.0, 100.0).toFloat()
@@ -375,8 +364,6 @@ fun AmountScreenContent(
                     AmountInputType.AMOUNT_PAID -> state.paidAmount
                 }
                 
-                Log.d("AmountScreenContent", "onValueChange: value: $value inputType: $inputType, currentValue: $currentValue")
-                
                 // Only update if value is different from current state
                 if (value != currentValue) {
                     when (inputType) {
@@ -393,8 +380,6 @@ fun AmountScreenContent(
                             )
                         )
                     }
-                } else {
-                    Log.d("AmountScreenContent", "onValueChange: Skipping update - value unchanged")
                 }
             },
             onSaveClick = {

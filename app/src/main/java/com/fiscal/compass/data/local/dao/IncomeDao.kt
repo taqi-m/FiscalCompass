@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface IncomeDao {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(incomeEntity: IncomeEntity): Long
 
     @Update
@@ -97,10 +97,10 @@ interface IncomeDao {
      * * Sync-related queries
      */
 
-    @Query("UPDATE incomes SET isDeleted = 1, needsSync = 1, updatedAt = :timestamp WHERE incomeId = :incomeId")
+    @Query("UPDATE incomes SET isDeleted = 1, needsSync = 0, updatedAt = :timestamp WHERE incomeId = :incomeId")
     suspend fun markIncomeAsDeleted(incomeId: Long, timestamp: Long = System.currentTimeMillis())
 
-    @Query("UPDATE incomes SET isDeleted = 1, needsSync = 1, updatedAt = :timestamp WHERE categoryId = :categoryId AND isDeleted = 0")
+    @Query("UPDATE incomes SET isDeleted = 1, needsSync = 0, updatedAt = :timestamp WHERE categoryId = :categoryId AND isDeleted = 0")
     suspend fun markIncomesAsDeletedByCategory(categoryId: Long, timestamp: Long = System.currentTimeMillis())
 
     @Query("SELECT COUNT(*) FROM incomes WHERE needsSync = 1")
