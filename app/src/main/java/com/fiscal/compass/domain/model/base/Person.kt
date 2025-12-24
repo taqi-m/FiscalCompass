@@ -12,6 +12,20 @@ data class Person(
 )
 
 object PersonProvider {
+
+    fun provideNullPerson(): Person {
+        return Person(
+            personId = 0,
+            name = "",
+            personType = "",
+            contact = null
+        )
+    }
+
+    fun Person.isNull(): Boolean {
+        return this == provideNullPerson()
+    }
+
     // Individual person providers
     fun providePerson(id: Long = Random.nextLong(1, 1000)): Person {
         val names = listOf("John Doe", "Jane Smith", "Mike Johnson", "Sarah Wilson", "David Brown", "Emily Davis")

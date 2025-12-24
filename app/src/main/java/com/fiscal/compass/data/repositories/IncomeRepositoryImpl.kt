@@ -28,14 +28,23 @@ class IncomeRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateIncome(income: Income) {
+        // Get existing income to preserve localId, firestoreId, and sync fields
+        val existingIncome = incomeDao.getById(income.incomeId)
+            ?: throw IllegalArgumentException("Income with id ${income.incomeId} not found")
+        
+        // Convert domain model to entity and preserve critical fields
         val updatedIncome = income.toIncomeEntity().copy(
+            localId = existingIncome.localId, // Preserve localId
+            firestoreId = existingIncome.firestoreId, // Preserve firestoreId
+            categoryFirestoreId = existingIncome.categoryFirestoreId, // Preserve categoryFirestoreId
+            personFirestoreId = existingIncome.personFirestoreId, // Preserve personFirestoreId
+            isDeleted = existingIncome.isDeleted, // Preserve deletion status
+            createdAt = existingIncome.createdAt, // Preserve creation time
             updatedAt = System.currentTimeMillis(),
-            needsSync = true
+            needsSync = true,
+            isSynced = false
         )
-        val doesIncomeExist = incomeDao.getById(income.incomeId) != null
-        if (!doesIncomeExist) {
-            throw IllegalArgumentException("Income with id ${income.incomeId} not found")
-        }
+        
         incomeDao.update(updatedIncome)
         autoSyncManager.triggerSync(SyncType.INCOMES)
     }

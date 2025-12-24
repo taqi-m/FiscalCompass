@@ -27,21 +27,29 @@ class ExpenseRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateExpense(expense: Expense) {
+        // Get existing expense to preserve localId, firestoreId, and sync fields
+        val existingExpense = expenseDao.getExpenseById(expense.expenseId)
+            ?: throw IllegalArgumentException("Expense with id ${expense.expenseId} not found")
+        
+        // Convert domain model to entity and preserve critical fields
         val updatedExpense = expense.toEntity().copy(
+            localId = existingExpense.localId, // Preserve localId
+            firestoreId = existingExpense.firestoreId, // Preserve firestoreId
+            categoryFirestoreId = existingExpense.categoryFirestoreId, // Preserve categoryFirestoreId
+            personFirestoreId = existingExpense.personFirestoreId, // Preserve personFirestoreId
+            isDeleted = existingExpense.isDeleted, // Preserve deletion status
+            createdAt = existingExpense.createdAt, // Preserve creation time
             updatedAt = System.currentTimeMillis(),
-            needsSync = true
+            needsSync = true,
+            isSynced = false
         )
-        val doesExpenseExist = expenseDao.getExpenseById(expense.expenseId) != null
-        if (!doesExpenseExist) {
-            throw IllegalArgumentException("Expense with id ${expense.expenseId} not found")
-        }
+        
         expenseDao.update(updatedExpense)
         autoSyncManager.triggerSync(SyncType.EXPENSES)
     }
 
     override suspend fun deleteExpense(expense: Expense) {
         expenseDao.markExpenseAsDeleted(expense.expenseId, System.currentTimeMillis())
-//        expenseDao.delete(expense.toEntity())
         autoSyncManager.triggerSync(SyncType.EXPENSES)
     }
 

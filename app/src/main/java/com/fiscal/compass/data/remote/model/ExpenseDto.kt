@@ -22,17 +22,11 @@ data class ExpenseDto(
     @get:PropertyName("date") @set:PropertyName("date")
     var date: Timestamp = Timestamp.now(),
 
-    @get:PropertyName("categoryId") @set:PropertyName("categoryId")
-    var categoryId: Long = 0,
-
     @get:PropertyName("categoryFirestoreId") @set:PropertyName("categoryFirestoreId")
     var categoryFirestoreId: String = "",
 
     @get:PropertyName("userId") @set:PropertyName("userId")
     var userId: String = "",
-
-    @get:PropertyName("personId") @set:PropertyName("personId")
-    var personId: Long? = null,
 
     @get:PropertyName("personFirestoreId") @set:PropertyName("personFirestoreId")
     var personFirestoreId: String? = null,
