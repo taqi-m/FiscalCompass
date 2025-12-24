@@ -220,10 +220,17 @@ class TransactionServiceImpl @Inject constructor(
             calendar.timeInMillis
         }
 
+        val userIds = mutableListOf<String>()
+        val canViewAll = checkPermissionUseCase(Permission.VIEW_ALL_TRANSACTIONS)
+        if (!canViewAll){
+            userIds.add(getCurrentUserId())
+        }
+
         val expenses = if (filterType?.lowercase() == "income") {
             emptyList()
         } else {
             expenseRepository.getAllFiltered(
+                userIds = userIds.takeIf { it.isNotEmpty() },
                 personIds = personIds,
                 categoryIds = categoryIds,
                 startDate = adjustedStartDate,
@@ -235,6 +242,7 @@ class TransactionServiceImpl @Inject constructor(
             emptyList()
         } else {
             incomeRepository.getAllFiltered(
+                userIds = userIds.takeIf { it.isNotEmpty() },
                 personIds = personIds,
                 categoryIds = categoryIds,
                 startDate = adjustedStartDate,
