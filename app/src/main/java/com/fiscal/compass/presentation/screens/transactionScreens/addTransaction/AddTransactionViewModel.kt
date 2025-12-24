@@ -1,6 +1,5 @@
 package com.fiscal.compass.presentation.screens.transactionScreens.addTransaction
 
-import android.util.Log
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -27,9 +26,9 @@ class AddTransactionViewModel @Inject constructor(
     private val categoryUseCase: GetCategoriesUseCase,
     private val getPersonUseCase: GetAllPersonsUseCase
 ) : ViewModel() {
-    val date = Calendar.getInstance()
+    val date: Calendar = Calendar.getInstance()
     private val _state = MutableStateFlow(
-        AddTransactionState(transaction = Transaction.default().copy(date = date.time))
+        AddTransactionState(transaction = Transaction.empty().copy(date = date.time))
     )
     val state: StateFlow<AddTransactionState> = _state.asStateFlow()
 
@@ -64,7 +63,9 @@ class AddTransactionViewModel @Inject constructor(
                 assignCategories()
 
             } catch (e: Exception) {
-                Log.e("AddTransactionViewModel", "init: ", e)
+                _state.value = _state.value.copy(
+                    uiState = UiState.Error(e.message ?: "Unknown error")
+                )
             }
         }
     }
@@ -124,8 +125,26 @@ class AddTransactionViewModel @Inject constructor(
             }
 
             AddTransactionEvent.NavigateToCategorySelection -> {
+                val transactionType = TransactionType.fromString(_state.value.transaction.transactionType)
+                when(transactionType){
+                    TransactionType.EXPENSE -> {
+                        if (expenseCategories.isEmpty()) {
+                            updateState {
+                                copy(uiState = UiState.Error("No categories found"))
+                            }
+                            return
+                        }
+                    }
+                    TransactionType.INCOME -> {
+                        if (incomeCategories.isEmpty()) {
+                            updateState {
+                                copy(uiState = UiState.Error("No categories found"))
+                            }
+                            return
+                        }
+                    }
+                }
                 updateState { copy(navigateToCategorySelection = true) }
-                Log.d("AddTransactionViewModel", "NavigateToCategorySelection: ${_state.value.navigateToCategorySelection}")
             }
 
             AddTransactionEvent.NavigateToPersonSelection -> {
@@ -146,7 +165,6 @@ class AddTransactionViewModel @Inject constructor(
                         navigateToAmountScreen = false
                     )
                 }
-                Log.d("AddTransactionViewModel", "ResetNavigation: ${_state.value.navigateToCategorySelection}")
             }
 
             is AddTransactionEvent.UpdateSelectedCategory -> {
@@ -173,27 +191,25 @@ class AddTransactionViewModel @Inject constructor(
     }
 
     private fun assignCategories() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val transactionType = TransactionType.fromString(_state.value.transaction.transactionType)
-            when (transactionType) {
-                TransactionType.EXPENSE -> {
-                    val updatedTransaction = _state.value.transaction.copy(categoryId = expenseCategories.first().categoryId)
-                    updateState {
-                        copy(
-                            allCategories = expenseCategories,
-                            transaction = updatedTransaction
-                        )
-                    }
+        val transactionType = TransactionType.fromString(_state.value.transaction.transactionType)
+        when (transactionType) {
+            TransactionType.EXPENSE -> {
+                val updatedTransaction = _state.value.transaction.copy(categoryId = 0)
+                updateState {
+                    copy(
+                        allCategories = expenseCategories,
+                        transaction = updatedTransaction
+                    )
                 }
+            }
 
-                TransactionType.INCOME -> {
-                    val updatedTransaction = _state.value.transaction.copy(categoryId = incomeCategories.first().categoryId)
-                    updateState {
-                        copy(
-                            allCategories = incomeCategories,
-                            transaction = updatedTransaction
-                        )
-                    }
+            TransactionType.INCOME -> {
+                val updatedTransaction = _state.value.transaction.copy(categoryId = 0)
+                updateState {
+                    copy(
+                        allCategories = incomeCategories,
+                        transaction = updatedTransaction
+                    )
                 }
             }
         }

@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ExpenseDao {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(expenseEntity: ExpenseEntity): Long
     
     @Update
@@ -118,10 +118,10 @@ interface ExpenseDao {
     @Query("UPDATE expenses SET isSynced = 1 , needsSync = 0 WHERE expenseId = :expenseId")
     suspend fun markExpenseAsSynced(expenseId: String)
 
-    @Query("UPDATE expenses SET isDeleted = 1, needsSync = 1, updatedAt = :timestamp WHERE expenseId = :expenseId")
+    @Query("UPDATE expenses SET isDeleted = 1, needsSync = 0, updatedAt = :timestamp WHERE expenseId = :expenseId")
     suspend fun markExpenseAsDeleted(expenseId: Long, timestamp: Long = System.currentTimeMillis())
 
-    @Query("UPDATE expenses SET isDeleted = 1, needsSync = 1, updatedAt = :timestamp WHERE categoryId = :categoryId AND isDeleted = 0")
+    @Query("UPDATE expenses SET isDeleted = 1, needsSync = 0, updatedAt = :timestamp WHERE categoryId = :categoryId AND isDeleted = 0")
     suspend fun markExpensesAsDeletedByCategory(categoryId: Long, timestamp: Long = System.currentTimeMillis())
 
     @Query("SELECT * FROM expenses WHERE isDeleted = 1 AND isSynced = 0 AND needsSync = 1")

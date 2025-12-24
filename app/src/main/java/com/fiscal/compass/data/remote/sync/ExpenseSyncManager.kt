@@ -45,15 +45,14 @@ class ExpenseSyncManager @Inject constructor(
 
         val currentSyncTime = Timestamp.now().toDate().time
 
-
-
-        unsyncedExpenses.forEach { expense ->
+        unsyncedExpenses.forEachIndexed { index, expense ->
+            Log.d(TAG, "Processing expense ${index + 1}/${unsyncedExpenses.size}: expenseId=${expense.expenseId}, localId=${expense.localId}, firestoreId=${expense.firestoreId}, needsSync=${expense.needsSync}, isSynced=${expense.isSynced}")
 
             val categoryFirestoreId = categoryDao.getCategoryByIdIncludeDeleted(expense.categoryId)?.firestoreId
             if (categoryFirestoreId == null) {
                 // Skip if category isn't synced yet
                 Log.d(TAG, "Skipping expense ${expense.expenseId} as category isn't synced")
-                return@forEach
+                return@forEachIndexed
             }
 
             var personFirestoreId: String? = null
@@ -62,30 +61,37 @@ class ExpenseSyncManager @Inject constructor(
                 if (personFirestoreId == null) {
                     // Skip if linked person isn't synced yet
                     Log.d(TAG, "Skipping expense ${expense.expenseId} as linked person isn't synced")
-                    return@forEach
+                    return@forEachIndexed
                 }
             }
 
-
             var firestoreId = expense.firestoreId
-            if (firestoreId == null) {
+            Log.d(TAG, "  firestoreId from expense object: $firestoreId")
+            
+            if (firestoreId.isNullOrBlank()) {
                 firestoreId = userExpensesRef.document().id
+                Log.d(TAG, "  Generated NEW firestoreId: $firestoreId (this will CREATE a new document)")
+            } else {
+                Log.d(TAG, "  Using EXISTING firestoreId: $firestoreId (this will UPDATE existing document)")
             }
 
             // Update local sync status immediately
             // This ensures that even if some part of the sync fails,
             // successfully processed items are not re-processed.
+            Log.d(TAG, "  Updating local sync status: isSynced=true, needsSync=false")
             expenseDao.updateSyncStatus(
                 expenseId = expense.expenseId,
                 firestoreId = firestoreId,
                 isSynced = true,
                 lastSyncedAt = currentSyncTime
             )
+            
             val expenseData = expense.toDto().copy(
                 categoryFirestoreId = categoryFirestoreId,
                 personFirestoreId = personFirestoreId
             ).toFirestoreMap(firestoreId, currentSyncTime)
 
+            Log.d(TAG, "  Adding to batch: users/$userId/expenses/$firestoreId")
             val docRef = userExpensesRef.document(firestoreId)
             batch.set(docRef, expenseData)
             batchCount++
@@ -163,8 +169,8 @@ class ExpenseSyncManager @Inject constructor(
             // Track the latest timestamp for incremental sync
             latestRemoteTimestamp = maxOf(latestRemoteTimestamp, remoteExpense.updatedAt)
 
-            // Check if expense already exists locally
-            val existingExpense = expenseDao.getExpenseByFirestoreId(remoteExpense.firestoreId!!)
+            // Check if expense already exists locally (use localId as it's the stable identifier)
+            val existingExpense = expenseDao.getExpenseByLocalId(remoteExpense.localId)
 
             if (existingExpense != null) {
                 // Update existing expense
@@ -193,6 +199,7 @@ class ExpenseSyncManager @Inject constructor(
         return if (local.updatedAt >= remote.updatedAt) {
             // Local is newer or same, keep local but ensure it's marked as synced
             local.copy(
+                firestoreId = local.firestoreId ?: remote.firestoreId, // Preserve firestoreId
                 isSynced = true,
                 needsSync = false,
                 lastSyncedAt = System.currentTimeMillis()
@@ -201,6 +208,7 @@ class ExpenseSyncManager @Inject constructor(
             // Remote is newer, use remote data
             remote.copy(
                 expenseId = local.expenseId, // Preserve local primary key
+                firestoreId = local.firestoreId ?: remote.firestoreId, // Preserve firestoreId
                 isSynced = true,
                 needsSync = false,
                 lastSyncedAt = System.currentTimeMillis()
