@@ -42,6 +42,7 @@ class IncomeSyncManager @Inject constructor(
         // Use batch writes for better performance
         var batch = firestore.batch()
         var batchCount = 0
+        val incomesToUpdate = mutableListOf<Pair<Long, String>>() // Pair of incomeId and firestoreId
 
         val currentSyncTime = Timestamp.now().toDate().time
 
@@ -75,14 +76,6 @@ class IncomeSyncManager @Inject constructor(
                 Log.d(TAG, "  Using EXISTING firestoreDocId: $firestoreDocId (this will UPDATE existing document)")
             }
 
-            Log.d(TAG, "  Updating local sync status: isSynced=true, needsSync=false")
-            incomeDao.updateSyncStatus(
-                incomeId = income.incomeId,
-                firestoreId = firestoreDocId,
-                isSynced = true,
-                lastSyncedAt = System.currentTimeMillis()
-            )
-
             val incomeData = income.toDto().copy(
                 categoryFirestoreId = categoryFirestoreId,
                 personFirestoreId = personFirestoreId
@@ -91,13 +84,27 @@ class IncomeSyncManager @Inject constructor(
             Log.d(TAG, "  Adding to batch: users/$userId/incomes/$firestoreDocId")
             val docRef = userIncomesRef.document(firestoreDocId)
             batch.set(docRef, incomeData)
+            incomesToUpdate.add(income.incomeId to firestoreDocId)
             batchCount++
 
             // Firestore batch limit is 500 operations
             if (batchCount >= 500) {
                 batch.commit().await()
+                Log.d(TAG, "  Batch committed successfully, updating local sync status for $batchCount incomes")
+                
+                // Update sync status only after successful commit
+                incomesToUpdate.forEach { (incomeId, firestoreId) ->
+                    incomeDao.updateSyncStatus(
+                        incomeId = incomeId,
+                        firestoreId = firestoreId,
+                        isSynced = true,
+                        lastSyncedAt = System.currentTimeMillis()
+                    )
+                }
+                
                 batch = firestore.batch()
                 batchCount = 0
+                incomesToUpdate.clear()
             }
 
         }
@@ -105,6 +112,17 @@ class IncomeSyncManager @Inject constructor(
         // Commit remaining operations
         if (batchCount > 0) {
             batch.commit().await()
+            Log.d(TAG, "  Final batch committed successfully, updating local sync status for $batchCount incomes")
+            
+            // Update sync status only after successful commit
+            incomesToUpdate.forEach { (incomeId, firestoreId) ->
+                incomeDao.updateSyncStatus(
+                    incomeId = incomeId,
+                    firestoreId = firestoreId,
+                    isSynced = true,
+                    lastSyncedAt = System.currentTimeMillis()
+                )
+            }
         }
 
         Log.d(TAG, "Successfully uploaded ${unsyncedIncomes.size} incomes")

@@ -1,5 +1,7 @@
 package com.fiscal.compass.di
 
+import com.fiscal.compass.domain.service.CategoryService
+import com.fiscal.compass.domain.service.CategoryServiceImpl
 import com.fiscal.compass.domain.service.ExpenseService
 import com.fiscal.compass.domain.service.ExpenseServiceImpl
 import com.fiscal.compass.domain.service.IncomeService
@@ -33,4 +35,10 @@ abstract class ServiceModule {
     abstract fun bindTransactionService(
         transactionServiceImpl: TransactionServiceImpl
     ): TransactionService
+
+    @Binds
+    @Singleton
+    abstract fun bindCategoryService(
+        categoryServiceImpl: CategoryServiceImpl
+    ): CategoryService
 }
