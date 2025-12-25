@@ -48,8 +48,10 @@ fun HomeScreen(
     appNavController: NavHostController,
     state: HomeScreenState,
     onEvent: (HomeEvent) -> Unit = {},
+    onSyncClick: () -> Unit = {},
+    onSearchClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
 ) {
-    onEvent(HomeEvent.OnScreenLoad(appNavController))
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     var isBottomBarVisible by remember { mutableStateOf(true) }
@@ -72,7 +74,7 @@ fun HomeScreen(
         }
     }
 
-    val items = mutableListOf<HomeBottomScreen>(
+    val items = mutableListOf(
         HomeBottomScreen.Dashboard,
         HomeBottomScreen.Analytics,
     )
@@ -151,14 +153,19 @@ fun HomeScreen(
                 },
                 actions = {
                     TopBarActionButton(
-                        onClick = { onEvent(HomeEvent.OnSearchClicked) },
+                        icon = R.drawable.ic_cloud_sync_24,
+                        contentDescription = "Sync Data",
+                        onClick = onSyncClick,
+                    )
+                    TopBarActionButton(
+                        onClick = onSearchClick,
                         icon = R.drawable.ic_history_24,
                         contentDescription = "Search"
                     )
                 },
                 navigationIcon = {
                     TopBarActionButton(
-                        onClick = { onEvent(HomeEvent.OnSettingsClicked) },
+                        onClick = onSettingsClick,
                         icon = R.drawable.ic_settings_24,
                         contentDescription = "Settings"
                     )
@@ -189,7 +196,10 @@ fun HomeScreenPreview() {
     FiscalCompassTheme {
         HomeScreen(
             appNavController = rememberNavController(),
-            HomeScreenState(),
+            HomeScreenState(
+                canViewPeople = true,
+                canViewCategories = true
+            ),
             onEvent = {}
         )
     }

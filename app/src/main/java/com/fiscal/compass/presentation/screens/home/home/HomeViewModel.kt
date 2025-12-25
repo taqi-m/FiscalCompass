@@ -41,29 +41,8 @@ class HomeViewModel @Inject constructor(
     // Example function to handle logout event
     fun onEvent(event: HomeEvent) {
         when (event) {
-            is HomeEvent.NavigateTo -> { updatedRoute : String ->
-                _state.update { it.copy(selectedTab = updatedRoute) }
-            }
-            is HomeEvent.LogoutClicked -> {
-                // Handle logout logic here
-            }
-
             is HomeEvent.ToggleFabExpanded -> {
                 _state.update { it.copy(isFabExpanded = !it.isFabExpanded) }
-            }
-
-            is HomeEvent.OnScreenLoad -> {
-                _state.update { it.copy(appNavController = event.appNavController) }
-            }
-
-            is HomeEvent.OnSettingsClicked -> {
-                val navController = _state.value.appNavController
-                navController?.navigate(MainScreens.Settings.route)
-            }
-
-            is HomeEvent.OnSearchClicked -> {
-                val navController = _state.value.appNavController
-                navController?.navigate(MainScreens.Search.route)
             }
         }
     }
