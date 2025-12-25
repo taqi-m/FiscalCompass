@@ -6,6 +6,8 @@ import com.fiscal.compass.domain.service.ExpenseService
 import com.fiscal.compass.domain.service.ExpenseServiceImpl
 import com.fiscal.compass.domain.service.IncomeService
 import com.fiscal.compass.domain.service.IncomeServiceImpl
+import com.fiscal.compass.domain.service.PersonService
+import com.fiscal.compass.domain.service.PersonServiceImpl
 import com.fiscal.compass.domain.service.TransactionService
 import com.fiscal.compass.domain.service.TransactionServiceImpl
 import dagger.Binds
@@ -41,4 +43,10 @@ abstract class ServiceModule {
     abstract fun bindCategoryService(
         categoryServiceImpl: CategoryServiceImpl
     ): CategoryService
+
+    @Binds
+    @Singleton
+    abstract fun bindPersonService(
+        personServiceImpl: PersonServiceImpl
+    ): PersonService
 }
