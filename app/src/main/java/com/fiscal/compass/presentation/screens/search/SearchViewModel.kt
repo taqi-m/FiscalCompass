@@ -3,10 +3,9 @@ package com.fiscal.compass.presentation.screens.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fiscal.compass.domain.service.CategoryService
+import com.fiscal.compass.domain.service.PersonService
 import com.fiscal.compass.domain.service.TransactionService
-import com.fiscal.compass.domain.usecase.person.GetAllPersonsUseCase
 import com.fiscal.compass.domain.util.DateRange
-import com.fiscal.compass.presentation.mappers.toUi
 import com.fiscal.compass.presentation.screens.category.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +22,7 @@ import javax.inject.Inject
 class SearchViewModel @Inject constructor(
     private val transactionService: TransactionService,
     private val categoryService: CategoryService,
-    private val getAllPersonsUseCase: GetAllPersonsUseCase
+    private val personService: PersonService,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SearchScreenState())
@@ -188,7 +187,7 @@ class SearchViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val categories = categoryService.getAllCategories()
-                val persons = getAllPersonsUseCase.getAllPersons()
+                val persons = personService.getAllPersons()
                 updateState { copy(allCategories = categories, allPersons = persons) }
             } catch (e: Exception) {
                 // Handle error if needed

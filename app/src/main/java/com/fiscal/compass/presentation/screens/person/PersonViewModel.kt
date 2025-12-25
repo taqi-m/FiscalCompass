@@ -3,10 +3,7 @@ package com.fiscal.compass.presentation.screens.person
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fiscal.compass.data.rbac.Permission
-import com.fiscal.compass.domain.usecase.person.AddPersonUseCase
-import com.fiscal.compass.domain.usecase.person.DeletePersonUseCase
-import com.fiscal.compass.domain.usecase.person.EditPersonUC
-import com.fiscal.compass.domain.usecase.person.GetAllPersonsUseCase
+import com.fiscal.compass.domain.service.PersonService
 import com.fiscal.compass.domain.usecase.rbac.CheckPermissionUseCase
 import com.fiscal.compass.presentation.screens.category.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,10 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PersonViewModel @Inject constructor(
-    private val getAllPersonsUseCase: GetAllPersonsUseCase,
-    private val addPersonUseCase: AddPersonUseCase,
-    private val deletePersonUseCase: DeletePersonUseCase,
-    private val editPersonUseCase: EditPersonUC,
+    private val personService: PersonService,
     private val checkPermissionUseCase: CheckPermissionUseCase
 ) : ViewModel() {
 
@@ -79,7 +73,7 @@ class PersonViewModel @Inject constructor(
 
     private fun updatePeople() {
         coroutineScope.launch {
-            getAllPersonsUseCase.getAllPersonsWithFlow().collect { personList ->
+            personService.getAllPersonsWithFlow().collect { personList ->
                 updateState { copy(persons = personList) }
             }
         }
@@ -130,11 +124,16 @@ class PersonViewModel @Inject constructor(
                 updateState { copy(uiState = UiState.Loading) }
                 val personType = _state.value.selectedType
                 viewModelScope.launch {
-                    val updatedState = addPersonUseCase.invoke(
+                    val result = personService.addPerson(
                         name = event.name,
                         contact = event.contact,
                         personType = personType
                     )
+                    val updatedState = if (result.isSuccess) {
+                        UiState.Success("Person added successfully.")
+                    } else {
+                        UiState.Error("Failed to add person: ${result.exceptionOrNull()?.message}")
+                    }
                     updateState {
                         copy(uiState = updatedState)
                     }
@@ -146,7 +145,7 @@ class PersonViewModel @Inject constructor(
                 updateState { copy(uiState = UiState.Loading) }
                 viewModelScope.launch {
                     try {
-                        editPersonUseCase.invoke(person.personId, person.name, person.contact ?: "", person.personType)
+                        personService.updatePerson(person.personId, person.name, person.contact ?: "", person.personType)
                         updateState {
                             copy(uiState = UiState.Success("Person edited successfully."))
                         }
@@ -168,7 +167,12 @@ class PersonViewModel @Inject constructor(
                 }
                 updateState { copy(uiState = UiState.Loading) }
                 viewModelScope.launch {
-                    val updatedState = deletePersonUseCase.invoke(person)
+                    val result = personService.deletePerson(person)
+                    val updatedState = if (result.isSuccess) {
+                        UiState.Success("Person deleted successfully.")
+                    } else {
+                        UiState.Error("Failed to delete person: ${result.exceptionOrNull()?.message}")
+                    }
                     updateState {
                         copy(
                             uiState = updatedState
