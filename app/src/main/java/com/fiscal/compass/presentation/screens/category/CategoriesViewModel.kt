@@ -3,13 +3,9 @@ package com.fiscal.compass.presentation.screens.category
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fiscal.compass.data.rbac.Permission
-import com.fiscal.compass.domain.usecase.categories.AddCategoryUseCase
-import com.fiscal.compass.domain.usecase.categories.DeleteCategoryUseCase
-import com.fiscal.compass.domain.usecase.categories.GetCategoriesUseCase
-import com.fiscal.compass.domain.usecase.categories.UpdateCategoryUseCase
+import com.fiscal.compass.domain.service.CategoryService
 import com.fiscal.compass.domain.usecase.rbac.CheckPermissionUseCase
 import com.fiscal.compass.presentation.mappers.toCategory
-import com.fiscal.compass.presentation.mappers.toGroupedCategoryUi
 import com.fiscal.compass.presentation.mappers.toUi
 import com.fiscal.compass.presentation.model.TransactionType
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,10 +20,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CategoriesViewModel @Inject constructor(
-    private val getCategoriesUseCase: GetCategoriesUseCase,
-    private val updateCategoryUseCase: UpdateCategoryUseCase,
-    private val deleteCategoryUseCase: DeleteCategoryUseCase,
-    private val addCategoryUseCase: AddCategoryUseCase,
+    private val categoryService: CategoryService,
     private val checkPermissionUseCase: CheckPermissionUseCase
 ) : ViewModel() {
 
@@ -154,23 +147,20 @@ class CategoriesViewModel @Inject constructor(
         when (event) {
             is CategoryDialogSubmit.Add -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    val updatedState = addCategoryUseCase.invoke(
-                        name = event.name,
-                        description = event.description,
-                        transactionType = _state.value.transactionType,
-                        expectedPersonType = event.expectedPersonType
-                    )
-                    updateState {
-                        copy(
-                            uiState = updatedState
-                        )
+                    val result = categoryService.addCategory(event.name, event.description, _state.value.transactionType, event.expectedPersonType)
+                    if (result.isFailure) {
+                        updateState { copy(uiState = UiState.Error(result.exceptionOrNull()?.message ?: "An unexpected error occurred")) }
+                        return@launch
+                    }
+                    if (result.isSuccess) {
+                        updateState { copy(uiState = UiState.Success(result.getOrNull() ?: "Category added successfully")) }
                     }
                 }
             }
 
             is CategoryDialogSubmit.Edit -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    val result = updateCategoryUseCase.invoke(event.category)
+                    val result = categoryService.updateCategory(event.category)
                     if (result.isFailure) {
                         updateState {
                             copy(
@@ -195,11 +185,16 @@ class CategoriesViewModel @Inject constructor(
             is CategoryDialogSubmit.Delete -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     val category = _state.value.dialogState.category ?: return@launch
-                    val updatedState = deleteCategoryUseCase.invoke(category.toCategory())
-                    updateState {
-                        copy(
-                            uiState = updatedState
-                        )
+                    val result = categoryService.deleteCategory(category.toCategory())
+                    if (result.isFailure) {
+                        updateState {
+                            copy(uiState = UiState.Error(result.exceptionOrNull()?.message ?: "An unexpected error occurred"))
+                        }
+                    }
+                    if (result.isSuccess) {
+                        updateState {
+                            copy(uiState = UiState.Success(result.getOrNull() ?: "Category deleted successfully"))
+                        }
                     }
                 }
             }
@@ -214,8 +209,8 @@ class CategoriesViewModel @Inject constructor(
             try {
                 val type = _state.value.transactionType
                 val currentFlow = when (type) {
-                    TransactionType.EXPENSE -> getCategoriesUseCase.getExpenseCategoriesWithFlow()
-                    TransactionType.INCOME -> getCategoriesUseCase.getIncomeCategoriesWithFlow()
+                    TransactionType.EXPENSE -> categoryService.getExpenseCategoriesWithFlow()
+                    TransactionType.INCOME -> categoryService.getIncomeCategoriesWithFlow()
                 }
                 currentFlow.collect { updatedCategories ->
                     updateState {
