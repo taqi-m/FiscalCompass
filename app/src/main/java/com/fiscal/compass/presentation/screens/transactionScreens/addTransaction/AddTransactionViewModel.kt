@@ -7,8 +7,8 @@ import com.fiscal.compass.domain.model.Transaction
 import com.fiscal.compass.domain.model.base.Category
 import com.fiscal.compass.domain.model.base.Person
 import com.fiscal.compass.domain.service.CategoryService
+import com.fiscal.compass.domain.service.PersonService
 import com.fiscal.compass.domain.service.TransactionService
-import com.fiscal.compass.domain.usecase.person.GetAllPersonsUseCase
 import com.fiscal.compass.presentation.model.TransactionType
 import com.fiscal.compass.presentation.screens.category.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,7 +24,7 @@ import javax.inject.Inject
 class AddTransactionViewModel @Inject constructor(
     private val transactionService: TransactionService,
     private val categoryService: CategoryService,
-    private val getPersonUseCase: GetAllPersonsUseCase
+    private val personService: PersonService
 ) : ViewModel() {
     val date: Calendar = Calendar.getInstance()
     private val _state = MutableStateFlow(
@@ -52,7 +52,7 @@ class AddTransactionViewModel @Inject constructor(
                 allIncomeCategories = categoryService.getIncomeCategories()
                 incomeCategories = allIncomeCategories
 
-                allPersons = getPersonUseCase.getAllPersons()
+                allPersons = personService.getAllPersons()
                 persons = allPersons
 
 
