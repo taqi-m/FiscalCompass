@@ -45,9 +45,9 @@ interface ExpenseDao {
         """
         SELECT * FROM expenses
         WHERE isDeleted = 0
-          AND (:userIds IS NULL OR userId IN (:userIds))
-          AND (:personIds IS NULL OR personId IN (:personIds))
-          AND (:categoryIds IS NULL OR categoryId IN (:categoryIds))
+          AND (CASE WHEN :hasUserIds THEN userId IN (:userIds) ELSE 1 END)
+          AND (CASE WHEN :hasPersonIds THEN personId IN (:personIds) ELSE 1 END)
+          AND (CASE WHEN :hasCategoryIds THEN categoryId IN (:categoryIds) ELSE 1 END)
           AND (
               (:startDate IS NULL AND :endDate IS NULL)
               OR (:startDate IS NOT NULL AND :endDate IS NULL AND date >= :startDate)
@@ -57,9 +57,12 @@ interface ExpenseDao {
     """
     )
     fun getAllFullExpensesFiltered(
-        userIds: List<String>? = null,          // nullable to ignore
-        personIds: List<Long>? = null,   // pass null to ignore
-        categoryIds: List<Long>? = null, // pass null to ignore
+        userIds: List<String>,
+        hasUserIds: Boolean,
+        personIds: List<Long>,
+        hasPersonIds: Boolean,
+        categoryIds: List<Long>,
+        hasCategoryIds: Boolean,
         startDate: Long? = null,         // nullable → open start
         endDate: Long?  = null            // nullable → open end
     ): Flow<List<ExpenseEntity>>
