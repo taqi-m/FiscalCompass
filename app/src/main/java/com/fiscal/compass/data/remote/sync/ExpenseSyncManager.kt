@@ -42,6 +42,7 @@ class ExpenseSyncManager @Inject constructor(
         // Use batch writes for better performance
         var batch = firestore.batch()
         var batchCount = 0
+        val expensesToUpdate = mutableListOf<Pair<Long, String>>() // Pair of expenseId and firestoreId
 
         val currentSyncTime = Timestamp.now().toDate().time
 
@@ -74,17 +75,6 @@ class ExpenseSyncManager @Inject constructor(
             } else {
                 Log.d(TAG, "  Using EXISTING firestoreId: $firestoreId (this will UPDATE existing document)")
             }
-
-            // Update local sync status immediately
-            // This ensures that even if some part of the sync fails,
-            // successfully processed items are not re-processed.
-            Log.d(TAG, "  Updating local sync status: isSynced=true, needsSync=false")
-            expenseDao.updateSyncStatus(
-                expenseId = expense.expenseId,
-                firestoreId = firestoreId,
-                isSynced = true,
-                lastSyncedAt = currentSyncTime
-            )
             
             val expenseData = expense.toDto().copy(
                 categoryFirestoreId = categoryFirestoreId,
@@ -94,13 +84,27 @@ class ExpenseSyncManager @Inject constructor(
             Log.d(TAG, "  Adding to batch: users/$userId/expenses/$firestoreId")
             val docRef = userExpensesRef.document(firestoreId)
             batch.set(docRef, expenseData)
+            expensesToUpdate.add(expense.expenseId to firestoreId)
             batchCount++
 
             // Firestore batch limit is 500 operations
             if (batchCount >= 500) {
                 batch.commit().await()
+                Log.d(TAG, "  Batch committed successfully, updating local sync status for $batchCount expenses")
+                
+                // Update sync status only after successful commit
+                expensesToUpdate.forEach { (expenseId, firestoreDocId) ->
+                    expenseDao.updateSyncStatus(
+                        expenseId = expenseId,
+                        firestoreId = firestoreDocId,
+                        isSynced = true,
+                        lastSyncedAt = currentSyncTime
+                    )
+                }
+                
                 batch = firestore.batch()
                 batchCount = 0
+                expensesToUpdate.clear()
             }
 
         }
@@ -108,6 +112,17 @@ class ExpenseSyncManager @Inject constructor(
         // Commit remaining operations
         if (batchCount > 0) {
             batch.commit().await()
+            Log.d(TAG, "  Final batch committed successfully, updating local sync status for $batchCount expenses")
+            
+            // Update sync status only after successful commit
+            expensesToUpdate.forEach { (expenseId, firestoreDocId) ->
+                expenseDao.updateSyncStatus(
+                    expenseId = expenseId,
+                    firestoreId = firestoreDocId,
+                    isSynced = true,
+                    lastSyncedAt = currentSyncTime
+                )
+            }
         }
 
         Log.d(TAG, "Successfully uploaded ${unsyncedExpenses.size} expenses")

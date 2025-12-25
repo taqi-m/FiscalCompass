@@ -123,10 +123,20 @@ class ExpenseRepositoryImpl @Inject constructor(
         startDate: Long?,
         endDate: Long?
     ): Flow<List<Expense>> {
-        val userIds = userIds?.takeIf { it.isNotEmpty() }
-        val personIds = personIds?.takeIf { it.isNotEmpty() }
-        val categoryIds = categoryIds?.takeIf { it.isNotEmpty() }
-        return expenseDao.getAllFullExpensesFiltered(userIds, personIds, categoryIds, startDate, endDate).map {
+        val finalUserIds = userIds?.takeIf { it.isNotEmpty() } ?: emptyList()
+        val finalPersonIds = personIds?.takeIf { it.isNotEmpty() } ?: emptyList()
+        val finalCategoryIds = categoryIds?.takeIf { it.isNotEmpty() } ?: emptyList()
+        
+        return expenseDao.getAllFullExpensesFiltered(
+            userIds = finalUserIds,
+            hasUserIds = finalUserIds.isNotEmpty(),
+            personIds = finalPersonIds,
+            hasPersonIds = finalPersonIds.isNotEmpty(),
+            categoryIds = finalCategoryIds,
+            hasCategoryIds = finalCategoryIds.isNotEmpty(),
+            startDate = startDate,
+            endDate = endDate
+        ).map {
             it.map { expenseEntity ->
                 expenseEntity.toDomain()
             }
