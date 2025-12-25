@@ -6,7 +6,6 @@ import com.fiscal.compass.presentation.screens.category.UiState
 
 data class HomeScreenState(
     val uiState: UiState = UiState.Idle,
-    val appNavController: NavHostController? = null,
     val selectedTab: String = HomeBottomScreen.Dashboard.route,
     val isFabExpanded: Boolean = false,
     val canViewCategories: Boolean = false,
