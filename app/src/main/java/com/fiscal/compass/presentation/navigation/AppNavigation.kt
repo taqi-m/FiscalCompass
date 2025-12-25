@@ -127,7 +127,10 @@ fun AppNavigation(
             HomeScreen(
                 appNavController = navController,
                 state = homeState,
-                onEvent = homeViewModel::onEvent
+                onEvent = homeViewModel::onEvent,
+                onSettingsClick = { navController.navigate(MainScreens.Settings.route) },
+                onSearchClick = { navController.navigate(MainScreens.Search.route)},
+                onSyncClick = { navController.navigate(MainScreens.Sync.route) }
             )
         }
 
@@ -143,7 +146,10 @@ fun AppNavigation(
             HomeScreen(
                 appNavController = navController,
                 state = homeState,
-                onEvent = homeViewModel::onEvent
+                onEvent = homeViewModel::onEvent,
+                onSettingsClick = { navController.navigate(MainScreens.Settings.route) },
+                onSearchClick = { navController.navigate(MainScreens.Search.route)},
+                onSyncClick = { navController.navigate(MainScreens.Sync.route) }
             )
         }
 
