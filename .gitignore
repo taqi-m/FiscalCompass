@@ -244,8 +244,5 @@ emulator-data/
 # Service account keys
 serviceAccountKey.json
 
-# Functions
-functions/
-
 # Exports
 exports/
