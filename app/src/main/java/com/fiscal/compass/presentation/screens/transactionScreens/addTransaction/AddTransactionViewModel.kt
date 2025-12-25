@@ -6,8 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.fiscal.compass.domain.model.Transaction
 import com.fiscal.compass.domain.model.base.Category
 import com.fiscal.compass.domain.model.base.Person
+import com.fiscal.compass.domain.service.CategoryService
 import com.fiscal.compass.domain.service.TransactionService
-import com.fiscal.compass.domain.usecase.categories.GetCategoriesUseCase
 import com.fiscal.compass.domain.usecase.person.GetAllPersonsUseCase
 import com.fiscal.compass.presentation.model.TransactionType
 import com.fiscal.compass.presentation.screens.category.UiState
@@ -23,7 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AddTransactionViewModel @Inject constructor(
     private val transactionService: TransactionService,
-    private val categoryUseCase: GetCategoriesUseCase,
+    private val categoryService: CategoryService,
     private val getPersonUseCase: GetAllPersonsUseCase
 ) : ViewModel() {
     val date: Calendar = Calendar.getInstance()
@@ -46,10 +46,10 @@ class AddTransactionViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             try {
 
-                allExpenseCategories = categoryUseCase.getExpenseCategories()
+                allExpenseCategories = categoryService.getExpenseCategories()
                 expenseCategories = allExpenseCategories
 
-                allIncomeCategories = categoryUseCase.getIncomeCategories()
+                allIncomeCategories = categoryService.getIncomeCategories()
                 incomeCategories = allIncomeCategories
 
                 allPersons = getPersonUseCase.getAllPersons()
