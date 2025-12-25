@@ -4,12 +4,13 @@ import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -45,7 +46,7 @@ import com.fiscal.compass.presentation.model.PersonUi
 import com.fiscal.compass.presentation.model.TransactionUi
 import com.fiscal.compass.presentation.navigation.MainScreens
 import com.fiscal.compass.presentation.screens.category.UiState
-import com.fiscal.compass.presentation.screens.transactionScreens.amountScreen.AmountEvent
+import com.fiscal.compass.ui.components.buttons.CardTextButton
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
 import com.google.gson.Gson
 
@@ -85,24 +86,6 @@ fun TransactionDetailsScreen(
                             contentDescription = "Back"
                         )
                     }
-                },
-                actions = {
-                    if (state.canEdit) {
-                        IconButton(
-                            onClick = {
-                                val encodedJsonTransaction = Uri.encode(transactionJson)
-                                appNavController.navigate(
-                                    MainScreens.Amount.editTransaction(
-                                        encodedJsonTransaction
-                                    )
-                                )
-                            }) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_edit_24),
-                                contentDescription = "Edit"
-                            )
-                        }
-                    }
                 }
             )
         }
@@ -127,6 +110,17 @@ fun TransactionDetailsScreen(
                         .background(MaterialTheme.colorScheme.background)
                         .padding(paddingValues),
                     state = state,
+                    onDeleteClick = {
+
+                    },
+                    onUpdateClick = {
+                        val encodedJsonTransaction = Uri.encode(transactionJson)
+                        appNavController.navigate(
+                            MainScreens.Amount.editTransaction(
+                                encodedJsonTransaction
+                            )
+                        )
+                    }
                 )
             }
 
@@ -154,22 +148,30 @@ fun TransactionDetailsScreen(
 private fun DetailsContent(
     modifier: Modifier = Modifier,
     state: TransactionDetailsScreenState,
+    onDeleteClick: () -> Unit,
+    onUpdateClick: () -> Unit
 ) {
     TransactionCardContent(
         modifier = modifier
             .fillMaxSize(),
-        state = state
+        state = state,
+        onDeleteClick = onDeleteClick,
+        onUpdateClick = onUpdateClick
+
     )
 }
 
 @Composable
 private fun TransactionCardContent(
     modifier: Modifier = Modifier,
-    state: TransactionDetailsScreenState
+    state: TransactionDetailsScreenState,
+    onDeleteClick: () -> Unit,
+    onUpdateClick: () -> Unit
 ) {
     Column(
         modifier = modifier.padding(horizontal = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         HeaderContent(
             transactionUi = state.transaction
@@ -178,6 +180,22 @@ private fun TransactionCardContent(
             transaction = state.transaction,
             category = state.category,
             personUi = state.person
+        )
+        if (state.canEdit) {
+            DeleteAndUpdateCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(72.dp)
+                    .padding(vertical = 8.dp),
+                onDeleteClick = onDeleteClick,
+                onUpdateClick = onUpdateClick
+            )
+        }
+        CardRowDivider()
+        Text(
+            text = "${state.transaction?.formatedDate},  ${state.transaction?.formatedTime}",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
         )
     }
 }
@@ -197,31 +215,35 @@ private fun HeaderContent(
         modifier = Modifier
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.small)
-            .background(MaterialTheme.colorScheme.primaryContainer)
+            .background(MaterialTheme.colorScheme.secondaryContainer)
             .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = amount,
-            style = MaterialTheme.typography.headlineMedium,
-            color = if (transactionUi.isExpense) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onPrimaryContainer
+            text = "Total",
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
         )
         Spacer(
-            modifier = Modifier.padding(vertical = 4.dp)
+            modifier = Modifier.padding(vertical = 2.dp)
+        )
+        Text(
+            text = amount,
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        CardRowDivider()
+        Text(
+            text = "Paid",
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+        )
+        Spacer(
+            modifier = Modifier.padding(vertical = 2.dp)
         )
         Text(
             text = transactionUi.formatedPaidAmount,
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onPrimaryContainer
-        )
-        Spacer(
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
-        Text(
-            text = "${transactionUi.formatedDate},  ${transactionUi.formatedTime}",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onPrimaryContainer
+            color = MaterialTheme.colorScheme.onSecondaryContainer
         )
     }
 }
@@ -241,20 +263,17 @@ private fun RowContent(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         CardRow(
-            label = "Category",
-            value = category?.name ?: "N/A",
+            label = category?.name ?: "N/A",
             description = category?.description
         )
         CardRowDivider()
         CardRow(
-            label = "Person",
-            value = personUi?.name ?: "N/A",
+            label = personUi?.name ?: "N/A",
             description = personUi?.contact
         )
         CardRowDivider()
         CardRow(
             label = "Note",
-            value = "",
             description = if (transaction.description.isNullOrEmpty()) "N/A" else transaction.description,
         )
     }
@@ -264,7 +283,6 @@ private fun RowContent(
 @Composable
 private fun CardRow(
     label: String,
-    value: String,
     description: String? = ""
 ) {
 
@@ -274,14 +292,10 @@ private fun CardRow(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.Start
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
-        )
         Card(
             shape = RoundedCornerShape(15),
             colors = CardDefaults.cardColors().copy(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(0.5f),
+                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(0.35f),
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer
             ),
             modifier = Modifier
@@ -294,10 +308,10 @@ private fun CardRow(
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                value?.let {
-                    if (value.isNotEmpty())
-                        Text(text = value, style = MaterialTheme.typography.bodyLarge)
-                }
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelLarge
+                )
                 description?.let {
                     if (description.isNotEmpty())
                         Text(text = it, style = MaterialTheme.typography.bodyMedium)
@@ -346,6 +360,45 @@ private fun CardRowDivider() {
     )
 }
 
+
+@Composable
+fun DeleteAndUpdateCard(
+    modifier: Modifier = Modifier,
+    onDeleteClick: () -> Unit,
+    onUpdateClick: () -> Unit
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        CardTextButton(
+            modifier = Modifier
+                .fillMaxHeight()
+                .weight(1f),
+            cardColors = CardDefaults.cardColors().copy(
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.onErrorContainer
+            ),
+            icon = painterResource(R.drawable.ic_delete_24),
+            text = "Delete",
+            onClick = onDeleteClick
+        )
+        CardTextButton(
+            modifier = Modifier
+                .fillMaxHeight()
+                .weight(1f),
+            cardColors = CardDefaults.cardColors().copy(
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+            ),
+            icon = painterResource(R.drawable.ic_edit_24),
+            text = "Edit",
+            onClick = onUpdateClick
+        )
+    }
+}
+
+
 @Preview(showBackground = true)
 @Composable
 fun TransactionDetailsScreenPreview() {
@@ -356,10 +409,23 @@ fun TransactionDetailsScreenPreview() {
                 uiState = UiState.Success("Transaction Loaded"),
                 transaction = TransactionUi.dummy,
                 category = CategoryUi.dummy,
-                person = PersonUi.dummy
-
+                person = PersonUi.dummy,
+                canEdit = true,
             ),
             onEvent = {},
         )
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DeleteAndUpdateCardPreview() {
+    DeleteAndUpdateCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(72.dp)
+            .padding(8.dp),
+        onDeleteClick = {},
+        onUpdateClick = {}
+    )
 }
