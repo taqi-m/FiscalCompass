@@ -6,6 +6,7 @@ import com.fiscal.compass.domain.service.CategoryService
 import com.fiscal.compass.domain.service.PersonService
 import com.fiscal.compass.domain.service.TransactionService
 import com.fiscal.compass.domain.util.DateRange
+import com.fiscal.compass.domain.util.SearchCriteria
 import com.fiscal.compass.presentation.screens.category.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -150,7 +151,7 @@ class SearchViewModel @Inject constructor(
             }
             SearchEvent.ClearFilters -> {
                 updateState {
-                    copy(searchCriteria = com.fiscal.compass.domain.util.SearchCriteria())
+                    copy(searchCriteria = SearchCriteria())
                 }
                 fetchTransactions()
             }
@@ -169,14 +170,9 @@ class SearchViewModel @Inject constructor(
             updateState { copy(uiState = UiState.Loading) }
             try {
                 val criteria = state.value.searchCriteria
-                val results = transactionService.searchTransactions(
-                    personIds = criteria.getPersonIds(),
-                    categoryIds = criteria.getCategoryIds(),
-                    startDate = criteria.getDateRange()?.startDate,
-                    endDate = criteria.getDateRange()?.endDate,
-                    filterType = criteria.getTransactionType()?.name
-                )
-                updateState { copy(uiState = UiState.Idle, searchResults = results) }
+                transactionService.searchTransactions(criteria).collect {
+                    updateState { copy(uiState = UiState.Idle, searchResults = it) }
+                }
             } catch (e: Exception) {
                 updateState { copy(uiState = UiState.Error(e.message ?: "An unexpected error occurred")) }
             }

@@ -7,6 +7,7 @@ fun Person.toUi(): PersonUi {
     return PersonUi(
         personId = this.personId,
         name = this.name,
+        contact = this.contact,
         personType = this.personType,
     )
 }
@@ -19,6 +20,7 @@ fun PersonUi.toDomain(): Person {
     return Person(
         personId = this.personId,
         name = this.name,
+        contact = this.contact,
         personType = this.personType,
     )
 }

@@ -53,7 +53,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.fiscal.compass.R
-import com.fiscal.compass.presentation.model.TransactionType
+import com.fiscal.compass.domain.util.TransactionType
 import com.fiscal.compass.presentation.navigation.MainScreens
 import com.fiscal.compass.presentation.screens.category.UiState
 import com.fiscal.compass.presentation.screens.itemselection.SelectableItem

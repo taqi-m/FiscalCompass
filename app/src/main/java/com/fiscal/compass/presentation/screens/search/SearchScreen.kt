@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -53,12 +54,10 @@ import androidx.navigation.compose.rememberNavController
 import com.fiscal.compass.R
 import com.fiscal.compass.domain.model.Transaction
 import com.fiscal.compass.domain.util.DateRange
-import com.fiscal.compass.domain.util.TransactionTypes
-import com.fiscal.compass.presentation.model.TransactionUi
+import com.fiscal.compass.domain.util.TransactionType
 import com.fiscal.compass.presentation.navigation.MainScreens
 import com.fiscal.compass.presentation.screens.category.UiState
 import com.fiscal.compass.presentation.screens.itemselection.SelectableItem
-import com.fiscal.compass.presentation.utilities.CurrencyFormater
 import com.fiscal.compass.ui.components.cards.ChipFlow
 import com.fiscal.compass.ui.components.cards.TransactionCard
 import com.fiscal.compass.ui.components.pickers.DatePicker
@@ -251,7 +250,7 @@ fun ResultsScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (state.uiState is UiState.Loading) {
-            CircularProgressIndicator(modifier = Modifier.padding(vertical = 16.dp))
+            Box(Modifier.fillMaxSize()){ CircularProgressIndicator(modifier = Modifier.padding(vertical = 16.dp)) }
         } else if (state.searchCriteria.areAnyFiltersActive()) {
             // Create a list of active filter strings
             val activeFilters = mutableListOf<String>()
@@ -478,7 +477,7 @@ fun FilterScreen(
                     selected = tempFilterType == "INCOME",
                     onClick = {
                         tempFilterType = "INCOME"
-                        onEvent(SearchEvent.UpdateFilterType(TransactionTypes.INCOME))
+                        onEvent(SearchEvent.UpdateFilterType(TransactionType.INCOME))
                     },
                     shape = SegmentedButtonDefaults.itemShape(index = 1, count = 3)
                 ) {
@@ -488,7 +487,7 @@ fun FilterScreen(
                     selected = tempFilterType == "EXPENSE",
                     onClick = {
                         tempFilterType = "EXPENSE"
-                        onEvent(SearchEvent.UpdateFilterType(TransactionTypes.EXPENSE))
+                        onEvent(SearchEvent.UpdateFilterType(TransactionType.EXPENSE))
                     },
                     shape = SegmentedButtonDefaults.itemShape(index = 2, count = 3)
                 ) {
@@ -681,7 +680,7 @@ fun SearchScreenPreview() {
                     Date(System.currentTimeMillis()) to Transaction.sampleList()
                 ),
                 searchCriteria = com.fiscal.compass.domain.util.SearchCriteria().apply {
-                    setTransactionType(TransactionTypes.INCOME)
+                    setTransactionType(TransactionType.INCOME)
                     setDateRange(DateRange(System.currentTimeMillis(), null))
                 }
             ),

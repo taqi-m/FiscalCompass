@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fiscal.compass.data.rbac.Permission
 import com.fiscal.compass.domain.model.Transaction
-import com.fiscal.compass.domain.service.TransactionService
 import com.fiscal.compass.domain.usecase.rbac.CheckPermissionUseCase
 import com.fiscal.compass.presentation.mappers.toUi
 import com.fiscal.compass.presentation.screens.category.UiState
@@ -17,7 +16,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TransactionDetailsViewModel @Inject constructor(
-    private val transactionService: TransactionService,
     private val checkPermissionUseCase: CheckPermissionUseCase
 ) : ViewModel() {
 

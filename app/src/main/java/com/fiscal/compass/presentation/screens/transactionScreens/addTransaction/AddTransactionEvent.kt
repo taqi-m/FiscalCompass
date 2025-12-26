@@ -1,7 +1,6 @@
 package com.fiscal.compass.presentation.screens.transactionScreens.addTransaction
 
-import com.fiscal.compass.presentation.model.TransactionType
-import com.fiscal.compass.presentation.utils.AmountInputType
+import com.fiscal.compass.domain.util.TransactionType
 import java.util.Calendar
 
 sealed class AddTransactionEvent {
