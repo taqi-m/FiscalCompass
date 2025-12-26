@@ -5,9 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.fiscal.compass.data.rbac.Permission
 import com.fiscal.compass.domain.service.CategoryService
 import com.fiscal.compass.domain.usecase.rbac.CheckPermissionUseCase
+import com.fiscal.compass.domain.util.TransactionType
 import com.fiscal.compass.presentation.mappers.toCategory
 import com.fiscal.compass.presentation.mappers.toUi
-import com.fiscal.compass.presentation.model.TransactionType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

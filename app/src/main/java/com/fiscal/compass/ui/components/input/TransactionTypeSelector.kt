@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.fiscal.compass.presentation.model.TransactionType
+import com.fiscal.compass.domain.util.TransactionType
 
 @Composable
 fun TransactionTypeSelector(

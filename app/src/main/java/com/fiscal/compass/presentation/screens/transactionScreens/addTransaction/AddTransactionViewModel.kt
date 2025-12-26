@@ -9,7 +9,7 @@ import com.fiscal.compass.domain.model.base.Person
 import com.fiscal.compass.domain.service.CategoryService
 import com.fiscal.compass.domain.service.PersonService
 import com.fiscal.compass.domain.service.TransactionService
-import com.fiscal.compass.presentation.model.TransactionType
+import com.fiscal.compass.domain.util.TransactionType
 import com.fiscal.compass.presentation.screens.category.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers

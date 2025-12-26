@@ -2,6 +2,7 @@ package com.fiscal.compass.presentation.screens.person
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.Top
 import androidx.compose.foundation.layout.Box
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -34,14 +36,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.fiscal.compass.R
-import com.fiscal.compass.domain.util.PersonType
 import com.fiscal.compass.domain.model.base.Person
+import com.fiscal.compass.domain.util.PersonType
 import com.fiscal.compass.presentation.screens.category.UiState
 import com.fiscal.compass.ui.components.LoadingProgress
 import com.fiscal.compass.ui.components.dialogs.AddPersonDialog
 import com.fiscal.compass.ui.components.dialogs.DeletePersonDialog
 import com.fiscal.compass.ui.components.dialogs.EditPersonDialog
-import com.fiscal.compass.ui.components.input.TypeSwitch
+import com.fiscal.compass.ui.components.input.SingleSelectionChipGroup
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -182,31 +184,30 @@ fun PersonScreenContent(
         horizontalAlignment = CenterHorizontally,
         verticalArrangement = Top
     ) {
-        TypeSwitch(
+        SingleSelectionChipGroup(
             modifier = Modifier
-                .fillMaxWidth(),
-            shape = shape,
-            typeOptions = typeOptions,
-            selectedTypeIndex = selectedTypeIndex,
-            onTypeSelected = { index ->
-                val selectedType = typeOptions.getOrNull(index) ?: PersonType.CUSTOMER.name
-                onEvent(PersonEvent.OnFilterTypeSelected(selectedType))
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            maxLines = 1,
+            items = typeOptions,
+            chipToLabel = {it},
+            onSelectionChanged = {
+                onEvent(PersonEvent.OnFilterTypeSelected(it))
             }
         )
 
         PersonList(
             modifier = Modifier
-                .weight(1f)
-                .padding(vertical = 8.dp),
+                .weight(1f),
             state = state,
             persons = personList,
-            onEvent = onEvent,
-            onAddNewPersonClick = if (state.canAdd) {
+//            onEvent = onEvent,
+            /*onAddNewPersonClick = if (state.canAdd) {
                 { filterType ->
                     onEvent(PersonEvent.OnFilterTypeSelected(filterType))
                     onEvent(PersonEvent.OnPersonDialogToggle(PersonDialogToggle.Add))
                 }
-            } else null,
+            } else null,*/
             onEditPersonClick = if (state.canEdit) {
                 { person ->
                     onEvent(PersonEvent.OnPersonDialogToggle(PersonDialogToggle.Edit(person)))
@@ -227,15 +228,13 @@ fun PersonScreenContent(
 fun PersonList(
     modifier: Modifier = Modifier,
     state: PersonScreenState,
-    onEvent: (PersonEvent) -> Unit,
     persons: List<Person> = emptyList(),
-    onAddNewPersonClick: ((String) -> Unit)? = null,
     onEditPersonClick: ((Person) -> Unit)? = null,
     onDeletePersonClick: ((Person) -> Unit)? = null,
 ) {
     if (state.uiState is UiState.Loading) {
         LoadingProgress(true)
-        return@PersonList
+        return
     }
 
     if (persons.isEmpty()) {
@@ -251,7 +250,7 @@ fun PersonList(
                 color = MaterialTheme.colorScheme.onBackground
             )
         }
-        return@PersonList
+        return
     }
 
     LazyColumn(
@@ -300,24 +299,6 @@ fun PersonList(
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 8.dp))
             }
         }
-
-        /*onAddNewPersonClick?.let {
-            item {
-                AddNewButton(
-                    modifier = Modifier
-                        .padding(vertical = 4.dp)
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .border(
-                            width = 2.dp,
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = RoundedCornerShape(4.dp)
-                        ), text = "Add Person",
-                    onClick = {
-                        onAddNewPersonClick(state.selectedType)
-                    })
-            }
-        }*/
     }
 }
 

@@ -2,6 +2,7 @@ package com.fiscal.compass.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
@@ -11,10 +12,13 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface PersonDao {
 
-    @androidx.room.Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(person: PersonEntity): Long
 
-    @androidx.room.Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Update
+    suspend fun update(person: PersonEntity): Int
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(persons: List<PersonEntity>)
 
     @Query("SELECT * FROM persons")
@@ -28,14 +32,11 @@ interface PersonDao {
 
     @Query("SELECT * FROM persons WHERE personId = :id")
     suspend fun getById(id: Long): PersonEntity?
-
     @Query("SELECT * FROM persons WHERE personType = :type")
     suspend fun getByPersonType(type: String): List<PersonEntity>
+
     @Query("SELECT * FROM persons WHERE personType = :type")
     fun getByPersonTypeWithFlow(type: String): Flow<List<PersonEntity>>
-
-    @Update
-    suspend fun update(person: PersonEntity): Int
 
     @Delete
     suspend fun delete(person: PersonEntity)

@@ -54,6 +54,24 @@ class PersonServiceImpl @Inject constructor(
         }
     }
 
+    override suspend fun updatePerson(updatedPerson: Person): Result<Any> {
+        val currentPerson = personDao.getById(updatedPerson.personId)
+        if (currentPerson == null) {
+            return Result.failure(Exception("Person not found."))
+        }
+        val newPerson = currentPerson.copy(
+            name = updatedPerson.name,
+            contact = updatedPerson.contact,
+            personType = PersonType.valueOf(updatedPerson.personType.uppercase())
+        )
+        val result = personDao.update(newPerson)
+        return if (result > 0) {
+            Result.success("Person updated successfully.")
+        } else {
+            Result.failure(Exception("Failed to update person."))
+        }
+    }
+
     override suspend fun deletePerson(person: Person): Result<Any> {
         return try {
             personDao.delete(person.toEntity())

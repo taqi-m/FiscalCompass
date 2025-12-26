@@ -2,7 +2,7 @@ package com.fiscal.compass.domain.util
 
 import java.util.Locale.getDefault
 
-enum class TransactionTypes {
+enum class TransactionType {
     INCOME,
     EXPENSE;
 
@@ -12,7 +12,7 @@ enum class TransactionTypes {
             return entries.map { it.name }
         }
 
-        fun fromString(value: String): TransactionTypes {
+        fun fromString(value: String): TransactionType {
             val caseInsensitiveValue = value.uppercase(getDefault())
             return when (caseInsensitiveValue) {
                 "INCOME" -> INCOME
@@ -21,7 +21,7 @@ enum class TransactionTypes {
             }
         }
 
-        fun toString(transactionType: TransactionTypes): String {
+        fun toString(transactionType: TransactionType): String {
             return when (transactionType) {
                 INCOME -> "INCOME"
                 EXPENSE -> "EXPENSE"

@@ -3,12 +3,7 @@ package com.fiscal.compass.presentation.screens.transactionScreens.addTransactio
 import com.fiscal.compass.domain.model.Transaction
 import com.fiscal.compass.domain.model.base.Category
 import com.fiscal.compass.domain.model.base.Person
-import com.fiscal.compass.presentation.model.CategoryUi
-import com.fiscal.compass.presentation.model.InputField
-import com.fiscal.compass.presentation.model.PersonUi
-import com.fiscal.compass.presentation.model.TransactionType
 import com.fiscal.compass.presentation.screens.category.UiState
-import java.util.Calendar
 
 data class AddTransactionState(
     val uiState: UiState = UiState.Idle,

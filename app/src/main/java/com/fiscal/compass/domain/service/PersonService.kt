@@ -29,6 +29,12 @@ interface PersonService {
      * Deletes a person
      * @return UiState with success message or error
      */
+    suspend fun updatePerson(updatedPerson: Person): Result<Any>
+
+    /**
+     * Deletes a person
+     * @return UiState with success message or error
+     */
     suspend fun deletePerson(person: Person): Result<Any>
 
     /**

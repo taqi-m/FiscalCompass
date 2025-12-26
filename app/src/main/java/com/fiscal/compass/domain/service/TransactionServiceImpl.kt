@@ -1,5 +1,6 @@
 package com.fiscal.compass.domain.service
 
+import android.util.Log
 import com.fiscal.compass.data.mappers.toTransaction
 import com.fiscal.compass.data.rbac.Permission
 import com.fiscal.compass.domain.model.Transaction
@@ -12,15 +13,15 @@ import com.fiscal.compass.domain.repository.PersonRepository
 import com.fiscal.compass.domain.repository.UserRepository
 import com.fiscal.compass.domain.usecase.auth.SessionUseCase
 import com.fiscal.compass.domain.usecase.rbac.CheckPermissionUseCase
-import com.fiscal.compass.domain.util.DateRange
+import com.fiscal.compass.domain.util.SearchCriteria
+import com.fiscal.compass.domain.util.TransactionType
 import com.fiscal.compass.domain.validation.PaymentValidation
-import com.fiscal.compass.presentation.model.TransactionType
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -194,7 +195,7 @@ class TransactionServiceImpl @Inject constructor(
         }
     }
 
-    override suspend fun searchTransactions(
+/*    override suspend fun searchTransactions(
         personIds: List<Long>?,
         categoryIds: List<Long>?,
         dateRange: DateRange?,
@@ -265,6 +266,52 @@ class TransactionServiceImpl @Inject constructor(
             null
         }
         return searchTransactions(personIds, categoryIds, dateRange, filterType)
+    }*/
+
+    override suspend fun searchTransactions(searchCriteria: SearchCriteria): Flow<Map<Date, List<Transaction>>> {
+        val dateRange = searchCriteria.getDateRange()
+        val adjustedStartDate = dateRange?.startDate?.let {
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = it
+            calendar.set(Calendar.HOUR_OF_DAY, 0)
+            calendar.set(Calendar.MINUTE, 0)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            calendar.timeInMillis
+        }
+        val adjustedEndDate = dateRange?.endDate?.let {
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = it
+            calendar.set(Calendar.HOUR_OF_DAY, 23)
+            calendar.set(Calendar.MINUTE, 59)
+            calendar.set(Calendar.SECOND, 59)
+            calendar.set(Calendar.MILLISECOND, 999)
+            calendar.timeInMillis
+        }
+
+        val filterType = searchCriteria.getTransactionType()
+        Log.d("TransactionServiceImpl", "searchTransactions: $filterType")
+
+        val personIds = searchCriteria.getPersonIds()
+        val categoryIds = searchCriteria.getCategoryIds()
+
+        val userIds = mutableListOf<String>()
+        val canViewAll = checkPermissionUseCase(Permission.VIEW_ALL_TRANSACTIONS)
+        if (!canViewAll) {
+            userIds.add(getCurrentUserId())
+        }
+
+        val expenseFlow = expenseRepository.getAllFiltered(userIds, personIds, categoryIds, adjustedStartDate, adjustedEndDate).map { expenses -> expenses.map { it.toTransaction() } }
+        val incomeFlow = incomeRepository.getAllFiltered(userIds, personIds, categoryIds, adjustedStartDate, adjustedEndDate).map { incomes -> incomes.map { it.toTransaction() } }
+
+        val transactionFlow: Flow<List<Transaction>> = when (filterType) {
+            TransactionType.EXPENSE -> expenseFlow
+            TransactionType.INCOME -> incomeFlow
+            else -> combine(expenseFlow, incomeFlow) { expenses, incomes ->
+                expenses + incomes
+            }
+        }
+        return mergeAndGroupTransactions(transactionFlow)
     }
 
     override suspend fun loadCurrentMonthTransactions(date: Date?): Flow<Map<Date, List<Transaction>>> {
@@ -301,9 +348,7 @@ class TransactionServiceImpl @Inject constructor(
             endDate = endDate
         )
 
-        return combine(expenseFlow, incomeFlow) { expenses, incomes ->
-            mergeAndGroupTransactions(expenses, incomes)
-        }
+        return mergeAndGroupTransactions(expenseFlow, incomeFlow)
     }
 
     override suspend fun getCurrentMonthIncome(date: Date?): Flow<Double> {
@@ -400,40 +445,72 @@ class TransactionServiceImpl @Inject constructor(
         return ""
     }
 
-    private suspend fun mergeAndGroupTransactions(
-        expenses: List<Expense>,
-        incomes: List<Income>
-    ): Map<Date, List<Transaction>> = coroutineScope {
+    private fun mergeAndGroupTransactions(
+        transactionFlow: Flow<List<Transaction>>
+    ): Flow<Map<Date, List<Transaction>>> {
         val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         
-        // Process expenses and incomes in parallel
-        val expenseTransactionsDeferred = async {
-            expenses.map { expense ->
-                async {
-                    bindCategoryAndPerson(expense.toTransaction())
-                }
-            }.awaitAll()
-        }
-        
-        val incomeTransactionsDeferred = async {
-            incomes.map { income ->
-                async {
-                    bindCategoryAndPerson(income.toTransaction())
-                }
-            }.awaitAll()
-        }
-        
-        // Await both expense and income processing
-        val expenseTransactions = expenseTransactionsDeferred.await()
-        val incomeTransactions = incomeTransactionsDeferred.await()
+        return transactionFlow.map { transactions ->
+            coroutineScope {
+                Log.d("mergeAndGroupTransactions", "transactions: ${transactions.size}")
+                // Process transactions in parallel
+                val processedTransactions = transactions.map { transaction ->
+                    async {
+                        bindCategoryAndPerson(transaction)
+                    }
+                }.awaitAll()
 
-        // Merge, sort and group
-        (expenseTransactions + incomeTransactions)
-            .sortedByDescending { it.date }
-            .groupBy { transaction ->
-                @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-                dateFormatter.parse(dateFormatter.format(transaction.date))
+                // Sort and group
+                processedTransactions
+                    .sortedByDescending { it.date }
+                    .groupBy { transaction ->
+                        @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
+                        dateFormatter.parse(dateFormatter.format(transaction.date))
+                    }
             }
+        }
+    }
+
+    private fun mergeAndGroupTransactions(
+        expenses: Flow<List<Expense>>,
+        incomes: Flow<List<Income>>
+    ): Flow<Map<Date, List<Transaction>>> {
+        val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        
+        return combine(expenses, incomes) { expenseList, incomeList ->
+            coroutineScope {
+                Log.d("mergeAndGroupTransactions", "expenseList: ${expenseList.size}")
+                Log.d("mergeAndGroupTransactions", "incomeList: ${incomeList.size}")
+                // Process expenses and incomes in parallel
+                val expenseTransactionsDeferred = async {
+                    expenseList.map { expense ->
+                        async {
+                            bindCategoryAndPerson(expense.toTransaction())
+                        }
+                    }.awaitAll()
+                }
+                
+                val incomeTransactionsDeferred = async {
+                    incomeList.map { income ->
+                        async {
+                            bindCategoryAndPerson(income.toTransaction())
+                        }
+                    }.awaitAll()
+                }
+                
+                // Await both expense and income processing
+                val expenseTransactions = expenseTransactionsDeferred.await()
+                val incomeTransactions = incomeTransactionsDeferred.await()
+
+                // Merge, sort and group
+                (expenseTransactions + incomeTransactions)
+                    .sortedByDescending { it.date }
+                    .groupBy { transaction ->
+                        @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
+                        dateFormatter.parse(dateFormatter.format(transaction.date))
+                    }
+            }
+        }
     }
 
     private suspend fun bindCategoryAndPerson(transaction: Transaction): Transaction = coroutineScope {
