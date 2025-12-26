@@ -145,7 +145,7 @@ class PersonViewModel @Inject constructor(
                 updateState { copy(uiState = UiState.Loading) }
                 viewModelScope.launch {
                     try {
-                        personService.updatePerson(person.personId, person.name, person.contact ?: "", person.personType)
+                        personService.updatePerson(person)
                         updateState {
                             copy(uiState = UiState.Success("Person edited successfully."))
                         }
