@@ -3,7 +3,8 @@ package com.fiscal.compass.domain.util
 enum class PersonType {
     CUSTOMER,
     DEALER,
-    EMPLOYEE;
+    EMPLOYEE,
+    SHOPKEEPER;
 
     companion object {
         fun getDefaultTypes(): List<String> {
