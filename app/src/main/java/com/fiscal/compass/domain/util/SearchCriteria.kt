@@ -18,7 +18,7 @@ import com.fiscal.compass.domain.model.base.Person
  * @property categories The list of categories associated with the transactions to filter by.
  */
 data class SearchCriteria(
-    private var transactionType : TransactionTypes? = null,
+    private var transactionType : TransactionType? = null,
     private var dateRange: DateRange? = null,
     private var persons: List<Person>? = null,
     private var categories: List<Category>? = null
@@ -27,7 +27,7 @@ data class SearchCriteria(
      * Gets the transaction type for the search criteria.
      * @return The transaction type, or null if not set.
      */
-    fun getTransactionType(): TransactionTypes? {
+    fun getTransactionType(): TransactionType? {
         return transactionType
     }
 
@@ -35,7 +35,7 @@ data class SearchCriteria(
      * Sets the transaction type for the search criteria.
      * @param transactionType The transaction type to set.
      */
-    fun setTransactionType(transactionType: TransactionTypes?) {
+    fun setTransactionType(transactionType: TransactionType?) {
         this.transactionType = transactionType
     }
 

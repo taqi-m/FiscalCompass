@@ -3,7 +3,7 @@ package com.fiscal.compass.domain.service
 import com.fiscal.compass.domain.model.base.Category
 import com.fiscal.compass.domain.model.base.CategoryTree
 import com.fiscal.compass.domain.repository.CategoryRepository
-import com.fiscal.compass.presentation.model.TransactionType
+import com.fiscal.compass.domain.util.TransactionType
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 

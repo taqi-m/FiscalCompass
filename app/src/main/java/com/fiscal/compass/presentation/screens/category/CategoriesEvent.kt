@@ -1,8 +1,8 @@
 package com.fiscal.compass.presentation.screens.category
 
 import com.fiscal.compass.domain.model.base.Category
+import com.fiscal.compass.domain.util.TransactionType
 import com.fiscal.compass.presentation.model.CategoryUi
-import com.fiscal.compass.presentation.model.TransactionType
 
 
 sealed class CategoryDialogToggle {

@@ -1,7 +1,7 @@
 package com.fiscal.compass.domain.service
 
 import com.fiscal.compass.domain.model.Transaction
-import com.fiscal.compass.domain.util.DateRange
+import com.fiscal.compass.domain.util.SearchCriteria
 import kotlinx.coroutines.flow.Flow
 import java.util.Date
 
@@ -14,7 +14,7 @@ interface TransactionService {
 
     suspend fun deleteTransaction(transactionId: Long, isExpense: Boolean)
 
-    suspend fun searchTransactions(
+/*    suspend fun searchTransactions(
         personIds: List<Long>? = null,
         categoryIds: List<Long>? = null,
         dateRange: DateRange? = null,
@@ -27,7 +27,10 @@ interface TransactionService {
         startDate: Long?,
         endDate: Long?,
         filterType: String? = null
-    ): Map<Date, List<Transaction>>
+    ): Map<Date, List<Transaction>>*/
+
+    suspend fun searchTransactions(searchCriteria: SearchCriteria): Flow<Map<Date, List<Transaction>>>
+
 
     suspend fun loadCurrentMonthTransactions(date: Date? = null): Flow<Map<Date, List<Transaction>>>
 
