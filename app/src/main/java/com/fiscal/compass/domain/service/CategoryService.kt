@@ -2,7 +2,7 @@ package com.fiscal.compass.domain.service
 
 import com.fiscal.compass.domain.model.base.Category
 import com.fiscal.compass.domain.model.base.CategoryTree
-import com.fiscal.compass.presentation.model.TransactionType
+import com.fiscal.compass.domain.util.TransactionType
 import kotlinx.coroutines.flow.Flow
 
 interface CategoryService {

@@ -30,9 +30,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.fiscal.compass.domain.util.TransactionType
 import com.fiscal.compass.presentation.mappers.toCategory
 import com.fiscal.compass.presentation.model.CategoryUi
-import com.fiscal.compass.presentation.model.TransactionType
 import com.fiscal.compass.ui.components.buttons.AddNewButton
 import com.fiscal.compass.ui.components.cards.CategoryItem
 import com.fiscal.compass.ui.components.dialogs.AddCategoryDialog

@@ -187,8 +187,7 @@ fun PersonScreenContent(
         SingleSelectionChipGroup(
             modifier = Modifier
                 .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(vertical = 8.dp),
+                .horizontalScroll(rememberScrollState()),
             maxLines = 1,
             items = typeOptions,
             chipToLabel = {it},
@@ -199,17 +198,16 @@ fun PersonScreenContent(
 
         PersonList(
             modifier = Modifier
-                .weight(1f)
-                .padding(vertical = 8.dp),
+                .weight(1f),
             state = state,
             persons = personList,
-            onEvent = onEvent,
-            onAddNewPersonClick = if (state.canAdd) {
+//            onEvent = onEvent,
+            /*onAddNewPersonClick = if (state.canAdd) {
                 { filterType ->
                     onEvent(PersonEvent.OnFilterTypeSelected(filterType))
                     onEvent(PersonEvent.OnPersonDialogToggle(PersonDialogToggle.Add))
                 }
-            } else null,
+            } else null,*/
             onEditPersonClick = if (state.canEdit) {
                 { person ->
                     onEvent(PersonEvent.OnPersonDialogToggle(PersonDialogToggle.Edit(person)))
@@ -230,15 +228,13 @@ fun PersonScreenContent(
 fun PersonList(
     modifier: Modifier = Modifier,
     state: PersonScreenState,
-    onEvent: (PersonEvent) -> Unit,
     persons: List<Person> = emptyList(),
-    onAddNewPersonClick: ((String) -> Unit)? = null,
     onEditPersonClick: ((Person) -> Unit)? = null,
     onDeletePersonClick: ((Person) -> Unit)? = null,
 ) {
     if (state.uiState is UiState.Loading) {
         LoadingProgress(true)
-        return@PersonList
+        return
     }
 
     if (persons.isEmpty()) {
@@ -254,7 +250,7 @@ fun PersonList(
                 color = MaterialTheme.colorScheme.onBackground
             )
         }
-        return@PersonList
+        return
     }
 
     LazyColumn(
