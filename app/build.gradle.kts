@@ -17,13 +17,6 @@ android {
             keyAlias = "testConfig"
             keyPassword = "testConfig"
         }
-
-        create("prod-release") {
-            storeFile = file("prodConfig.jks")
-            storePassword = "roasted@0912"
-            keyAlias = "fiscal-compass"
-            keyPassword = "fiscal101"
-        }
     }
     namespace = "com.fiscal.compass"
     compileSdk = 36
@@ -80,7 +73,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-            signingConfig = signingConfigs.getByName("prod-release")
+            // signingConfig removed (prod-release was removed for security)
         }
         debug {
             isMinifyEnabled = false
