@@ -17,6 +17,13 @@ android {
             keyAlias = "testConfig"
             keyPassword = "testConfig"
         }
+
+        create("prod-release") {
+            storeFile = file("prodConfig.jks")
+            storePassword = "roasted@0912"
+            keyAlias = "fiscal-compass"
+            keyPassword = "fiscal101"
+        }
     }
     namespace = "com.fiscal.compass"
     compileSdk = 36
