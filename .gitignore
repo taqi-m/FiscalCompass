@@ -256,3 +256,7 @@ exports/
 /firestore.indexes.json
 /.firebaserc
 
+# === Exclude all .md files except README.md ===
+/*.md
+!/README.md
+
