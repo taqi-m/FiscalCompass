@@ -16,8 +16,8 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ExpenseDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(expenseEntity: ExpenseEntity): Long
-    
+    suspend fun insert(expenseEntity: ExpenseEntity)
+
     @Update
     suspend fun update(expenseEntity: ExpenseEntity)
     
@@ -31,15 +31,15 @@ interface ExpenseDao {
     fun getAllExpensesByUser(userId: String): Flow<List<ExpenseEntity>>
     
     @Query("SELECT * FROM expenses WHERE expenseId = :id AND isDeleted = 0")
-    suspend fun getExpenseById(id: Long): ExpenseEntity?
-    
+    suspend fun getExpenseById(id: String): ExpenseEntity?
+
     @Transaction
     @Query("SELECT * FROM expenses WHERE userId = :userId AND isDeleted = 0 ORDER BY date DESC")
     fun getExpensesWithCategory(userId: String): Flow<List<ExpenseWithCategoryDbo>>
 
     @Transaction
     @Query("SELECT * FROM expenses WHERE expenseId = :id AND isDeleted = 0 ORDER BY date DESC LIMIT 1")
-    suspend fun getSingleFullExpense(id: Long): ExpenseFullDbo?
+    suspend fun getSingleFullExpense(id: String): ExpenseFullDbo?
 
     @Query(
         """
@@ -59,9 +59,9 @@ interface ExpenseDao {
     fun getAllFullExpensesFiltered(
         userIds: List<String>,
         hasUserIds: Boolean,
-        personIds: List<Long>,
+        personIds: List<String>,
         hasPersonIds: Boolean,
-        categoryIds: List<Long>,
+        categoryIds: List<String>,
         hasCategoryIds: Boolean,
         startDate: Long? = null,         // nullable → open start
         endDate: Long?  = null            // nullable → open end
@@ -74,8 +74,8 @@ interface ExpenseDao {
     fun getExpensesByDateRangeForAllUsers(startDate: Long, endDate: Long): Flow<List<ExpenseEntity>>
     
     @Query("SELECT * FROM expenses WHERE userId = :userId AND categoryId = :categoryId AND isDeleted = 0 ORDER BY date DESC")
-    fun getExpensesByCategory(userId: String, categoryId: Long): Flow<List<ExpenseEntity>>
-    
+    fun getExpensesByCategory(userId: String, categoryId: String): Flow<List<ExpenseEntity>>
+
     @Query("SELECT SUM(amount) FROM expenses WHERE userId = :userId AND isDeleted = 0")
     fun getTotalExpensesByUser(userId: String): Flow<Double?>
     
@@ -83,7 +83,7 @@ interface ExpenseDao {
     fun getExpenseSumByDateRange(userId: String? = null, startDate: Long, endDate: Long): Flow<Double>
     
     @Query("SELECT categoryId, SUM(amount) as total FROM expenses WHERE userId = :userId AND isDeleted = 0 GROUP BY categoryId ORDER BY total DESC")
-    fun getExpenseSumByCategory(userId: String): Flow<Map<@MapColumn("categoryId") Long?, @MapColumn("total") Double>>
+    fun getExpenseSumByCategory(userId: String): Flow<Map<@MapColumn("categoryId") String?, @MapColumn("total") Double>>
 
     @Query("SELECT COUNT(*) FROM expenses WHERE userId = :userId AND isDeleted = 0")
     suspend fun getExpenseCount(userId: String): Int
@@ -96,38 +96,31 @@ interface ExpenseDao {
     @Query("SELECT * FROM expenses WHERE userId = :userId AND needsSync = 1")
     suspend fun getUnsyncedExpenses(userId: String): List<ExpenseEntity>
 
-    @Query("SELECT * FROM expenses WHERE localId = :localId")
-    suspend fun getExpenseByLocalId(localId: String): ExpenseEntity?
+    @Query("SELECT * FROM expenses WHERE needsSync = 1")
+    suspend fun getUnsyncedExpenses(): List<ExpenseEntity>
+    
+    @Query("SELECT DISTINCT userId FROM expenses WHERE needsSync = 1")
+    suspend fun getAllUnsyncedUserIds(): List<String>
 
-    @Query("SELECT * FROM expenses WHERE firestoreId = :firestoreId")
-    suspend fun getExpenseByFirestoreId(firestoreId: String): ExpenseEntity?
-
-    @Query("""
-        UPDATE expenses 
-        SET firestoreId = :firestoreId, isSynced = :isSynced, 
-            needsSync = 0, lastSyncedAt = :lastSyncedAt 
-        WHERE expenseId = :expenseId
-    """)
+    @Query("UPDATE expenses SET isSynced = 1, needsSync = 0, lastSyncedAt = :lastSyncedAt WHERE expenseId = :expenseId")
     suspend fun updateSyncStatus(
-        expenseId: Long,
-        firestoreId: String,
-        isSynced: Boolean,
+        expenseId: String,
         lastSyncedAt: Long
     )
 
     @Query("UPDATE expenses SET needsSync = 1 WHERE expenseId = :expenseId")
-    suspend fun markForSync(expenseId: Long)
+    suspend fun markForSync(expenseId: String)
 
     @Query("UPDATE expenses SET isSynced = 1 , needsSync = 0 WHERE expenseId = :expenseId")
     suspend fun markExpenseAsSynced(expenseId: String)
 
-    @Query("UPDATE expenses SET isDeleted = 1, needsSync = 0, updatedAt = :timestamp WHERE expenseId = :expenseId")
-    suspend fun markExpenseAsDeleted(expenseId: Long, timestamp: Long = System.currentTimeMillis())
+    @Query("UPDATE expenses SET isDeleted = 1, needsSync = 1, updatedAt = :timestamp WHERE expenseId = :expenseId")
+    suspend fun markExpenseAsDeleted(expenseId: String, timestamp: Long = System.currentTimeMillis())
 
-    @Query("UPDATE expenses SET isDeleted = 1, needsSync = 0, updatedAt = :timestamp WHERE categoryId = :categoryId AND isDeleted = 0")
-    suspend fun markExpensesAsDeletedByCategory(categoryId: Long, timestamp: Long = System.currentTimeMillis())
+    @Query("UPDATE expenses SET isDeleted = 1, needsSync = 1, updatedAt = :timestamp WHERE categoryId = :categoryId AND isDeleted = 0")
+    suspend fun markExpensesAsDeletedByCategory(categoryId: String, timestamp: Long = System.currentTimeMillis())
 
-    @Query("SELECT * FROM expenses WHERE isDeleted = 1 AND isSynced = 0 AND needsSync = 1")
+    @Query("SELECT * FROM expenses WHERE isDeleted = 1 AND needsSync = 1")
     suspend fun getUnsyncedDeletedExpenses(): List<ExpenseEntity>
 
 

@@ -93,33 +93,35 @@ fun GenericExposedDropDownMenu(
     label: String,
     options: List<String>,
     selectedOption: String?,
-    onOptionSelected: (String) -> Unit
+    onOptionSelected: (String) -> Unit,
+    enabled: Boolean = true
 ) {
     if (selectedOption == null) {
         return // If no option is selected, do not render the dropdown
     }
     var expanded by remember { mutableStateOf(false) }
-    val enabled = options.isNotEmpty() && selectedOption.isNotEmpty()
+    val isEnabled = enabled && options.isNotEmpty() && selectedOption.isNotEmpty()
     ExposedDropdownMenuBox(
         expanded = expanded,
-        onExpandedChange = { expanded = !expanded },
+        onExpandedChange = { if (isEnabled) expanded = !expanded },
         modifier = modifier
     ) {
         OutlinedTextField(
             value = selectedOption,
             onValueChange = {},
             readOnly = true,
+            enabled = enabled,
             label = { Text(text = label) },
             trailingIcon = {
                 Icon(
                     imageVector = Icons.Filled.ArrowDropDown,
                     contentDescription = "Dropdown Arrow",
-                    Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled)
+                    Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, isEnabled)
                 )
             },
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
             modifier = Modifier
-                .menuAnchor(ExposedDropdownMenuAnchorType.SecondaryEditable, enabled)
+                .menuAnchor(ExposedDropdownMenuAnchorType.SecondaryEditable, isEnabled)
                 .fillMaxWidth()
         )
         ExposedDropdownMenu(
@@ -137,39 +139,6 @@ fun GenericExposedDropDownMenu(
             }
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showSystemUi = true, showBackground = true)
-@Composable
-fun CustomExposedDropDownMenuPreview() {
-
-    val options = listOf(
-        CategoryUi(
-            categoryId = 1,
-            isExpenseCategory = true,
-            name = "Category 1",
-            color = "#FF0000"
-        ),
-        CategoryUi(
-            categoryId = 2,
-            isExpenseCategory = false,
-            name = "Category 2",
-            color = "#00FF00"
-        ),
-
-    )
-    CustomExposedDropDownMenu(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp),
-        label = "Select an option",
-        options = options,
-        selectedOption = options.first(),
-        onOptionSelected = {
-        },
-        optionToString = { it.name }
-    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

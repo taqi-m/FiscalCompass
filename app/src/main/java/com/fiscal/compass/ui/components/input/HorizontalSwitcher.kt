@@ -15,10 +15,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.fiscal.compass.R
+import com.fiscal.compass.domain.util.DateTimeUtil
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 
 @Composable
 fun MonthSelector(
@@ -26,7 +25,7 @@ fun MonthSelector(
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
     modifier: Modifier = Modifier,
-    dateFormatter: SimpleDateFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault()),
+    dateFormat: String = DateTimeUtil.MONTH_YEAR_FORMAT,
     textStyle: TextStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Black)
 ) {
     Row(
@@ -42,7 +41,7 @@ fun MonthSelector(
         }
 
         Text(
-            text = dateFormatter.format(currentDate),
+            text = DateTimeUtil.formatDate(currentDate, dateFormat),
             modifier = Modifier
                 .weight(1f),
             textAlign = TextAlign.Center,

@@ -1,27 +1,37 @@
 package com.fiscal.compass.data.repositories
 
 import com.fiscal.compass.data.local.dao.PersonDao
-import com.fiscal.compass.data.managers.AutoSyncManager
-import com.fiscal.compass.data.managers.SyncType
 import com.fiscal.compass.data.mappers.toDomain
 import com.fiscal.compass.data.mappers.toEntity
+import com.fiscal.compass.data.remote.RemoteUtil
 import com.fiscal.compass.domain.model.base.Person
+import com.fiscal.compass.domain.model.sync.SyncType
 import com.fiscal.compass.domain.repository.PersonRepository
+import com.fiscal.compass.domain.sync.AutoSyncManager
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class PersonRepositoryImpl @Inject constructor(
     private val personDao: PersonDao,
     private val autoSyncManager: AutoSyncManager
 ) : PersonRepository {
-    override suspend fun getPersonId(id: Long): String {
-        TODO("Not yet implemented")
-    }
-    override suspend fun getAllPersons(): List<Person> {
-        TODO("Not yet implemented")
+    override suspend fun getPersonId(personId: String): String {
+        return personId // Return the same ID as it's already a String
     }
 
-    override suspend fun getPersonById(id: Long): Person? {
-        return personDao.getPersonById(id)?.toDomain()
+    override suspend fun getAllPersons(): Flow<List<Person>> {
+        return personDao.getAllWithFlow().map { it.map { personEntity -> personEntity.toDomain() } }
+    }
+
+    override suspend fun getPersonById(personId: String): Person? {
+        return personDao.getPersonById(personId)?.toDomain()
+    }
+
+    override fun getNextPersonId(): String {
+        val newPersonId = RemoteUtil.generatePersonId()
+        val validPersonId = RemoteUtil.ensureValidPersonId(newPersonId)
+        return validPersonId
     }
 
     override suspend fun addPerson(person: Person): Long {
@@ -38,8 +48,7 @@ class PersonRepositoryImpl @Inject constructor(
             needsSync = true,
             isSynced = false,
             createdAt = existingPerson?.createdAt ?: currentTime,
-            updatedAt = currentTime,
-            firestoreId = existingPerson?.firestoreId
+            updatedAt = currentTime
         )
 
         val dbResult = personDao.update(personEntity)
@@ -48,7 +57,9 @@ class PersonRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deletePerson(person: Person): Long {
-        TODO("Not yet implemented")
+        val result = personDao.markAsDeleted(person.personId)
+        autoSyncManager.triggerSync(SyncType.PERSONS)
+        return result.toLong()
     }
 
 }

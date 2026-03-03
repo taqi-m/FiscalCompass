@@ -91,17 +91,3 @@ fun EditCategoryDialog(
         }
     )
 }
-
-@Preview
-@Composable
-fun EditCategoryDialogPreview() {
-    val category = Category(
-        name = "Gardening Tools",
-        description = "Tools for gardening",
-        isExpenseCategory = true
-    )
-    EditCategoryDialog(
-        category = category,
-        onEditCategory = {},
-        onDismiss = {})
-}

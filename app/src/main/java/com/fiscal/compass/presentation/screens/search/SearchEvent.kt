@@ -4,19 +4,18 @@ import com.fiscal.compass.domain.util.DateRange
 import com.fiscal.compass.domain.util.TransactionType
 
 sealed class SearchEvent {
-    object OnFilterIconClicked : SearchEvent()
-    object OnDismissFilterDialog : SearchEvent()
-    data class UpdateFilterType(val type: TransactionType?) : SearchEvent()
-    data class UpdateDateRange(val dateRange: DateRange?) : SearchEvent()
-    data class SubmitFilterCategory(val categoryId: Long) : SearchEvent()
-    data class SubmitFilterPerson(val personId: Long) : SearchEvent()
-    data class StartDateSelected(val startDate: Long) : SearchEvent()
-    data class EndDateSelected(val endDate: Long) : SearchEvent()
-    object NavigateToCategorySelection : SearchEvent()
-    object NavigateToPersonSelection : SearchEvent()
-    object ResetNavigation: SearchEvent()
-    data class UpdateSelectedCategories(val categoryIds: List<Long>) : SearchEvent()
-    data class UpdateSelectedPersons(val personIds: List<Long>) : SearchEvent()
-    object ApplyFilters : SearchEvent()
-    object ClearFilters : SearchEvent()
+    // Filter events for temp criteria (uncommitted changes)
+    data class UpdateTempFilterType(val type: TransactionType?) : SearchEvent()
+    data class UpdateTempDateRange(val dateRange: DateRange?) : SearchEvent()
+    data class TempStartDateSelected(val startDate: Long) : SearchEvent()
+    data class TempEndDateSelected(val endDate: Long) : SearchEvent()
+
+    // Selection update events (from navigation results)
+    data class UpdateSelectedCategories(val categoryIds: List<String>) : SearchEvent()
+    data class UpdateSelectedPersons(val personIds: List<String>) : SearchEvent()
+
+    // Filter action events
+    data object ApplyFilters : SearchEvent()
+    data object ClearFilters : SearchEvent()
+    data object ResetTempFilters : SearchEvent()
 }

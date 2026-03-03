@@ -1,14 +1,15 @@
 package com.fiscal.compass.data.remote.sync
 
 import com.fiscal.compass.domain.interfaces.SyncService
+import com.fiscal.compass.domain.sync.EnhancedSyncManager
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class EnhancedSyncManagerImpl @Inject constructor(
     private val enhancedSyncManager: EnhancedSyncManager
 ) : SyncService {
-    override suspend fun syncAllData() {
-        enhancedSyncManager.syncAllData()
-    }
+    override suspend fun syncAllData(): Flow<Int> = enhancedSyncManager.syncAllData()
+
 
     override suspend fun syncCategories() {
         enhancedSyncManager.syncCategories()

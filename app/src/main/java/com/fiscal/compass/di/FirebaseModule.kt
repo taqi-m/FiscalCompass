@@ -3,13 +3,13 @@ package com.fiscal.compass.di
 import android.util.Log
 import com.fiscal.compass.BuildConfig
 import com.google.firebase.auth.FirebaseAuth
-import com. google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreSettings
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.functions.FirebaseFunctions
 import dagger.Module
-import dagger. Provides
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import javax. inject.Singleton
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -54,9 +54,31 @@ object FirebaseModule {
                 Log.e("FirebaseModule", "❌ Failed to connect to Firestore Emulator", e)
             }
         } else {
-            Log. d("FirebaseModule", "🚀 Using Production Firebase Firestore")
+            Log.d("FirebaseModule", "🚀 Using Production Firebase Firestore")
         }
 
         return firestore
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseFunctions(): FirebaseFunctions {
+        val functions = FirebaseFunctions.getInstance()
+
+        if (BuildConfig.USE_EMULATOR) {
+            try {
+                functions.useEmulator(
+                    BuildConfig.EMULATOR_HOST,
+                    BuildConfig.FUNCTIONS_EMULATOR_PORT
+                )
+                Log.d("FirebaseModule", "✅ Functions Emulator connected: ${BuildConfig.EMULATOR_HOST}:${BuildConfig.FUNCTIONS_EMULATOR_PORT}")
+            } catch (e: Exception) {
+                Log.e("FirebaseModule", "❌ Failed to connect to Functions Emulator", e)
+            }
+        } else {
+            Log.d("FirebaseModule", "🚀 Using Production Firebase Functions")
+        }
+
+        return functions
     }
 }

@@ -4,11 +4,17 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.PropertyName
 
 data class ExpenseDto(
-    @get:PropertyName("firestoreId") @set:PropertyName("firestoreId")
-    var firestoreId: String = "",
+    @get:PropertyName("id") @set:PropertyName("expenseId")
+    var id: String = "",
 
-    @get:PropertyName("localId") @set:PropertyName("localId")
-    var localId: String = "",
+    @get:PropertyName("userId") @set:PropertyName("userId")
+    var userId: String = "",
+
+    @get:PropertyName("categoryId") @set:PropertyName("categoryId")
+    var categoryId: String = "",
+
+    @get:PropertyName("personId") @set:PropertyName("personId")
+    var personId: String? = null,
 
     @get:PropertyName("amount") @set:PropertyName("amount")
     var amount: Double = 0.0,
@@ -21,15 +27,6 @@ data class ExpenseDto(
 
     @get:PropertyName("date") @set:PropertyName("date")
     var date: Timestamp = Timestamp.now(),
-
-    @get:PropertyName("categoryFirestoreId") @set:PropertyName("categoryFirestoreId")
-    var categoryFirestoreId: String = "",
-
-    @get:PropertyName("userId") @set:PropertyName("userId")
-    var userId: String = "",
-
-    @get:PropertyName("personFirestoreId") @set:PropertyName("personFirestoreId")
-    var personFirestoreId: String? = null,
 
     @get:PropertyName("paymentMethod") @set:PropertyName("paymentMethod")
     var paymentMethod: String? = null,
@@ -54,12 +51,6 @@ data class ExpenseDto(
 
     @get:PropertyName("isDeleted") @set:PropertyName("isDeleted")
     var isDeleted: Boolean = false,
-
-    @get:PropertyName("isSynced") @set:PropertyName("isSynced")
-    var isSynced: Boolean = false,
-
-    @get:PropertyName("needsSync") @set:PropertyName("needsSync")
-    var needsSync: Boolean = true,
 
     @get:PropertyName("lastSyncedAt") @set:PropertyName("lastSyncedAt")
     var lastSyncedAt: Timestamp? = null

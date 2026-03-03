@@ -11,10 +11,8 @@ import java.util.UUID
     tableName = "persons"
 )
 data class PersonEntity(
-    @PrimaryKey(autoGenerate = true)
-    val personId: Long = 0,
-    val firestoreId: String? = null,
-    val localId: String = UUID.randomUUID().toString(),
+    @PrimaryKey
+    val personId: String,
     val name: String,
     val personType: PersonType,
     val contact: String? = null,

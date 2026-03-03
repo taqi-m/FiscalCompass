@@ -1,14 +1,14 @@
 package com.fiscal.compass.domain.sync
 
 import android.util.Log
-import com.fiscal.compass.data.managers.SyncStatus
-import com.fiscal.compass.data.managers.SyncType
 import com.fiscal.compass.domain.interfaces.AuthService
 import com.fiscal.compass.domain.interfaces.LocalDataSource
 import com.fiscal.compass.domain.interfaces.NetworkStateProvider
 import com.fiscal.compass.domain.interfaces.Preferences
 import com.fiscal.compass.domain.interfaces.SyncService
 import com.fiscal.compass.domain.interfaces.TimestampProvider
+import com.fiscal.compass.domain.model.sync.SyncStatus
+import com.fiscal.compass.domain.model.sync.SyncType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -39,7 +41,7 @@ class AutoSyncManager @Inject constructor(
 
     private val syncChannel = Channel<SyncType>(Channel.UNLIMITED)
     private val syncQueue = mutableSetOf<SyncType>()
-    private var isSyncing = false
+    private val syncMutex = Mutex()
 
     fun initialize(scope: CoroutineScope) {
         coroutineScope = scope
@@ -76,96 +78,117 @@ class AutoSyncManager @Inject constructor(
     }
 
     private suspend fun processSyncQueue() {
-        val userId = authService.currentUserId ?: return
+        // Skip if a sync is already in progress (mutex is locked)
+        if (syncMutex.isLocked) return
 
-        if (syncQueue.isEmpty()) {
-            return
-        }
+        syncMutex.withLock {
+            val userId = authService.currentUserId ?: return
 
-        if (!networkStateProvider.isOnline()) {
-            updateSyncStatus { copy(isOnline = false, isSyncing = false, syncError = "No network connection") }
-            return
-        }
+            if (syncQueue.isEmpty()) return
 
-        if (isSyncing) {
-            return
-        }
-
-        // Filter sync types based on dependencies
-        val allowedSyncTypes = syncQueue.filter { syncType ->
-            dependencyManager.canSync(syncType, userId)
-        }.toSet()
-
-        if (allowedSyncTypes.isEmpty()) {
-            Log.w(TAG, "No sync types allowed due to dependency constraints")
-            syncQueue.clear()
-            updateSyncStatus { copy(isSyncing = false, syncError = "Dependency constraints not met") }
-            return
-        }
-
-        isSyncing = true
-        updateSyncStatus { copy(isSyncing = true, syncError = null) }
-
-        try {
-            // Update queue with only allowed types and clear the original queue
-            syncQueue.clear()
-            val typesToSync = allowedSyncTypes
-
-            Log.d(TAG, "Starting sync for types: $typesToSync")
-
-            // Sort by priority (critical first)
-            val sortedTypes = typesToSync.sortedBy { type ->
-                when (type) {
-                    SyncType.CATEGORIES -> 0
-                    SyncType.PERSONS -> 1
-                    SyncType.EXPENSES -> 2
-                    SyncType.INCOMES -> 3
-                    SyncType.ALL -> 4
-                }
+            if (!networkStateProvider.isOnline()) {
+                updateSyncStatus { copy(isOnline = false, isSyncing = false, syncError = "No network connection") }
+                return
             }
 
-            when {
-                SyncType.ALL in sortedTypes -> {
-                    syncService.syncAllData()
-                    timestampProvider.updateLastSyncTimestamp(SyncType.ALL)
+            // Filter sync types based on dependencies
+            val allowedSyncTypes = syncQueue.filter { syncType ->
+                dependencyManager.canSync(syncType, userId)
+            }.toSet()
+
+            if (allowedSyncTypes.isEmpty()) {
+                Log.w(TAG, "No sync types allowed due to dependency constraints")
+                syncQueue.clear()
+                updateSyncStatus { copy(isSyncing = false, syncError = "Dependency constraints not met") }
+                return
+            }
+
+            updateSyncStatus { copy(isSyncing = true, syncError = null) }
+
+            try {
+                // Update queue with only allowed types and clear the original queue
+                syncQueue.clear()
+                val typesToSync = allowedSyncTypes
+
+                Log.d(TAG, "Starting sync for types: $typesToSync")
+
+                // Sort by priority (critical first)
+                val sortedTypes = typesToSync.sortedBy { type ->
+                    when (type) {
+                        SyncType.USERS -> 0
+                        SyncType.CATEGORIES -> 1
+                        SyncType.PERSONS -> 2
+                        SyncType.EXPENSES -> 3
+                        SyncType.INCOMES -> 4
+                        SyncType.ALL -> 5
+                    }
                 }
-                else -> {
-                    sortedTypes.forEach { type ->
-                        when (type) {
-                            SyncType.CATEGORIES -> syncService.syncCategories()
-                            SyncType.PERSONS -> syncService.syncPersons()
-                            SyncType.EXPENSES -> syncService.syncExpenses()
-                            SyncType.INCOMES -> syncService.syncIncomes()
-                            SyncType.ALL -> { /* Already handled above */ }
+
+                when {
+                    SyncType.ALL in sortedTypes -> {
+                        syncService.syncAllData().collect()
+                        timestampProvider.updateLastSyncTimestamp(SyncType.ALL)
+                    }
+                    else -> {
+                        sortedTypes.forEach { type ->
+                            when (type) {
+                                SyncType.USERS -> { }
+                                SyncType.CATEGORIES -> syncService.syncCategories()
+                                SyncType.PERSONS -> syncService.syncPersons()
+                                SyncType.EXPENSES -> syncService.syncExpenses()
+                                SyncType.INCOMES -> syncService.syncIncomes()
+                                SyncType.ALL -> { /* Already handled above */ }
+                            }
                         }
                     }
                 }
+
+                preferences.saveInt("sync_retry_count", 0)
+
+                updateSyncStatus {
+                    copy(
+                        isSyncing = false,
+                        lastSyncTime = System.currentTimeMillis(),
+                        syncError = null
+                    )
+                }
+
+            } catch (e: Exception) {
+                Log.e(TAG, "Sync failed", e)
+                updateSyncStatus { copy(isSyncing = false, syncError = e.message) }
+
+                // Retry logic with exponential backoff
+                scheduleRetry(allowedSyncTypes)
             }
+        }
+    }
 
-            preferences.saveInt("sync_retry_count", 0)
-
-            updateSyncStatus {
-                copy(
-                    isSyncing = false,
-                    lastSyncTime = System.currentTimeMillis(),
-                    syncError = null
-                )
+    /**
+     * Force a full bidirectional sync by resetting all timestamps first,
+     * then running a complete sync of all data types.
+     * Mutex-guarded: will wait if auto-sync is already running.
+     */
+    suspend fun forceSyncAll() {
+        syncMutex.withLock {
+            Log.d(TAG, "Force sync started — resetting all timestamps")
+            updateSyncStatus { copy(isSyncing = true, syncError = null) }
+            try {
+                timestampProvider.resetTimestamps()
+                syncService.syncAllData().collect()
+                timestampProvider.updateLastSyncTimestamp(SyncType.ALL)
+                preferences.saveInt("sync_retry_count", 0)
+                updateSyncStatus {
+                    copy(
+                        isSyncing = false,
+                        lastSyncTime = System.currentTimeMillis(),
+                        syncError = null
+                    )
+                }
+                Log.d(TAG, "Force sync completed")
+            } catch (e: Exception) {
+                Log.e(TAG, "Force sync failed", e)
+                updateSyncStatus { copy(isSyncing = false, syncError = e.message) }
             }
-
-        } catch (e: Exception) {
-            Log.e(TAG, "Sync failed", e)
-            updateSyncStatus {
-                copy(
-                    isSyncing = false,
-                    syncError = e.message
-                )
-            }
-
-            // Retry logic with exponential backoff
-            scheduleRetry(allowedSyncTypes)
-        } finally {
-            isSyncing = false
-            updateSyncStatus { copy(isSyncing = false) }
         }
     }
 
@@ -218,7 +241,7 @@ class AutoSyncManager @Inject constructor(
                 // Auto-trigger sync if there's unsynced data and we're online
                 val userId = authService.currentUserId
                 if ((unsyncedExpenses > 0 || unsyncedIncomes > 0) &&
-                    networkStateProvider.isOnline() && !isSyncing && userId != null &&
+                    networkStateProvider.isOnline() && !syncMutex.isLocked && userId != null &&
                     dependencyManager.isInitialized(SyncType.ALL, userId)) {
                     delay(2000) // Small delay to batch operations
                     triggerSync(SyncType.ALL)

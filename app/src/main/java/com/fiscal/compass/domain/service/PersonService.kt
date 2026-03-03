@@ -19,7 +19,7 @@ interface PersonService {
      * @return UiState with success message or error
      */
     suspend fun updatePerson(
-        personId: Long,
+        personId: String,
         name: String,
         contact: String,
         personType: String
@@ -48,12 +48,7 @@ interface PersonService {
     suspend fun getAllPersons(): List<Person>
 
     /**
-     * Gets persons by type with Flow
-     */
-    suspend fun getPersonByType(type: String): Flow<List<Person>>
-
-    /**
      * Gets a person by ID
      */
-    suspend fun getPersonById(id: Long): Person?
+    suspend fun getPersonById(personId: String): Person?
 }

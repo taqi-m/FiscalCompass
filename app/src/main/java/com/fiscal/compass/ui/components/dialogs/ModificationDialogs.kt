@@ -102,23 +102,6 @@ fun EditTransactionDialog(
     )
 }
 
-@Preview
-@Composable
-fun EditDialogPreview() {
-    FiscalCompassTheme {
-        EditTransactionDialog(
-            transaction = ExpenseEntity(
-                amount = 50.0,
-                description = "Groceries",
-                date = Date().time,
-                categoryId = 1,
-                userId = "1"
-            ),
-            onDismissRequest = {}
-        ) {}
-    }
-}
-
 
 @Composable
 fun EditExpenseContent(
@@ -138,24 +121,6 @@ fun EditExpenseContent(
             placeholder = "Description",
             value = expense.description,
             onValueChange = {},
-        )
-    }
-}
-
-@Preview(
-    showBackground = true
-)
-@Composable
-fun EditExpenseContentPreview() {
-    FiscalCompassTheme {
-        EditExpenseContent(
-            expense = ExpenseEntity(
-                description = "Groceries",
-                amount = 50.0,
-                date = Date().time,
-                categoryId = 1,
-                userId = "1"
-            )
         )
     }
 }

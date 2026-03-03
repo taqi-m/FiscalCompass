@@ -10,6 +10,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.fiscal.compass.domain.repository.AppPreferenceRepository
+import com.fiscal.compass.domain.service.analytics.AnalyticsService
 import com.fiscal.compass.presentation.navigation.AppNavigation
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
 import com.fiscal.compass.ui.util.LocalDarkTheme
@@ -21,6 +22,9 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
     @Inject
     lateinit var preferenceManager: AppPreferenceRepository
+    @Inject
+    lateinit var analyticsService: AnalyticsService
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -34,7 +38,11 @@ class MainActivity : ComponentActivity() {
                         color = MaterialTheme.colorScheme.background
                     ) {
                         val navController = rememberNavController()
-                        AppNavigation(navController = navController, preferenceManager)
+                        AppNavigation(
+                            navController = navController,
+                            prefs = preferenceManager,
+                            analyticsService = analyticsService
+                        )
                     }
                 }
             }

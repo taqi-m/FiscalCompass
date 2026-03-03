@@ -1,119 +1,64 @@
 package com.fiscal.compass.presentation.screens.sync
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fiscal.compass.domain.interfaces.LocalDataSource
-import com.fiscal.compass.domain.interfaces.NetworkStateProvider
-import com.fiscal.compass.domain.interfaces.SyncService
+import com.fiscal.compass.domain.service.analytics.AnalyticsEvent
+import com.fiscal.compass.domain.service.analytics.AnalyticsService
+import com.fiscal.compass.domain.sync.AutoSyncManager
+import com.fiscal.compass.domain.usecase.sync.ForceSyncUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SyncViewModel @Inject constructor(
-    private val localDataSource: LocalDataSource,
-    private val networkDataSource: NetworkStateProvider,
-    private val syncService: SyncService
-): ViewModel(){
-    private val _state = MutableStateFlow(SyncScreenState())
-    val state: StateFlow<SyncScreenState> = _state.asStateFlow()
+    private val autoSyncManager: AutoSyncManager,
+    private val forceSyncUseCase: ForceSyncUseCase,
+    private val analyticsService: AnalyticsService,
+) : ViewModel() {
 
-    private val coroutineScope = viewModelScope
-    private var unsyncedDataCollectionJob: Job? = null
-
-
-    init {
-        coroutineScope.launch {
-            checkConnectivityStatus()
+    val state: StateFlow<SyncScreenState> = autoSyncManager.syncStatusFlow
+        .map { status ->
+            SyncScreenState(
+                isSyncing       = status.isSyncing,
+                isOnline        = status.isOnline,
+                pendingExpenses = status.pendingExpenses,
+                pendingIncomes  = status.pendingIncomes,
+                lastSyncTime    = status.lastSyncTime,
+                errorMessage    = status.syncError
+            )
         }
-        coroutineScope.launch {
-            checkUnsyncedData()
-            collectUnsyncedCounts()
-        }
-    }
-
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = SyncScreenState()
+        )
 
     fun onEvent(event: SyncEvent) {
         when (event) {
-            is SyncEvent.CancelSync -> {
-
-            }
-            is SyncEvent.SyncAll -> {
-                coroutineScope.launch {
-                    updateState {
-                        copy(
-                            isSyncing = true
-                        )
-                    }
+            is SyncEvent.ForceSync -> {
+                val startTime = System.currentTimeMillis()
+                analyticsService.logEvent(AnalyticsEvent.SyncStarted)
+                viewModelScope.launch {
                     try {
-                        syncService.syncAllData()
+                        forceSyncUseCase()
+                        val duration = System.currentTimeMillis() - startTime
+                        analyticsService.logEvent(AnalyticsEvent.SyncCompleted(0, duration))
                     } catch (e: Exception) {
-                        // Handle exception
-                    } finally {
-                        updateState {
-                            copy(
-                                isSyncing = false
-                            )
-                        }
-                        checkUnsyncedData()
+                        Log.e(TAG, "Force sync failed", e)
+                        analyticsService.logEvent(AnalyticsEvent.SyncFailed(e.message ?: "Unknown error"))
                     }
                 }
             }
         }
     }
 
-    private suspend fun checkUnsyncedData() {
-        val hasUnsyncedData = localDataSource.hasUnsyncedData()
-        updateState {
-            copy(
-                hasUnsyncedData = hasUnsyncedData,
-            )
-        }
-    }
-
-    private fun collectUnsyncedCounts() {
-        unsyncedDataCollectionJob?.cancel()
-        unsyncedDataCollectionJob = coroutineScope.launch(Dispatchers.IO) {
-            try {
-                val dataFlow = combine(
-                    localDataSource.getUnsyncedExpenseCount(),
-                    localDataSource.getUnsyncedIncomeCount(),
-                ) { expenseCount, incomeCount ->
-                    Pair(expenseCount, incomeCount)
-                }.collect { (expenseCount, incomeCount) ->
-                    updateState {
-                        copy(
-                            unsyncedExpenseCount = expenseCount,
-                            unsyncedIncomeCount = incomeCount,
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                // Handle exception
-            }
-        }
-    }
-
-    private suspend fun checkConnectivityStatus() {
-        val isConnected = networkDataSource.networkStateFlow
-        updateState {
-            copy(
-                isConnected = isConnected,
-            )
-        }
-    }
-
-    private fun resetState() {
-        _state.value = SyncScreenState()
-    }
-
-    private fun updateState(update: SyncScreenState.() -> SyncScreenState) {
-        _state.value = _state.value.update()
+    private companion object {
+        const val TAG = "SyncViewModel"
     }
 }

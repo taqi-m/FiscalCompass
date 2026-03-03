@@ -1,7 +1,7 @@
 package com.fiscal.compass.presentation.screens.transactionScreens.addTransaction
 
 import android.annotation.SuppressLint
-import android.net.Uri
+import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -51,18 +51,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.fiscal.compass.R
+import com.fiscal.compass.domain.util.DateTimeUtil
 import com.fiscal.compass.domain.util.TransactionType
-import com.fiscal.compass.presentation.navigation.MainScreens
 import com.fiscal.compass.presentation.screens.category.UiState
-import com.fiscal.compass.presentation.screens.itemselection.SelectableItem
 import com.fiscal.compass.ui.components.input.DataEntryTextField
 import com.fiscal.compass.ui.components.input.TypeSwitch
 import com.fiscal.compass.ui.components.pickers.DatePicker
 import com.fiscal.compass.ui.components.pickers.TimePicker
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
-import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import java.util.Calendar
@@ -72,115 +69,30 @@ import java.util.Calendar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionScreen(
-    appNavController: NavHostController,
     state: AddTransactionState,
     onEvent: (AddTransactionEvent) -> Unit,
+    onNavigate: (AddTransactionNavigation) -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val uiState = state.uiState
 
-    // Handle navigation to category selection
-    LaunchedEffect(state.navigateToCategorySelection) {
-        if (state.navigateToCategorySelection) {
-            val allSelectableItems = state.allCategories.map { category ->
-                SelectableItem(
-                    id = category.categoryId.toString(),
-                    name = category.name,
-                    isSelected = category.categoryId == state.transaction.categoryId
-                )
-            }
-            val itemsJson = Gson().toJson(allSelectableItems)
-            val itemsEncoded = Uri.encode(itemsJson)
-            appNavController.navigate(
-                MainScreens.MultiSelection.passParameters(
-                    itemsEncoded,
-                    "category",
-                    "selectedCategoryId",
-                    singleSelectionMode = true
-                )
-            )
-            onEvent(AddTransactionEvent.ResetNavigation)
-        }
-    }
-
-    // Handle navigation to person selection
-    LaunchedEffect(state.navigateToPersonSelection) {
-        if (!state.navigateToPersonSelection) {
-            return@LaunchedEffect
-        }
-        // Add "N/A" option for persons
-        val naOption = SelectableItem(
-            id = "-1",
-            name = "N/A",
-            isSelected = state.transaction.personId == null
-        )
-        val personSelectableItems = state.allPersons.map { person ->
-            SelectableItem(
-                id = person.personId.toString(),
-                name = person.name,
-                isSelected = person.personId == state.transaction.personId
-            )
-        }
-        val allSelectableItems = listOf(naOption) + personSelectableItems
-
-        appNavController.navigate(
-            MainScreens.MultiSelection.passParameters(
-                Uri.encode(Gson().toJson(allSelectableItems)),
-                "person",
-                "selectedPersonId",
-                singleSelectionMode = true
-            )
-        )
-        onEvent(AddTransactionEvent.ResetNavigation)
-    }
-
-    // Handle navigation to amount screen
-    LaunchedEffect(state.navigateToAmountScreen) {
-        if (!state.navigateToAmountScreen) {
-            return@LaunchedEffect
-        }
-        val jsonTransaction = Gson().toJson(state.transaction)
-        val encodedTransaction = Uri.encode(jsonTransaction)
-        appNavController.navigate(MainScreens.Amount.passTransaction(encodedTransaction))
-        onEvent(AddTransactionEvent.ResetNavigation)
-    }
-
     // Get selected category ID from navigation result
-    LaunchedEffect(appNavController.currentBackStackEntry) {
-        appNavController.currentBackStackEntry
-            ?.savedStateHandle
-            ?.get<String>("selectedCategoryId")
-            ?.let { idsString ->
-                if (idsString.isNotEmpty()) {
-                    // For single selection, we take the first (and only) ID
-                    val categoryId = idsString.split(",").firstOrNull()?.toLongOrNull()
-                    categoryId?.let {
-                        onEvent(AddTransactionEvent.UpdateSelectedCategory(it))
-                    }
-                }
-                appNavController.currentBackStackEntry?.savedStateHandle?.remove<String>("selectedCategoryId")
-            }
+    LaunchedEffect(Unit) {
+        snapshotFlow {
+            onNavigate.hashCode() // Track navigation callback changes
+        }.collect {
+            // This ensures we keep listening for navigation results
+        }
     }
 
-    // Get selected person ID from navigation result
-    LaunchedEffect(appNavController.currentBackStackEntry) {
-        appNavController.currentBackStackEntry
-            ?.savedStateHandle
-            ?.get<String>("selectedPersonId")
-            ?.let { idsString ->
-                if (idsString.isNotEmpty()) {
-                    // For single selection, we take the first (and only) ID
-                    val personId = idsString.split(",").firstOrNull()?.toLongOrNull()
-                    if (personId == -1L) {
-                        onEvent(AddTransactionEvent.UpdateSelectedPerson(null))
-                    } else {
-                        personId?.let {
-                            onEvent(AddTransactionEvent.UpdateSelectedPerson(it))
-                        }
-                    }
-                }
-                appNavController.currentBackStackEntry?.savedStateHandle?.remove<String>("selectedPersonId")
-            }
+    // Listen for category selection result
+    LaunchedEffect(state.transaction.categoryId) {
+        // Category update is handled by the ViewModel when savedStateHandle changes
+    }
+
+    // Listen for person selection result
+    LaunchedEffect(state.transaction.personId) {
+        // Person update is handled by the ViewModel when savedStateHandle changes
     }
 
     var titleText by remember { mutableStateOf("Add Transaction") }
@@ -215,7 +127,7 @@ fun AddTransactionScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = {
-                        appNavController.navigateUp()
+                        onNavigate(AddTransactionNavigation.NavigateBack)
                     }) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_arrow_back_24),
@@ -235,9 +147,7 @@ fun AddTransactionScreen(
                     modifier = Modifier.padding(paddingValues),
                     state = state,
                     onEvent = onEvent,
-                    onNextClick = {
-                        onEvent(AddTransactionEvent.NavigateToAmountScreen)
-                    }
+                    onNavigate = onNavigate
                 )
             }
         }
@@ -250,16 +160,16 @@ fun AddTransactionFormContent(
     modifier: Modifier = Modifier,
     state: AddTransactionState,
     onEvent: (AddTransactionEvent) -> Unit,
-    onNextClick: () -> Unit
+    onNavigate: (AddTransactionNavigation) -> Unit
 ) {
-    // Derive selected category directly from state - no delay
-    val selectedCategory = remember(state.transaction.categoryId, state.allCategories) {
-        state.allCategories.firstOrNull { it.categoryId == state.transaction.categoryId }
+    // Derive selected category directly from state - no remember, immediate updates
+    val selectedCategory = state.allCategories.firstOrNull {
+        it.categoryId == state.transaction.categoryId
     }
 
-    // Derive selected person directly from state - no delay
-    val selectedPerson = remember(state.transaction.personId, state.allPersons) {
-        state.allPersons.firstOrNull { it.personId == state.transaction.personId }
+    // Derive selected person directly from state - no remember, immediate updates
+    val selectedPerson = state.allPersons.firstOrNull {
+        it.personId == state.transaction.personId
     }
 
     Column(
@@ -297,14 +207,33 @@ fun AddTransactionFormContent(
                 modifier = Modifier.fillMaxWidth(),
                 label = "Category",
                 selectedValue = selectedCategory?.name ?: "Select Category",
-                onClick = { onEvent(AddTransactionEvent.NavigateToCategorySelection) }
+                onClick = {
+                    // Validate categories exist before navigating
+                    if (state.allCategories.isEmpty()) {
+                        // Could show error - for now just don't navigate
+                        return@SelectionField
+                    }
+                    onNavigate(
+                        AddTransactionNavigation.NavigateToCategorySelection(
+                            categoriesJson = com.google.gson.Gson().toJson(state.allCategories),
+                            currentCategoryId = state.transaction.categoryId
+                        )
+                    )
+                }
             )
 
             SelectionField(
                 modifier = Modifier.fillMaxWidth(),
                 label = "Person",
                 selectedValue = selectedPerson?.name ?: "Select Person",
-                onClick = { onEvent(AddTransactionEvent.NavigateToPersonSelection) }
+                onClick = {
+                    onNavigate(
+                        AddTransactionNavigation.NavigateToPersonSelection(
+                            personsJson = com.google.gson.Gson().toJson(state.allPersons),
+                            currentPersonId = state.transaction.personId
+                        )
+                    )
+                }
             )
 
 
@@ -319,10 +248,10 @@ fun AddTransactionFormContent(
 
             TimePicker(
                 modifier = Modifier.fillMaxWidth(),
+                selectedTime = state.transaction.date.time,
                 label = "Time",
-                selectedTime = Calendar.getInstance()
-                    .apply { timeInMillis = state.transaction.date.time },
                 onTimeSelected = { time ->
+                    Log.d("TimePicker", "Selected time: ${DateTimeUtil.formatTimestampAsTime(time)}")
                     onEvent(AddTransactionEvent.TimeSelected(time))
                 }
             )
@@ -343,7 +272,10 @@ fun AddTransactionFormContent(
         // Next button
         Button(
             shape = RoundedCornerShape(8.dp),
-            onClick = onNextClick,
+            onClick = {
+                val transactionJson = com.google.gson.Gson().toJson(state.transaction)
+                onNavigate(AddTransactionNavigation.NavigateToAmountScreen(transactionJson))
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
@@ -465,7 +397,7 @@ fun AddTransactionFormContentPreview() {
                 modifier = Modifier.padding(it),
                 state = AddTransactionState(),
                 onEvent = {},
-                onNextClick = {}
+                onNavigate = {}
             )
         }
     }

@@ -1,12 +1,13 @@
 package com.fiscal.compass.domain.model.base
 
+import com.fiscal.compass.domain.model.rbac.Role
 import java.util.Date
 
 data class User(
     val userId: String,
     val username: String,
     val email: String,
-    val userType: String,
+    val userType: Role,
     val passwordHash: String? = null,
     val firstName: String? = null,
     val lastName: String? = null,

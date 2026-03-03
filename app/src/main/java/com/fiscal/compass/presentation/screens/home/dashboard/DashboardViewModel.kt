@@ -46,7 +46,7 @@ class DashboardViewModel @Inject constructor(
             _state.update { it.copy(userInfo = it.userInfo.copy(name = userInfo.userName, profilePictureUrl = userInfo.profilePicUrl)) }
 
             transactionService.getCurrentMonthBalance().collect { balance ->
-                _state.update { it.copy(userInfo = it.userInfo.copy(balance = balance)) }
+                _state.update { it.copy(userInfo = it.userInfo.copy(balance = balance, month = it.userInfo.month)) }
             }
         }
     }

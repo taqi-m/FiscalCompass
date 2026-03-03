@@ -4,8 +4,11 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.PropertyName
 
 data class CategoryDto(
-    @get:PropertyName("firestoreId") @set:PropertyName("firestoreId")
-    var firestoreId: String = "",
+    @get:PropertyName("categoryId") @set:PropertyName("categoryId")
+    var categoryId: String = "",
+
+    @get:PropertyName("name") @set:PropertyName("name")
+    var name: String = "",
 
     @get:PropertyName("color") @set:PropertyName("color")
     var color: Int = 0,
@@ -25,25 +28,12 @@ data class CategoryDto(
     @get:PropertyName("isExpenseCategory") @set:PropertyName("isExpenseCategory")
     var isExpenseCategory: Boolean = false,
 
-    @get:PropertyName("isSynced") @set:PropertyName("isSynced")
-    var isSynced: Boolean = false,
-
     @get:PropertyName("lastSyncedAt") @set:PropertyName("lastSyncedAt")
     var lastSyncedAt: Timestamp? = null,
-
-    @get:PropertyName("name") @set:PropertyName("name")
-    var name: String = "",
 
     @get:PropertyName("isDeleted") @set:PropertyName("isDeleted")
     var isDeleted: Boolean = false,
 
-    @get:PropertyName("needsSync") @set:PropertyName("needsSync")
-    var needsSync: Boolean = false,
-
-    @get:PropertyName("parentCategoryFirestoreId") @set:PropertyName("parentCategoryFirestoreId")
-    var parentCategoryFirestoreId: String = "",
-
     @get:PropertyName("updatedAt") @set:PropertyName("updatedAt")
     var updatedAt: Timestamp = Timestamp.now()
 )
-

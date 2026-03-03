@@ -1,12 +1,10 @@
 package com.fiscal.compass.presentation.screens.auth
 
-import com.fiscal.compass.data.managers.InitializationStatus
+import com.fiscal.compass.domain.initialization.InitializationStatus
 
 data class AuthScreenState(
-    val username: String = "",
     val email: String = "",
     val password: String = "",
-    val isSignUp: Boolean = false,
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val error: String = "",

@@ -29,6 +29,7 @@ sealed class MainScreens(val route: String) {
     object Person : MainScreens("person_screen")
     object Jobs : MainScreens("jobs_screen")
     object Search : MainScreens("search_screen")
+    object SearchFilters : MainScreens("search_filters_screen")
 
     object MultiSelection : MainScreens("multi_selection_screen/{allIds}/{title}/{navKey}/{singleMode}") {
         fun passParameters(allIds: String, title: String, navKey: String, singleSelectionMode: Boolean = false): String {
@@ -47,6 +48,20 @@ sealed class MainScreens(val route: String) {
             return "transaction_detail_screen/$transaction"
         }
     }
+
+    object CreateUser : MainScreens("create_user_screen")
+
+    object AddPerson : MainScreens("add_person_screen/{selectedType}") {
+        fun passSelectedType(selectedType: String): String {
+            return "add_person_screen/$selectedType"
+        }
+    }
+
+    object EditPerson : MainScreens("edit_person_screen/{personJson}") {
+        fun passPersonJson(personJson: String): String {
+            return "edit_person_screen/$personJson"
+        }
+    }
 }
 
 sealed class HomeBottomScreen(val route: String, val label: String, val unselectedIcon: Int,val selectedIcon: Int) {
@@ -55,5 +70,6 @@ sealed class HomeBottomScreen(val route: String, val label: String, val unselect
     object Analytics : HomeBottomScreen("analytics", "Analysis", R.drawable.ic_outlined_data_report_24, selectedIcon = R.drawable.ic_filled_data_report_24)
     object Categories : HomeBottomScreen("categories", "Categories", R.drawable.ic_outlined_categories, selectedIcon = R.drawable.ic_filled_categories)
     object People : HomeBottomScreen("people", "People", R.drawable.ic_outlined_employees_24, selectedIcon = R.drawable.ic_filled_employees_24)
+    object Users: HomeBottomScreen("users", "Users", R.drawable.ic_outlined_employees_24, selectedIcon = R.drawable.ic_filled_employees_24)
 
 }

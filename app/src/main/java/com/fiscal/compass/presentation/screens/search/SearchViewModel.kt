@@ -1,13 +1,15 @@
 package com.fiscal.compass.presentation.screens.search
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fiscal.compass.domain.service.CategoryService
 import com.fiscal.compass.domain.service.PersonService
 import com.fiscal.compass.domain.service.TransactionService
+import com.fiscal.compass.domain.service.analytics.AnalyticsEvent
+import com.fiscal.compass.domain.service.analytics.AnalyticsService
 import com.fiscal.compass.domain.util.DateRange
 import com.fiscal.compass.domain.util.SearchCriteria
-import com.fiscal.compass.presentation.screens.category.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -15,6 +17,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,10 +27,11 @@ class SearchViewModel @Inject constructor(
     private val transactionService: TransactionService,
     private val categoryService: CategoryService,
     private val personService: PersonService,
+    private val analyticsService: AnalyticsService
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(SearchScreenState())
-    val state: StateFlow<SearchScreenState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(SearchResultsState())
+    val state: StateFlow<SearchResultsState> = _state.asStateFlow()
 
     private var searchJob: Job? = null
 
@@ -38,128 +42,90 @@ class SearchViewModel @Inject constructor(
 
     fun onEvent(event: SearchEvent) {
         when (event) {
-            SearchEvent.OnFilterIconClicked -> {
-                updateState { copy(showFilterDialog = true) }
-            }
-            SearchEvent.OnDismissFilterDialog -> {
-                updateState { copy(showFilterDialog = false) }
-            }
-            is SearchEvent.UpdateFilterType -> {
-                val updatedCriteria = state.value.searchCriteria.apply {
-                    setTransactionType(event.type)
-                }
-                updateState { copy(searchCriteria = updatedCriteria) }
-            }
-            is SearchEvent.SubmitFilterCategory -> {
-                val updatedCriteria = state.value.searchCriteria.apply {
-                    val category = state.value.allCategories.find { it.categoryId == event.categoryId }
-                    if (category != null) {
-                        val currentCategories = getCategories() ?: emptyList()
-                        if (currentCategories.any { it.categoryId == event.categoryId }) {
-                            setCategories(currentCategories.filter { it.categoryId != event.categoryId })
-                        } else {
-                            addCategory(category)
-                        }
-                    }
-                }
-                updateState { copy(searchCriteria = updatedCriteria) }
+            is SearchEvent.UpdateTempFilterType -> {
+                val newCriteria = state.value.tempSearchCriteria.withTransactionType(event.type)
+                _state.update { it.copy(tempSearchCriteria = newCriteria) }
             }
 
-            is SearchEvent.SubmitFilterPerson -> {
-                val updatedCriteria = state.value.searchCriteria.apply {
-                    val person = state.value.allPersons.find { it.personId == event.personId }
-                    if (person != null) {
-                        val currentPersons = getPersons() ?: emptyList()
-                        if (currentPersons.any { it.personId == event.personId }) {
-                            setPersons(currentPersons.filter { it.personId != event.personId })
-                        } else {
-                            addPerson(person)
-                        }
-                    }
-                }
-                updateState { copy(searchCriteria = updatedCriteria) }
-            }
-
-            is SearchEvent.StartDateSelected -> {
-                val currentDateRange = state.value.searchCriteria.getDateRange()
+            is SearchEvent.TempStartDateSelected -> {
+                val currentDateRange = state.value.tempSearchCriteria.dateRange
                 val newDateRange = DateRange.from(event.startDate, currentDateRange?.endDate)
-                val updatedCriteria = state.value.searchCriteria.apply {
-                    setDateRange(newDateRange)
-                }
-                updateState { copy(searchCriteria = updatedCriteria) }
+                val newCriteria = state.value.tempSearchCriteria.withDateRange(newDateRange)
+                _state.update { it.copy(tempSearchCriteria = newCriteria) }
             }
 
-            is SearchEvent.EndDateSelected -> {
-                val currentDateRange = state.value.searchCriteria.getDateRange()
+            is SearchEvent.TempEndDateSelected -> {
+                val currentDateRange = state.value.tempSearchCriteria.dateRange
                 val newDateRange = DateRange.from(currentDateRange?.startDate, event.endDate)
-                val updatedCriteria = state.value.searchCriteria.apply {
-                    setDateRange(newDateRange)
-                }
-                updateState { copy(searchCriteria = updatedCriteria) }
-            }
-
-            SearchEvent.NavigateToCategorySelection -> {
-                updateState { copy(navigateToCategorySelection = true) }
-            }
-
-            SearchEvent.NavigateToPersonSelection -> {
-                updateState { copy(navigateToPersonSelection = true) }
-            }
-
-            SearchEvent.ResetNavigation -> {
-                updateState {
-                    copy(
-                        navigateToCategorySelection = false,
-                        navigateToPersonSelection = false
-                    )
-                }
+                val newCriteria = state.value.tempSearchCriteria.withDateRange(newDateRange)
+                _state.update { it.copy(tempSearchCriteria = newCriteria) }
             }
 
             is SearchEvent.UpdateSelectedCategories -> {
+                Log.d("SearchViewModel", "Received category IDs: ${event.categoryIds}")
                 val selectedCategories = state.value.allCategories.filter {
                     event.categoryIds.contains(it.categoryId)
                 }
-                val updatedCriteria = state.value.searchCriteria.apply {
-                    setCategories(selectedCategories)
-                }
-                updateState {
-                    copy(
-                        searchCriteria = updatedCriteria,
-                        navigateToCategorySelection = false
-                    )
-                }
+                val newCriteria = state.value.tempSearchCriteria.withCategories(selectedCategories)
+                Log.d("SearchViewModel", "New category criteria: ${newCriteria.categories}")
+                _state.update { it.copy(tempSearchCriteria = newCriteria) }
+                Log.d("SearchViewModel", "State updated - tempSearchCriteria hash: ${_state.value.tempSearchCriteria.hashCode()}")
             }
 
             is SearchEvent.UpdateSelectedPersons -> {
+                Log.d("SearchViewModel", "Received person IDs: ${event.personIds}")
                 val selectedPersons = state.value.allPersons.filter {
                     event.personIds.contains(it.personId)
                 }
-                val updatedCriteria = state.value.searchCriteria.apply {
-                    setPersons(selectedPersons)
-                }
-                updateState {
-                    copy(
-                        searchCriteria = updatedCriteria,
-                        navigateToPersonSelection = false
-                    )
-                }
+                val newCriteria = state.value.tempSearchCriteria.withPersons(selectedPersons)
+                Log.d("SearchViewModel", "New person criteria: ${newCriteria.persons}")
+                _state.update { it.copy(tempSearchCriteria = newCriteria) }
+                Log.d("SearchViewModel", "State updated - tempSearchCriteria hash: ${_state.value.tempSearchCriteria.hashCode()}")
             }
 
             SearchEvent.ApplyFilters -> {
-                updateState { copy(showFilterDialog = false) }
+                // Log analytics for filters applied
+                val criteria = state.value.tempSearchCriteria
+                analyticsService.logEvent(
+                    AnalyticsEvent.SearchFiltersApplied(
+                        hasTypeFilter = criteria.transactionType != null,
+                        hasDateFilter = criteria.dateRange != null,
+                        hasCategoryFilter = !criteria.categories.isNullOrEmpty(),
+                        hasPersonFilter = !criteria.persons.isNullOrEmpty(),
+                        categoryCount = criteria.categories?.size ?: 0,
+                        personCount = criteria.persons?.size ?: 0
+                    )
+                )
+                // Commit temp criteria to actual search criteria (already immutable, just copy reference)
+                _state.update {
+                    it.copy(searchCriteria = it.tempSearchCriteria)
+                }
                 fetchTransactions()
             }
+
             SearchEvent.ClearFilters -> {
-                updateState {
-                    copy(searchCriteria = SearchCriteria())
+                analyticsService.logEvent(AnalyticsEvent.SearchFiltersCleared)
+                val emptyCriteria = SearchCriteria()
+                _state.update {
+                    it.copy(
+                        searchCriteria = emptyCriteria,
+                        tempSearchCriteria = emptyCriteria
+                    )
                 }
                 fetchTransactions()
             }
-            is SearchEvent.UpdateDateRange -> {
-                val updatedCriteria = state.value.searchCriteria.apply {
-                    setDateRange(event.dateRange)
+
+            SearchEvent.ResetTempFilters -> {
+                Log.d("SearchViewModel", "ResetTempFilters - copying searchCriteria to tempSearchCriteria")
+                // Reset temp criteria to match current search criteria (already immutable, just copy reference)
+                _state.update {
+                    it.copy(tempSearchCriteria = it.searchCriteria)
                 }
-                updateState { copy(searchCriteria = updatedCriteria) }
+            }
+
+            is SearchEvent.UpdateTempDateRange -> {
+                val newCriteria = state.value.tempSearchCriteria.withDateRange(event.dateRange)
+                _state.update { it.copy(tempSearchCriteria = newCriteria) }
             }
         }
     }
@@ -167,14 +133,20 @@ class SearchViewModel @Inject constructor(
     private fun fetchTransactions() {
         searchJob?.cancel()
         searchJob = viewModelScope.launch(Dispatchers.IO) {
-            updateState { copy(uiState = UiState.Loading) }
+            _state.update { it.copy(displayState = SearchResultsDisplayState.Loading) }
             try {
                 val criteria = state.value.searchCriteria
-                transactionService.searchTransactions(criteria).collect {
-                    updateState { copy(uiState = UiState.Idle, searchResults = it) }
+                transactionService.searchTransactions(criteria).collect { results ->
+                    _state.update {
+                        it.copy(displayState = SearchResultsDisplayState.Content(searchResults = results))
+                    }
                 }
             } catch (e: Exception) {
-                updateState { copy(uiState = UiState.Error(e.message ?: "An unexpected error occurred")) }
+                _state.update {
+                    it.copy(displayState = SearchResultsDisplayState.Error(
+                        message = e.message ?: "An unexpected error occurred"
+                    ))
+                }
             }
         }
     }
@@ -184,14 +156,15 @@ class SearchViewModel @Inject constructor(
             try {
                 val categories = categoryService.getAllCategories()
                 val persons = personService.getAllPersons()
-                updateState { copy(allCategories = categories, allPersons = persons) }
+                _state.update {
+                    it.copy(
+                        allCategories = categories,
+                        allPersons = persons
+                    )
+                }
             } catch (e: Exception) {
-                // Handle error if needed
+                // Handle error if needed - could update a separate loading state
             }
         }
-    }
-
-    private fun updateState(update: SearchScreenState.() -> SearchScreenState) {
-        _state.value = _state.value.update()
     }
 }

@@ -25,7 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.fiscal.compass.R
-import com.fiscal.compass.data.managers.InitializationStatus
+import com.fiscal.compass.domain.initialization.InitializationStatus
 
 @Composable
 fun InitializationScreen(

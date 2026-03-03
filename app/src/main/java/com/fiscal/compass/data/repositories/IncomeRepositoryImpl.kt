@@ -1,15 +1,18 @@
 package com.fiscal.compass.data.repositories
 
-import com.fiscal.compass.data.managers.AutoSyncManager
-import com.fiscal.compass.data.managers.SyncType
+// Updated to use String IDs instead of Long IDs for incomes
+import com.fiscal.compass.data.local.dao.IncomeDao
 import com.fiscal.compass.data.mappers.toDomain
 import com.fiscal.compass.data.mappers.toIncomeEntity
 import com.fiscal.compass.data.mappers.toIncomeWithCategory
-import com.fiscal.compass.data.local.dao.IncomeDao
-import com.fiscal.compass.domain.model.base.Income
+import com.fiscal.compass.data.remote.RemoteUtil.ensureValidIncomeId
+import com.fiscal.compass.data.remote.RemoteUtil.generateIncomeId
 import com.fiscal.compass.domain.model.IncomeFull
 import com.fiscal.compass.domain.model.IncomeWithCategory
+import com.fiscal.compass.domain.model.base.Income
+import com.fiscal.compass.domain.model.sync.SyncType
 import com.fiscal.compass.domain.repository.IncomeRepository
+import com.fiscal.compass.domain.sync.AutoSyncManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.Calendar
@@ -22,22 +25,18 @@ class IncomeRepositoryImpl @Inject constructor(
 
     override suspend fun addIncome(income: Income): Long {
         val incomeEntity = income.toIncomeEntity()
-        val dbResult = incomeDao.insert(incomeEntity)
+        incomeDao.insert(incomeEntity)
         autoSyncManager.triggerSync(SyncType.INCOMES)
-        return dbResult
+        return 0L // Placeholder return since insert doesn't return ID for String-based IDs
     }
 
     override suspend fun updateIncome(income: Income) {
-        // Get existing income to preserve localId, firestoreId, and sync fields
+        // Get existing income to preserve sync fields
         val existingIncome = incomeDao.getById(income.incomeId)
             ?: throw IllegalArgumentException("Income with id ${income.incomeId} not found")
         
         // Convert domain model to entity and preserve critical fields
         val updatedIncome = income.toIncomeEntity().copy(
-            localId = existingIncome.localId, // Preserve localId
-            firestoreId = existingIncome.firestoreId, // Preserve firestoreId
-            categoryFirestoreId = existingIncome.categoryFirestoreId, // Preserve categoryFirestoreId
-            personFirestoreId = existingIncome.personFirestoreId, // Preserve personFirestoreId
             isDeleted = existingIncome.isDeleted, // Preserve deletion status
             createdAt = existingIncome.createdAt, // Preserve creation time
             updatedAt = System.currentTimeMillis(),
@@ -54,13 +53,12 @@ class IncomeRepositoryImpl @Inject constructor(
         autoSyncManager.triggerSync(SyncType.INCOMES)
     }
 
-    override suspend fun deleteIncomeById(id: Long) {
-        val income = incomeDao.getById(id)
-            ?: throw IllegalArgumentException("Income with id $id not found")
-        incomeDao.delete(income)
+    override suspend fun deleteIncomeById(id: String) {
+        incomeDao.markIncomeAsDeleted(id, System.currentTimeMillis())
+        autoSyncManager.triggerSync(SyncType.INCOMES)
     }
 
-    override suspend fun getIncomeById(id: Long): Income? {
+    override suspend fun getIncomeById(id: String): Income? {
         return incomeDao.getById(id)?.toDomain()
     }
 
@@ -80,9 +78,6 @@ class IncomeRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getIncomesByCategory(categoryId: Long): List<Income> {
-        TODO("Not yet implemented")
-    }
 
     override suspend fun getIncomesWithCategory(userId: String): Flow<List<IncomeWithCategory>> {
         return incomeDao.getIncomesWithCategory(userId).map { incomeWithCategoryDboList ->
@@ -92,11 +87,11 @@ class IncomeRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getSingleFullIncomeById(id: Long): IncomeFull? {
+    override suspend fun getSingleFullIncomeById(id: String): IncomeFull? {
         return incomeDao.getSingleFullIncome(id)?.toDomain()
     }
 
-    override suspend fun getAllFiltered(userIds: List<String>? ,personIds: List<Long>?, categoryIds: List<Long>?, startDate: Long?, endDate: Long?): Flow<List<Income>> {
+    override suspend fun getAllFiltered(userIds: List<String>?, personIds: List<String>?, categoryIds: List<String>?, startDate: Long?, endDate: Long?): Flow<List<Income>> {
         val finalUserIds = userIds?.takeIf { it.isNotEmpty() } ?: emptyList()
         val finalPersonIds = personIds?.takeIf { it.isNotEmpty() } ?: emptyList()
         val finalCategoryIds = categoryIds?.takeIf { it.isNotEmpty() } ?: emptyList()
@@ -117,9 +112,6 @@ class IncomeRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getTotalIncomes(): Double {
-        TODO("Not yet implemented")
-    }
 
     override suspend fun getIncomesByMonth(month: Int, year: Int): Flow<List<Income>> {
         val calendar = Calendar.getInstance()
@@ -141,16 +133,14 @@ class IncomeRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getNextIncomeId(): String {
+        val newIncomeId = generateIncomeId()
+        val validIncomeId = ensureValidIncomeId(newIncomeId)
+        return validIncomeId
+    }
+
     override suspend fun getSumByDateRange(userId:String?, startDate: Long, endDate: Long): Flow<Double> {
         val userId = userId.takeIf { !it.isNullOrBlank() }
         return incomeDao.getSumByDateRange(userId, startDate, endDate)
-    }
-
-    override suspend fun getIncomesByDateRange(startDate: String, endDate: String): List<Income> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getIncomesByDateRangeAndUser(startDate: String, endDate: String, userId: String): List<Income> {
-        TODO("Not yet implemented")
     }
 }

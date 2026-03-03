@@ -3,6 +3,7 @@ package com.fiscal.compass.presentation.screens.home.dashboard
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -133,13 +135,25 @@ private fun BalanceOverview(
             )
             .padding(24.dp),
         horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text(
-            text = "Total Balance",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onPrimaryContainer
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Total Balance",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            MonthSelector(
+                modifier = Modifier.wrapContentSize(),
+                selectedMonth = "Jan 2023",
+                onMonthSelected = {}
+
+            )
+        }
         Text(
             text = CurrencyFormater.formatCurrency(userInfo.balance),
             style = MaterialTheme.typography.titleLarge,
@@ -148,7 +162,29 @@ private fun BalanceOverview(
     }
 }
 
-@Preview(showBackground = true)
+@Composable
+fun MonthSelector(
+    modifier: Modifier = Modifier,
+    selectedMonth: String,
+    onMonthSelected: (String) -> Unit
+) {
+    Box(
+        modifier = modifier
+            .clip(MaterialTheme.shapes.medium)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Text(
+            modifier = Modifier
+                .padding(8.dp),
+            text = "Jan 2023",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+
+}
+
+//@Preview(showBackground = true)
 @Composable
 private fun BalanceOverviewPreview() {
     val userInfo = UserInfo(name = "John Doe", balance = 12345.67)
@@ -241,9 +277,9 @@ private fun NumberedList(
 }
 
 
-@Preview(
-    showBackground = true
-)
+//@Preview(
+//    showBackground = true
+//)
 @Composable
 private fun TopCategoriesSectionPreview() {
     FiscalCompassTheme {
@@ -285,7 +321,7 @@ private fun RecentTransactionsSection(
             .padding(24.dp),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(12.dp)
-    ){
+    ) {
         Text(text = "Recent Transactions", style = MaterialTheme.typography.titleMedium)
 
         when {
@@ -298,7 +334,7 @@ private fun RecentTransactionsSection(
     }
 }
 
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
 private fun RecentTransactionsSectionPreview() {
     val transactions = TransactionUi.dummyList

@@ -10,6 +10,10 @@ import com.fiscal.compass.domain.service.PersonService
 import com.fiscal.compass.domain.service.PersonServiceImpl
 import com.fiscal.compass.domain.service.TransactionService
 import com.fiscal.compass.domain.service.TransactionServiceImpl
+import com.fiscal.compass.domain.service.UserService
+import com.fiscal.compass.domain.service.UserServiceImpl
+import com.fiscal.compass.domain.sync.strategy.PermissionBasedSyncQueryStrategy
+import com.fiscal.compass.domain.sync.strategy.SyncQueryStrategy
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -49,4 +53,16 @@ abstract class ServiceModule {
     abstract fun bindPersonService(
         personServiceImpl: PersonServiceImpl
     ): PersonService
+
+    @Binds
+    @Singleton
+    abstract fun bindUserService(
+        userServiceImpl: UserServiceImpl
+    ): UserService
+
+    @Binds
+    @Singleton
+    abstract fun bindSyncQueryStrategy(
+        permissionBasedStrategy: PermissionBasedSyncQueryStrategy
+    ): SyncQueryStrategy
 }

@@ -56,6 +56,7 @@ fun DataEntryTextField(
     onValueChange: (String) -> Unit,
     isError: Boolean = false,
     errorMessage: String? = null,
+    enabled: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default.copy(
         imeAction = ImeAction.Next
     )
@@ -80,6 +81,7 @@ fun DataEntryTextField(
             shape = MaterialTheme.shapes.extraSmall,
             colors = OutlinedTextFieldDefaults.colors(),
             isError = isError,
+            enabled = enabled,
             keyboardOptions = keyboardOptions,
             singleLine = singleLine,
             maxLines = maxLines,

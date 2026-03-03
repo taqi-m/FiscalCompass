@@ -3,14 +3,14 @@ package com.fiscal.compass.domain.model.base
 import java.util.Date
 
 data class Expense(
-    val expenseId: Long = 0,
+    val expenseId: String,
     val amount: Double,
     val amountPaid: Double = 0.0,
     val description: String,
     val date: Date,
-    val categoryId: Long,
+    val categoryId: String,
     val userId: String,
-    val personId: Long? = null, // Nullable if not associated with a person
+    val personId: String? = null, // Nullable if not associated with a person
     val paymentMethod: String? = null,
     val location: String? = null,
     val receipt: String? = null, // URL to receipt image

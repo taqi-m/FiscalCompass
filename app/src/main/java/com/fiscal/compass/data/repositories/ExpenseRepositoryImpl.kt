@@ -1,14 +1,17 @@
 package com.fiscal.compass.data.repositories
 
-import com.fiscal.compass.data.managers.AutoSyncManager
-import com.fiscal.compass.data.managers.SyncType
+// Updated to use String IDs instead of Long IDs for expenses
+import com.fiscal.compass.data.local.dao.ExpenseDao
 import com.fiscal.compass.data.mappers.toDomain
 import com.fiscal.compass.data.mappers.toEntity
-import com.fiscal.compass.data.local.dao.ExpenseDao
-import com.fiscal.compass.domain.model.base.Expense
+import com.fiscal.compass.data.remote.RemoteUtil.ensureValidExpenseId
+import com.fiscal.compass.data.remote.RemoteUtil.generateExpenseId
 import com.fiscal.compass.domain.model.ExpenseFull
 import com.fiscal.compass.domain.model.ExpenseWithCategory
+import com.fiscal.compass.domain.model.base.Expense
+import com.fiscal.compass.domain.model.sync.SyncType
 import com.fiscal.compass.domain.repository.ExpenseRepository
+import com.fiscal.compass.domain.sync.AutoSyncManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.Calendar
@@ -21,22 +24,18 @@ class ExpenseRepositoryImpl @Inject constructor(
 
     override suspend fun addExpense(expense: Expense): Long {
         val newExpense = expense.toEntity()
-        val dbResult = expenseDao.insert(newExpense)
+        expenseDao.insert(newExpense)
         autoSyncManager.triggerSync(SyncType.EXPENSES)
-        return dbResult
+        return 0L // Placeholder return since insert doesn't return ID for String-based IDs
     }
 
     override suspend fun updateExpense(expense: Expense) {
-        // Get existing expense to preserve localId, firestoreId, and sync fields
+        // Get existing expense to preserve sync fields
         val existingExpense = expenseDao.getExpenseById(expense.expenseId)
             ?: throw IllegalArgumentException("Expense with id ${expense.expenseId} not found")
         
         // Convert domain model to entity and preserve critical fields
         val updatedExpense = expense.toEntity().copy(
-            localId = existingExpense.localId, // Preserve localId
-            firestoreId = existingExpense.firestoreId, // Preserve firestoreId
-            categoryFirestoreId = existingExpense.categoryFirestoreId, // Preserve categoryFirestoreId
-            personFirestoreId = existingExpense.personFirestoreId, // Preserve personFirestoreId
             isDeleted = existingExpense.isDeleted, // Preserve deletion status
             createdAt = existingExpense.createdAt, // Preserve creation time
             updatedAt = System.currentTimeMillis(),
@@ -53,16 +52,13 @@ class ExpenseRepositoryImpl @Inject constructor(
         autoSyncManager.triggerSync(SyncType.EXPENSES)
     }
 
-    override suspend fun deleteExpenseById(id: Long) {
-        val expense = expenseDao.getExpenseById(id)
-            ?: throw IllegalArgumentException("Expense with id $id not found")
-        expenseDao.delete(expense)
+    override suspend fun deleteExpenseById(id: String) {
+        expenseDao.markExpenseAsDeleted(id, System.currentTimeMillis())
+        autoSyncManager.triggerSync(SyncType.EXPENSES)
     }
 
-    override suspend fun getExpenseById(id: Long): Expense? {
-        return expenseDao.getExpenseById(id)
-            ?.toDomain()
-            ?: throw IllegalArgumentException("Expense with id $id not found")
+    override suspend fun getExpenseById(id: String): Expense? {
+        return expenseDao.getExpenseById(id)?.toDomain()
     }
 
     override suspend fun getAllExpenses(): Flow<List<Expense>> {
@@ -100,9 +96,6 @@ class ExpenseRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getExpensesByCategory(categoryId: Long): List<Expense> {
-        TODO("Not yet implemented")
-    }
 
     override suspend fun getExpensesWithCategory(userId: String): Flow<List<ExpenseWithCategory>> {
         return expenseDao.getExpensesWithCategory(userId).map {
@@ -112,14 +105,14 @@ class ExpenseRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getSingleFulExpenseById(id: Long): ExpenseFull? {
+    override suspend fun getSingleFulExpenseById(id: String): ExpenseFull? {
         return expenseDao.getSingleFullExpense(id)?.toDomain()
     }
 
     override suspend fun getAllFiltered(
         userIds: List<String>?,
-        personIds: List<Long>?,
-        categoryIds: List<Long>?,
+        personIds: List<String>?,
+        categoryIds: List<String>?,
         startDate: Long?,
         endDate: Long?
     ): Flow<List<Expense>> {
@@ -143,16 +136,6 @@ class ExpenseRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getTotalExpenses(): Double {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getExpensesByDateRange(
-        startDate: String,
-        endDate: String
-    ): List<Expense> {
-        TODO("Not yet implemented")
-    }
 
     override fun getSumByDateRange(
         userId: String?,
@@ -161,5 +144,11 @@ class ExpenseRepositoryImpl @Inject constructor(
     ): Flow<Double> {
         val userId = userId.takeIf { !it.isNullOrBlank() }
         return expenseDao.getExpenseSumByDateRange(userId, startDate, endDate)
+    }
+
+    override fun getNextExpenseId(): String {
+        val newExpenseId = generateExpenseId()
+        val validExpenseId = ensureValidExpenseId(newExpenseId)
+        return validExpenseId
     }
 }

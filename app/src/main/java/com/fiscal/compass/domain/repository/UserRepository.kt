@@ -18,8 +18,30 @@ interface UserRepository {
 
     suspend fun markAsLoggedIn(userId: String)
 
-    suspend fun register(username: String, email: String, password: String)
 
     suspend fun logout()
+    
     suspend fun addUserToDatabase(userId: String, username: String, email: String, userType: String)
+    
+    /**
+     * Fetches all users from Firebase Firestore and stores them in local database.
+     * This is typically called during app initialization in admin mode.
+     * 
+     * @return List of UserEntity objects that were synced
+     */
+    suspend fun syncAllUsersFromFirebase(): List<UserEntity>
+    
+    /**
+     * Gets all users from local database
+     * 
+     * @return List of all UserEntity objects in local database
+     */
+    suspend fun getAllLocalUsers(): List<UserEntity>
+    
+    /**
+     * Inserts multiple users into local database
+     * 
+     * @param users List of UserEntity objects to insert
+     */
+    suspend fun insertUsers(users: List<UserEntity>)
 }

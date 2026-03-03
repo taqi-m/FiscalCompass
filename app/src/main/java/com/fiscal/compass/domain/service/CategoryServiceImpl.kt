@@ -1,7 +1,6 @@
 package com.fiscal.compass.domain.service
 
 import com.fiscal.compass.domain.model.base.Category
-import com.fiscal.compass.domain.model.base.CategoryTree
 import com.fiscal.compass.domain.repository.CategoryRepository
 import com.fiscal.compass.domain.util.TransactionType
 import kotlinx.coroutines.flow.Flow
@@ -28,8 +27,12 @@ class CategoryServiceImpl @Inject constructor(
 
             val isExpenseCategory = transactionType == TransactionType.EXPENSE
 
+            val newCategoryId = categoryRepository.getNextCategoryId()
+
+
             // Create a new category
             val newCategory = Category(
+                categoryId = newCategoryId,
                 name = name,
                 description = description,
                 expectedPersonType = expectedPersonType,
@@ -93,26 +96,6 @@ class CategoryServiceImpl @Inject constructor(
         return categoryRepository.getAllCategories()
     }
 
-    override suspend fun getAllCategoryTreeFlow(): Flow<CategoryTree> {
-        return categoryRepository.getAllCategoriesTreeFlow()
-    }
-
-    override suspend fun getExpenseCategoryTreeFlow(): Flow<CategoryTree> {
-        return categoryRepository.getExpenseCategoriesTreeFLow()
-    }
-
-    override suspend fun getIncomeCategoryTreeFlow(): Flow<CategoryTree> {
-        return categoryRepository.getIncomeCategoriesTreeFLow()
-    }
-
-    override suspend fun getIncomeCategoriesTree(): CategoryTree {
-        return categoryRepository.getIncomeCategoriesTree()
-    }
-
-    override suspend fun getExpenseCategoriesTree(): CategoryTree {
-        return categoryRepository.getExpenseCategoriesTree()
-    }
-
     override suspend fun getExpenseCategoriesWithFlow(): Flow<List<Category>> {
         return categoryRepository.getExpenseCategoriesWithFlow()
     }
@@ -129,8 +112,8 @@ class CategoryServiceImpl @Inject constructor(
         return categoryRepository.getIncomeCategories()
     }
 
-    override suspend fun getCategoryById(id: Long): Category? {
-        return categoryRepository.getCategoryById(id)
+    override suspend fun getCategoryById(categoryId: String): Category? {
+        return categoryRepository.getCategoryById(categoryId)
     }
 
     override suspend fun getCategoryByName(name: String): Category? {

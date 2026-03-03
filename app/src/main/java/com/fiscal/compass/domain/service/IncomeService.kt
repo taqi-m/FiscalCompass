@@ -9,7 +9,7 @@ import java.util.Date
 interface IncomeService {
     suspend fun addIncome(
         amount: Double,
-        categoryId: Long,
+        categoryId: String,
         description: String,
         date: Date,
         amountPaid: Double = 0.0
@@ -19,13 +19,13 @@ interface IncomeService {
 
     suspend fun getIncomesWithCategory(userId: String): Flow<List<IncomeWithCategory>>
 
-    suspend fun getSingleFullIncomeById(id: Long): IncomeFull
+    suspend fun getSingleFullIncomeById(incomeId: String): IncomeFull
 
-    suspend fun updateIncomePayment(incomeId: Long, newAmountPaid: Double): Result<Unit>
+    suspend fun updateIncomePayment(incomeId: String, newAmountPaid: Double): Result<Unit>
 
-    suspend fun addPayment(incomeId: Long, paymentAmount: Double): Result<Unit>
+    suspend fun addPayment(incomeId: String, paymentAmount: Double): Result<Unit>
 
-    suspend fun markAsFullyReceived(incomeId: Long): Result<Unit>
+    suspend fun markAsFullyReceived(incomeId: String): Result<Unit>
 
     suspend fun getFullyReceivedIncomes(userId: String): Flow<List<Income>>
 

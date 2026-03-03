@@ -32,7 +32,7 @@ interface IncomeDao {
     fun getAllByUser(userId: String): Flow<List<IncomeEntity>>
 
     @Query("SELECT * FROM incomes WHERE categoryId = :categoryId AND isDeleted = 0 ORDER BY date DESC")
-    fun getAllByCategory(categoryId: Long): Flow<List<IncomeEntity>>
+    fun getAllByCategory(categoryId: String): Flow<List<IncomeEntity>>
 
     @Query("SELECT * FROM incomes WHERE personId = :personId AND isDeleted = 0 ORDER BY date DESC")
     fun getAllByPerson(personId: Long): Flow<List<IncomeEntity>>
@@ -41,7 +41,7 @@ interface IncomeDao {
     fun getAllByDateRange(startDate: Long, endDate: Long): Flow<List<IncomeEntity>>
 
     @Query("SELECT * FROM incomes WHERE incomeId = :id AND isDeleted = 0")
-    suspend fun getById(id: Long): IncomeEntity?
+    suspend fun getById(id: String): IncomeEntity?
 
     @Query("SELECT SUM(amount) FROM incomes WHERE userId = :userId AND isDeleted = 0")
     fun getSumByUser(userId: String): Flow<Double?>
@@ -50,7 +50,7 @@ interface IncomeDao {
     fun getSumByDateRange(userId:String?, startDate: Long, endDate: Long): Flow<Double>
 
     @Query("SELECT categoryId, SUM(amount) as total FROM incomes WHERE userId = :userId AND isDeleted = 0 GROUP BY categoryId ORDER BY total DESC")
-    fun getSumByCategory(userId: String): Flow<Map<@MapColumn("categoryId") Long?, @MapColumn("total") Double>>
+    fun getSumByCategory(userId: String): Flow<Map<@MapColumn("categoryId") String?, @MapColumn("total") Double>>
 
     @Query("SELECT SUM(amount) FROM incomes WHERE personId = :personId AND isDeleted = 0")
     fun getSumByPerson(personId: Long): Flow<Double>
@@ -65,7 +65,7 @@ interface IncomeDao {
 
     @Transaction
     @Query("SELECT * FROM incomes WHERE incomeId = :id AND isDeleted = 0 ORDER BY date DESC LIMIT 1")
-    suspend fun getSingleFullIncome(id: Long): IncomeFullDbo?
+    suspend fun getSingleFullIncome(id: String): IncomeFullDbo?
 
     @Query(
         """
@@ -85,9 +85,9 @@ interface IncomeDao {
     fun getAllFiltered(
         userIds: List<String>,
         hasUserIds: Boolean,
-        personIds: List<Long>,
+        personIds: List<String>,
         hasPersonIds: Boolean,
-        categoryIds: List<Long>,
+        categoryIds: List<String>,
         hasCategoryIds: Boolean,
         startDate: Long? = null,         // nullable → open start
         endDate: Long?  = null            // nullable → open end
@@ -100,11 +100,11 @@ interface IncomeDao {
      * * Sync-related queries
      */
 
-    @Query("UPDATE incomes SET isDeleted = 1, needsSync = 0, updatedAt = :timestamp WHERE incomeId = :incomeId")
-    suspend fun markIncomeAsDeleted(incomeId: Long, timestamp: Long = System.currentTimeMillis())
+    @Query("UPDATE incomes SET isDeleted = 1, needsSync = 1, updatedAt = :timestamp WHERE incomeId = :incomeId")
+    suspend fun markIncomeAsDeleted(incomeId: String, timestamp: Long = System.currentTimeMillis())
 
-    @Query("UPDATE incomes SET isDeleted = 1, needsSync = 0, updatedAt = :timestamp WHERE categoryId = :categoryId AND isDeleted = 0")
-    suspend fun markIncomesAsDeletedByCategory(categoryId: Long, timestamp: Long = System.currentTimeMillis())
+    @Query("UPDATE incomes SET isDeleted = 1, needsSync = 1, updatedAt = :timestamp WHERE categoryId = :categoryId AND isDeleted = 0")
+    suspend fun markIncomesAsDeletedByCategory(categoryId: String, timestamp: Long = System.currentTimeMillis())
 
     @Query("SELECT COUNT(*) FROM incomes WHERE needsSync = 1")
     fun getUnsyncedIncomeCount(): Flow<Int>
@@ -114,18 +114,24 @@ interface IncomeDao {
 
     @Query("SELECT * FROM incomes WHERE userId = :userId AND needsSync = 1")
     suspend fun getUnsyncedIncomes(userId: String): List<IncomeEntity>
+    
+    @Query("SELECT * FROM incomes WHERE needsSync = 1")
+    suspend fun getUnsyncedIncomes(): List<IncomeEntity>
+    
+    @Query("SELECT DISTINCT userId FROM incomes WHERE needsSync = 1")
+    suspend fun getAllUnsyncedUserIds(): List<String>
 
-    @Query("SELECT * FROM incomes WHERE localId = :localId")
-    suspend fun getIncomeByLocalId(localId: String): IncomeEntity?
+    @Query("UPDATE incomes SET isSynced = 1, needsSync = 0, lastSyncedAt = :lastSyncedAt WHERE incomeId = :incomeId")
+    suspend fun updateSyncStatus(incomeId: String, lastSyncedAt: Long)
 
-    @Query(
-        """
-        UPDATE incomes 
-        SET firestoreId = :firestoreId, isSynced = :isSynced, needsSync = 0, lastSyncedAt = :lastSyncedAt 
-        WHERE incomeId = :incomeId
-    """
-    )
-    suspend fun updateSyncStatus(incomeId: Long, firestoreId: String, isSynced: Boolean, lastSyncedAt: Long)
+    @Query("UPDATE incomes SET needsSync = 1 WHERE incomeId = :incomeId")
+    suspend fun markForSync(incomeId: String)
+
+    @Query("UPDATE incomes SET isSynced = 1, needsSync = 0 WHERE incomeId = :incomeId")
+    suspend fun markIncomeAsSynced(incomeId: String)
+
+    @Query("SELECT * FROM incomes WHERE isDeleted = 1 AND needsSync = 1")
+    suspend fun getUnsyncedDeletedIncomes(): List<IncomeEntity>
 
     /** Sync timestamp queries
      *  These help in determining what data needs to be synced
