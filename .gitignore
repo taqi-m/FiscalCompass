@@ -260,3 +260,6 @@ exports/
 /*.md
 !/README.md
 
+# === Temporary files ===
+temp_output.txt
+
