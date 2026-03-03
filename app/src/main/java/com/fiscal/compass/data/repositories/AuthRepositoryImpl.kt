@@ -1,9 +1,9 @@
 package com.fiscal.compass.data.repositories
 
 import com.fiscal.compass.data.local.model.UserEntity
-import com.fiscal.compass.data.rbac.Role
 import com.fiscal.compass.domain.model.Resource
 import com.fiscal.compass.domain.model.dto.UserInfo
+import com.fiscal.compass.domain.model.rbac.Role
 import com.fiscal.compass.domain.repository.AppPreferenceRepository
 import com.fiscal.compass.domain.repository.AuthRepository
 import com.fiscal.compass.domain.repository.UserRepository
@@ -82,6 +82,9 @@ class AuthRepositoryImpl @Inject constructor(
 
     override fun logout(): Flow<Resource<String>> = flow {
         try {
+            // Clear the local database user login tracking
+            userRepository.logout()
+            // Sign out from Firebase
             firebaseAuth.signOut()
         } catch (e: Exception) {
             e.printStackTrace()

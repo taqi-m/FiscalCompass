@@ -16,11 +16,7 @@ class JobsViewModel @Inject constructor(
     val state: StateFlow<JobsScreenState> = _state.asStateFlow()
 
     fun onEvent(event: JobsEvent) {
-        when (event) {
-            // Handle events here
-            JobsEvent.SampleEvent -> TODO()
-            is JobsEvent.SampleEventWithParameter -> TODO()
-        }
+        // Handle events here when added
     }
 
     private fun updateState(update: JobsScreenState.() -> JobsScreenState) {

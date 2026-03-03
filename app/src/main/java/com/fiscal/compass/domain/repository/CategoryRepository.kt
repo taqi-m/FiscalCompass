@@ -1,7 +1,6 @@
 package com.fiscal.compass.domain.repository
 
 import com.fiscal.compass.domain.model.base.Category
-import com.fiscal.compass.domain.model.base.CategoryTree
 import kotlinx.coroutines.flow.Flow
 
 interface CategoryRepository {
@@ -15,17 +14,6 @@ interface CategoryRepository {
 
     suspend fun getAllCategories(): List<Category>
 
-    suspend fun getAllCategoriesTreeFlow(): Flow<CategoryTree>
-
-    suspend fun getExpenseCategoriesTreeFLow(): Flow<CategoryTree>
-
-    suspend fun getExpenseCategoriesTree(): CategoryTree
-
-    suspend fun getIncomeCategoriesTreeFLow(): Flow<CategoryTree>
-
-    suspend fun getIncomeCategoriesTree(): CategoryTree
-
-    suspend fun seedDefaultCategories(defaultCategories: Map<Category, List<Category>>)
 
     suspend fun getIncomeCategoriesWithFlow(): Flow<List<Category>>
 
@@ -35,11 +23,13 @@ interface CategoryRepository {
 
     suspend fun getExpenseCategories(): List<Category>
 
-    suspend fun getCategoryById(id: Long): Category?
-    suspend fun getCategoryNameById(id: Long): String?
+    suspend fun getCategoryById(id: String): Category?
+    suspend fun getCategoryNameById(id: String): String?
 
-    suspend fun isCategoryUsedInExpenses(categoryId: Long): Boolean
+    suspend fun isCategoryUsedInExpenses(categoryId: String): Boolean
 
-    suspend fun isCategoryUsedInIncomes(categoryId: Long): Boolean
+    suspend fun isCategoryUsedInIncomes(categoryId: String): Boolean
     suspend fun getCategoryByName(name: String): Category?
+
+    suspend fun getNextCategoryId(): String
 }

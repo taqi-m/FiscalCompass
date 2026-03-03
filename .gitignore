@@ -246,3 +246,20 @@ serviceAccountKey.json
 
 # Exports
 exports/
+
+# === CLEANUP: Removed from tracking ===
+/.idea/
+/functions/
+/EMULATOR_SETUP.md
+/firebase.json
+/firestore.rules
+/firestore.indexes.json
+/.firebaserc
+
+# === Exclude all .md files except README.md ===
+/*.md
+!/README.md
+
+# === Temporary files ===
+temp_output.txt
+

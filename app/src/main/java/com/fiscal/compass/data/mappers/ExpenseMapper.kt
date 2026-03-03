@@ -32,28 +32,6 @@ fun ExpenseEntity.toDomain(): Expense {
     )
 }
 
-fun ExpenseEntity.toRemote(): Map<String, Any?> {
-    return mapOf(
-        "expenseId" to this.expenseId,
-        "amount" to this.amount,
-        "amountPaid" to this.amountPaid,
-        "description" to this.description,
-        "date" to Timestamp(Date(this.date)),
-        "categoryId" to this.categoryId,
-        "categoryFirestoreId" to this.categoryFirestoreId,
-        "userId" to this.userId,
-        "personId" to this.personId,
-        "personFirestoreId" to this.personFirestoreId,
-        "paymentMethod" to this.paymentMethod,
-        "location" to this.location,
-        "receipt" to this.receipt,
-        "isRecurring" to this.isRecurring,
-        "recurringFrequency" to this.recurringFrequency,
-        "createdAt" to Timestamp(Date(this.createdAt)),
-        "updatedAt" to Timestamp(Date(this.updatedAt))
-    )
-}
-
 fun Expense.toTransaction(): Transaction {
     return Transaction(
         transactionId = this.expenseId,
@@ -84,7 +62,12 @@ fun Expense.toEntity(): ExpenseEntity {
         isRecurring = this.isRecurring,
         recurringFrequency = this.recurringFrequency,
         createdAt = this.createdAt.time,
-        updatedAt = this.updatedAt.time
+        updatedAt = this.updatedAt.time,
+        // Default sync tracking fields for new expenses
+        isDeleted = false,
+        isSynced = false,
+        needsSync = true,
+        lastSyncedAt = null
     )
 }
 
@@ -93,15 +76,14 @@ fun Expense.toEntity(): ExpenseEntity {
  */
 fun ExpenseEntity.toDto(): ExpenseDto {
     return ExpenseDto(
-        firestoreId = firestoreId ?: "",
-        localId = localId,
+        id = expenseId,
         amount = amount,
         amountPaid = amountPaid,
+        userId = userId,
+        categoryId = categoryId,
+        personId = personId,
         description = description,
         date = Timestamp(date / 1000, ((date % 1000) * 1_000_000).toInt()),
-        categoryFirestoreId = categoryFirestoreId ?: "",
-        userId = userId,
-        personFirestoreId = personFirestoreId,
         paymentMethod = paymentMethod,
         location = location,
         receipt = receipt,
@@ -110,8 +92,6 @@ fun ExpenseEntity.toDto(): ExpenseDto {
         createdAt = Timestamp(createdAt / 1000, ((createdAt % 1000) * 1_000_000).toInt()),
         updatedAt = Timestamp(updatedAt / 1000, ((updatedAt % 1000) * 1_000_000).toInt()),
         isDeleted = isDeleted,
-        isSynced = isSynced,
-        needsSync = needsSync,
         lastSyncedAt = lastSyncedAt?.let {
             Timestamp(it / 1000, ((it % 1000) * 1_000_000).toInt())
         }
@@ -123,17 +103,14 @@ fun ExpenseEntity.toDto(): ExpenseDto {
  */
 fun ExpenseDto.toEntity(): ExpenseEntity {
     return ExpenseEntity(
-        firestoreId = firestoreId.ifBlank { null },
-        localId = localId,
+        expenseId = id, // id is already a String
         amount = amount,
         amountPaid = amountPaid,
+        categoryId = categoryId,
+        userId = userId,
+        personId = personId,
         description = description,
         date = date.toDate().time,
-        categoryId = 0,
-        categoryFirestoreId = categoryFirestoreId.ifBlank { null },
-        userId = userId,
-        personId = 0,
-        personFirestoreId = personFirestoreId?.ifBlank { null },
         paymentMethod = paymentMethod,
         location = location,
         receipt = receipt,
@@ -142,37 +119,20 @@ fun ExpenseDto.toEntity(): ExpenseEntity {
         createdAt = createdAt.toDate().time,
         updatedAt = updatedAt.toDate().time,
         isDeleted = isDeleted,
-        isSynced = isSynced,
-        needsSync = needsSync,
+        isSynced = true,
+        needsSync = false,
         lastSyncedAt = lastSyncedAt?.toDate()?.time
     )
 }
 
 /**
- * Converts an [ExpenseDto] to a Firestore map.
+ * Updates an [ExpenseDto] with sync timestamps for Firestore upload.
  */
-fun ExpenseDto.toFirestoreMap(firestoreId: String, syncTime: Long): Map<String, Any?> {
-    return mapOf(
-        "firestoreId" to firestoreId,
-        "localId" to localId,
-        "amount" to amount,
-        "amountPaid" to amountPaid,
-        "description" to description,
-        "date" to date,
-        "categoryFirestoreId" to categoryFirestoreId,
-        "userId" to userId,
-        "personFirestoreId" to personFirestoreId,
-        "paymentMethod" to paymentMethod,
-        "location" to location,
-        "receipt" to receipt,
-        "isRecurring" to isRecurring,
-        "recurringFrequency" to recurringFrequency,
-        "createdAt" to createdAt,
-        "updatedAt" to Timestamp(syncTime / 1000, ((syncTime % 1000) * 1_000_000).toInt()),
-        "isDeleted" to isDeleted,
-        "isSynced" to true,
-        "needsSync" to false,
-        "lastSyncedAt" to Timestamp(syncTime / 1000, ((syncTime % 1000) * 1_000_000).toInt())
+fun ExpenseDto.withSyncTimestamp(syncTime: Long = System.currentTimeMillis()): ExpenseDto {
+    val timestamp = Timestamp(syncTime / 1000, ((syncTime % 1000) * 1_000_000).toInt())
+    return this.copy(
+        updatedAt = timestamp,
+        lastSyncedAt = timestamp
     )
 }
 
@@ -183,15 +143,14 @@ fun DocumentSnapshot.toExpenseDto(): ExpenseDto? {
     if (!exists()) return null
 
     return ExpenseDto(
-        firestoreId = getString("firestoreId") ?: "",
-        localId = getString("localId") ?: "",
+        id = id, // Document ID as String
         amount = getDouble("amount") ?: 0.0,
         amountPaid = getDouble("amountPaid") ?: 0.0,
+        userId = getString("userId") ?: "",
+        categoryId = getString("categoryId") ?: "",
+        personId = getString("personId"),
         description = getString("description") ?: "",
         date = getTimestamp("date") ?: Timestamp.now(),
-        categoryFirestoreId = getString("categoryFirestoreId") ?: "",
-        userId = getString("userId") ?: "",
-        personFirestoreId = getString("personFirestoreId"),
         paymentMethod = getString("paymentMethod"),
         location = getString("location"),
         receipt = getString("receipt"),
@@ -200,8 +159,6 @@ fun DocumentSnapshot.toExpenseDto(): ExpenseDto? {
         createdAt = getTimestamp("createdAt") ?: Timestamp.now(),
         updatedAt = getTimestamp("updatedAt") ?: Timestamp.now(),
         isDeleted = getBoolean("isDeleted") ?: false,
-        isSynced = getBoolean("isSynced") ?: false,
-        needsSync = getBoolean("needsSync") ?: true,
         lastSyncedAt = getTimestamp("lastSyncedAt")
     )
 }

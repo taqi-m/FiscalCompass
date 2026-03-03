@@ -28,13 +28,16 @@ fun <T> SingleSelectionChipGroup(
     chipToLabel: (T) -> String,
     onSelectionChanged: ((T) -> Unit)? = null,
     maxLines: Int = Int.MAX_VALUE,
+    initialSelection: T? = null,
 ) {
 
     if (items.isEmpty()){
         return@SingleSelectionChipGroup
     }
 
-    var selectedItem by remember { mutableStateOf(items.first()) }
+    var selectedItem by remember(initialSelection) {
+        mutableStateOf(initialSelection ?: items.first())
+    }
 
     FlowRow(
         modifier = modifier.fillMaxWidth(),
@@ -44,7 +47,7 @@ fun <T> SingleSelectionChipGroup(
         items.forEach { chip ->
             SelectableChip (
                 modifier = Modifier
-                    .padding(4.dp),
+                    .padding(horizontal = 8.dp),
                 label = chipToLabel(chip),
                 isSelected = chip == selectedItem,
                 onChipClick = {
@@ -80,6 +83,7 @@ fun SelectableChip(
         selected = isSelected,
         label = {
             Text(
+                modifier = Modifier.padding(8.dp),
                 text = label,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.W600

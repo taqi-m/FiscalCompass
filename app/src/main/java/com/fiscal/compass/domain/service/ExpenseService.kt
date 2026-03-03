@@ -8,7 +8,7 @@ import java.util.Date
 interface ExpenseService {
     suspend fun addExpense(
         amount: Double,
-        categoryId: Long,
+        categoryId: String,
         description: String,
         date: Date,
         amountPaid: Double = 0.0
@@ -16,13 +16,13 @@ interface ExpenseService {
 
     suspend fun getUserExpenses(userId: String): Flow<List<Expense>>
 
-    suspend fun getExpenseWithCategoryAndPerson(id: Long): ExpenseFull
+    suspend fun getExpenseWithCategoryAndPerson(expenseId: String): ExpenseFull
 
-    suspend fun updateExpensePayment(expenseId: Long, newAmountPaid: Double): Result<Unit>
+    suspend fun updateExpensePayment(expenseId: String, newAmountPaid: Double): Result<Unit>
 
-    suspend fun addPayment(expenseId: Long, paymentAmount: Double): Result<Unit>
+    suspend fun addPayment(expenseId: String, paymentAmount: Double): Result<Unit>
 
-    suspend fun markAsFullyPaid(expenseId: Long): Result<Unit>
+    suspend fun markAsFullyPaid(expenseId: String): Result<Unit>
 
     suspend fun getFullyPaidExpenses(userId: String): Flow<List<Expense>>
 

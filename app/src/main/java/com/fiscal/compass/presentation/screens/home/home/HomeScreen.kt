@@ -84,6 +84,7 @@ fun HomeScreen(
     }
     if (state.canViewPeople) {
         items.add(HomeBottomScreen.People)
+        items.add(HomeBottomScreen.Users)
     }
 
 

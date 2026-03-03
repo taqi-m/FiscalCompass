@@ -1,6 +1,6 @@
 package com.fiscal.compass.domain.sync
 
-import com.fiscal.compass.data.managers.SyncType
+import com.fiscal.compass.domain.model.sync.SyncType
 import com.fiscal.compass.domain.repository.PreferenceManager
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,6 +22,7 @@ class SyncDependencyManager @Inject constructor(
     private val preferences: PreferenceManager
 ) {
     companion object {
+        private const val PREF_USERS_INITIALIZED = "users_initialized"
         private const val PREF_CATEGORIES_INITIALIZED = "categories_initialized"
         private const val PREF_PERSONS_INITIALIZED = "persons_initialized"
         private const val PREF_INCOMES_INITIALIZED = "incomes_initialized"
@@ -61,6 +62,9 @@ class SyncDependencyManager @Inject constructor(
 
     fun isInitialized(syncType: SyncType, userId: String): Boolean {
         return when (syncType) {
+            SyncType.USERS -> {
+                preferences.getBoolean(PREF_USERS_INITIALIZED, false)
+            }
             SyncType.CATEGORIES -> {
                 preferences.getBoolean(PREF_CATEGORIES_INITIALIZED, false)
             }
@@ -85,6 +89,10 @@ class SyncDependencyManager @Inject constructor(
 
     fun markAsInitialized(syncType: SyncType, userId: String) {
         when (syncType) {
+            SyncType.USERS -> {
+                preferences.saveBoolean(PREF_USERS_INITIALIZED, true)
+            }
+            
             SyncType.CATEGORIES -> {
                 preferences.saveBoolean(PREF_CATEGORIES_INITIALIZED, true)
             }
@@ -112,6 +120,7 @@ class SyncDependencyManager @Inject constructor(
 
     fun getRequiredInitializationOrder(): List<SyncType> {
         return listOf(
+            SyncType.USERS,
             SyncType.CATEGORIES,
             SyncType.PERSONS,
             SyncType.EXPENSES,
@@ -126,6 +135,7 @@ class SyncDependencyManager @Inject constructor(
     }
 
     fun resetInitialization(userId: String) {
+        preferences.remove(PREF_USERS_INITIALIZED)
         preferences.remove(PREF_CATEGORIES_INITIALIZED)
         preferences.remove(PREF_PERSONS_INITIALIZED)
         preferences.remove("${PREF_EXPENSES_INITIALIZED}_$userId")

@@ -1,7 +1,7 @@
 package com.fiscal.compass.data.repositories
 
-import com.fiscal.compass.domain.repository.PreferenceManager
 import com.fiscal.compass.domain.repository.AppPreferenceRepository
+import com.fiscal.compass.domain.repository.PreferenceManager
 import javax.inject.Inject
 import javax.inject.Singleton
 

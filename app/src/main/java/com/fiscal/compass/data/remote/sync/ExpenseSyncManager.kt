@@ -1,17 +1,16 @@
 package com.fiscal.compass.data.remote.sync
 
 import android.util.Log
-import com.fiscal.compass.data.local.dao.CategoryDao
 import com.fiscal.compass.data.local.dao.ExpenseDao
-import com.fiscal.compass.data.local.dao.PersonDao
 import com.fiscal.compass.data.local.model.ExpenseEntity
-import com.fiscal.compass.data.managers.SyncTimestampManager
-import com.fiscal.compass.data.managers.SyncType
+import com.fiscal.compass.domain.sync.SyncTimestampManager
 import com.fiscal.compass.data.mappers.toDto
 import com.fiscal.compass.data.mappers.toEntity
 import com.fiscal.compass.data.mappers.toExpenseDto
-import com.fiscal.compass.data.mappers.toFirestoreMap
-import com.fiscal.compass.data.remote.sync.EnhancedSyncManager.Companion.TAG
+import com.fiscal.compass.data.mappers.withSyncTimestamp
+import com.fiscal.compass.domain.model.sync.SyncType
+import com.fiscal.compass.domain.sync.EnhancedSyncManager.Companion.TAG
+import com.fiscal.compass.domain.sync.strategy.SyncQueryStrategy
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -22,11 +21,21 @@ class ExpenseSyncManager @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val timestampManager: SyncTimestampManager,
     private val expenseDao: ExpenseDao,
-    private val categoryDao: CategoryDao,
-    private val personDao: PersonDao
+    private val syncQueryStrategy: SyncQueryStrategy
 ) {
+
     suspend fun uploadLocalExpenses(userId: String) {
-        val unsyncedExpenses = expenseDao.getUnsyncedExpenses(userId)
+        // Use permission-based filtering to determine which expenses to upload
+        val shouldFilterByUserId = syncQueryStrategy.shouldFilterByUserId()
+        val unsyncedExpenses = if (shouldFilterByUserId) {
+            // Employee: Only upload own expenses
+            Log.d(TAG, "Fetching unsynced expenses for user: $userId (EMPLOYEE)")
+            expenseDao.getUnsyncedExpenses(userId)
+        } else {
+            // Admin: Upload all users' expenses
+            Log.d(TAG, "Fetching all unsynced expenses (ADMIN)")
+            expenseDao.getUnsyncedExpenses()
+        }
 
         if (unsyncedExpenses.isEmpty()) {
             Log.d(TAG, "No local expenses to upload")
@@ -35,56 +44,29 @@ class ExpenseSyncManager @Inject constructor(
 
         Log.d(TAG, "Uploading ${unsyncedExpenses.size} local expenses")
 
-        val userExpensesRef = firestore.collection("users")
-            .document(userId)
-            .collection("expenses")
+        val userExpensesRef = firestore.collection("expenses")
 
         // Use batch writes for better performance
         var batch = firestore.batch()
         var batchCount = 0
-        val expensesToUpdate = mutableListOf<Pair<Long, String>>() // Pair of expenseId and firestoreId
+        val expensesToUpdate = mutableListOf<String>() // List of expenseIds to mark as synced
 
         val currentSyncTime = Timestamp.now().toDate().time
 
         unsyncedExpenses.forEachIndexed { index, expense ->
-            Log.d(TAG, "Processing expense ${index + 1}/${unsyncedExpenses.size}: expenseId=${expense.expenseId}, localId=${expense.localId}, firestoreId=${expense.firestoreId}, needsSync=${expense.needsSync}, isSynced=${expense.isSynced}")
+            Log.d(TAG, "Processing expense ${index + 1}/${unsyncedExpenses.size}: expenseId=${expense.expenseId}, needsSync=${expense.needsSync}, isSynced=${expense.isSynced}")
 
-            val categoryFirestoreId = categoryDao.getCategoryByIdIncludeDeleted(expense.categoryId)?.firestoreId
-            if (categoryFirestoreId == null) {
-                // Skip if category isn't synced yet
-                Log.d(TAG, "Skipping expense ${expense.expenseId} as category isn't synced")
-                return@forEachIndexed
-            }
+            // Use expenseId as the Firestore document ID
+            val firestoreDocId = expense.expenseId
+            Log.d(TAG, "  Using expenseId as document ID: $firestoreDocId")
 
-            var personFirestoreId: String? = null
-            if (expense.personId != null) {
-                personFirestoreId = personDao.getPersonById(expense.personId)?.firestoreId
-                if (personFirestoreId == null) {
-                    // Skip if linked person isn't synced yet
-                    Log.d(TAG, "Skipping expense ${expense.expenseId} as linked person isn't synced")
-                    return@forEachIndexed
-                }
-            }
+            // Convert to DTO and update sync timestamp
+            val expenseDto = expense.toDto().withSyncTimestamp(currentSyncTime)
 
-            var firestoreId = expense.firestoreId
-            Log.d(TAG, "  firestoreId from expense object: $firestoreId")
-            
-            if (firestoreId.isNullOrBlank()) {
-                firestoreId = userExpensesRef.document().id
-                Log.d(TAG, "  Generated NEW firestoreId: $firestoreId (this will CREATE a new document)")
-            } else {
-                Log.d(TAG, "  Using EXISTING firestoreId: $firestoreId (this will UPDATE existing document)")
-            }
-            
-            val expenseData = expense.toDto().copy(
-                categoryFirestoreId = categoryFirestoreId,
-                personFirestoreId = personFirestoreId
-            ).toFirestoreMap(firestoreId, currentSyncTime)
-
-            Log.d(TAG, "  Adding to batch: users/$userId/expenses/$firestoreId")
-            val docRef = userExpensesRef.document(firestoreId)
-            batch.set(docRef, expenseData)
-            expensesToUpdate.add(expense.expenseId to firestoreId)
+            Log.d(TAG, "  Adding to batch: expenses/$firestoreDocId")
+            val docRef = userExpensesRef.document(firestoreDocId)
+            batch.set(docRef, expenseDto) // Direct DTO serialization
+            expensesToUpdate.add(expense.expenseId)
             batchCount++
 
             // Firestore batch limit is 500 operations
@@ -93,11 +75,9 @@ class ExpenseSyncManager @Inject constructor(
                 Log.d(TAG, "  Batch committed successfully, updating local sync status for $batchCount expenses")
                 
                 // Update sync status only after successful commit
-                expensesToUpdate.forEach { (expenseId, firestoreDocId) ->
+                expensesToUpdate.forEach { expenseId ->
                     expenseDao.updateSyncStatus(
                         expenseId = expenseId,
-                        firestoreId = firestoreDocId,
-                        isSynced = true,
                         lastSyncedAt = currentSyncTime
                     )
                 }
@@ -106,7 +86,6 @@ class ExpenseSyncManager @Inject constructor(
                 batchCount = 0
                 expensesToUpdate.clear()
             }
-
         }
 
         // Commit remaining operations
@@ -115,11 +94,9 @@ class ExpenseSyncManager @Inject constructor(
             Log.d(TAG, "  Final batch committed successfully, updating local sync status for $batchCount expenses")
             
             // Update sync status only after successful commit
-            expensesToUpdate.forEach { (expenseId, firestoreDocId) ->
+            expensesToUpdate.forEach { expenseId ->
                 expenseDao.updateSyncStatus(
                     expenseId = expenseId,
-                    firestoreId = firestoreDocId,
-                    isSynced = true,
                     lastSyncedAt = currentSyncTime
                 )
             }
@@ -136,12 +113,14 @@ class ExpenseSyncManager @Inject constructor(
         }
         Log.d(TAG, "Last sync time for expenses: ${Date(lastSyncTime)}")
 
-        val snapshot = firestore.collection("users")
-            .document(userId)
-            .collection("expenses")
+        // Build base query
+        val baseQuery = firestore.collection("expenses")
+
+        // Apply permission-based filtering dynamically using injected strategy
+        val query = syncQueryStrategy.buildDownloadQuery(baseQuery, userId)
             .whereGreaterThan("updatedAt", Timestamp(Date(lastSyncTime)))
-            .get()
-            .await()
+
+        val snapshot = query.get().await()
 
         Log.d(TAG, "Found ${snapshot.documents.size} remote expenses to sync")
 
@@ -149,51 +128,34 @@ class ExpenseSyncManager @Inject constructor(
         var latestRemoteTimestamp = lastSyncTime
 
         snapshot.documents.forEach { doc ->
-            val catFirestoreId = doc.getString("categoryFirestoreId")
-            if (catFirestoreId.isNullOrEmpty()) {
-                // Skip documents without a valid localId
-                return@forEach
-            }
-            val categoryId = categoryDao.getCategoryByFirestoreId(catFirestoreId)?.categoryId
-            if (categoryId == 0L || categoryId == null) {
-                Log.d(TAG, "Skipping expense ${doc.id} as linked category is missing locally")
-                return@forEach
-            }
-
-            var personId: Long? = null
-            val personFirestoreId = doc.getString("personFirestoreId")
-            if (!personFirestoreId.isNullOrBlank()) {
-                val localPerson = personDao.getPersonByFirestoreId(personFirestoreId)
-                if (localPerson == null) {
-                    Log.d(TAG, "Skipping expense ${doc.id} as linked person is missing locally")
-                    return@forEach
-                }
-                personId = localPerson.personId
-            }
+            // Use document ID as expenseId
+            val expenseId = doc.id
+            Log.d(TAG, "Processing remote expense with ID: $expenseId")
 
             val remoteExpense = doc.toExpenseDto()?.toEntity()?.copy(
-                categoryId = categoryId,
-                personId = personId
+                expenseId = expenseId // Ensure expenseId matches document ID
             )
 
             if (remoteExpense == null) {
-                Log.d(TAG, "Failed to parse expense ${doc.id}, skipping...")
+                Log.d(TAG, "Failed to parse expense $expenseId, skipping...")
                 return@forEach
             }
 
             // Track the latest timestamp for incremental sync
             latestRemoteTimestamp = maxOf(latestRemoteTimestamp, remoteExpense.updatedAt)
 
-            // Check if expense already exists locally (use localId as it's the stable identifier)
-            val existingExpense = expenseDao.getExpenseByLocalId(remoteExpense.localId)
+            // Check if expense already exists locally using expenseId
+            val existingExpense = expenseDao.getExpenseById(expenseId)
 
             if (existingExpense != null) {
                 // Update existing expense
                 val resolvedExpense = resolveConflict(existingExpense, remoteExpense)
                 expenseDao.update(resolvedExpense)
+                Log.d(TAG, "Updated existing expense: $expenseId")
             } else {
                 // Insert new expense
                 expenseDao.insert(remoteExpense)
+                Log.d(TAG, "Inserted new expense: $expenseId")
             }
 
             processedCount++
@@ -207,6 +169,78 @@ class ExpenseSyncManager @Inject constructor(
         }
     }
 
+    suspend fun uploadDeletedExpenses(userId: String) {
+        // Filter deleted expenses based on permissions using injected strategy
+        val shouldFilterByUserId = syncQueryStrategy.shouldFilterByUserId()
+        val deletedExpenses = if (shouldFilterByUserId) {
+            // Employee: Only sync own deleted expenses
+            expenseDao.getUnsyncedDeletedExpenses().filter { it.userId == userId }
+        } else {
+            // Admin: Sync all deleted expenses
+            expenseDao.getUnsyncedDeletedExpenses()
+        }
+
+        if (deletedExpenses.isEmpty()) {
+            Log.d(TAG, "No deleted expenses to sync")
+            return
+        }
+
+        Log.d(TAG, "Syncing ${deletedExpenses.size} deleted expenses")
+
+        val userExpensesRef = firestore.collection("expenses")
+
+        // Use batch writes for better performance
+        var batch = firestore.batch()
+        var batchCount = 0
+        val expensesToUpdate = mutableListOf<String>()
+
+        deletedExpenses.forEach { expense ->
+            // Use expenseId as the Firestore document ID for deletion
+            val firestoreDocId = expense.expenseId
+            Log.d(TAG, "Marking expense as deleted in Firestore: $firestoreDocId")
+
+            val docRef = userExpensesRef.document(firestoreDocId)
+
+            // Create DTO with deletion flag and current timestamp
+            val deletionDto = expense.toDto().copy(
+                isDeleted = true,
+                updatedAt = Timestamp.now()
+            )
+
+            batch.set(docRef, deletionDto) // Use set instead of update to ensure document exists
+            expensesToUpdate.add(expense.expenseId)
+            batchCount++
+
+            // Firestore batch limit is 500 operations
+            if (batchCount >= 500) {
+                batch.commit().await()
+                Log.d(TAG, "Deletion batch committed successfully")
+
+                // Mark as synced locally
+                expensesToUpdate.forEach { expenseId ->
+                    expenseDao.markExpenseAsSynced(expenseId)
+                }
+
+                batch = firestore.batch()
+                batchCount = 0
+                expensesToUpdate.clear()
+            }
+        }
+
+        // Commit remaining operations
+        if (batchCount > 0) {
+            batch.commit().await()
+            Log.d(TAG, "Final deletion batch committed successfully")
+
+            // Mark as synced locally
+            expensesToUpdate.forEach { expenseId ->
+                expenseDao.markExpenseAsSynced(expenseId)
+            }
+        }
+
+        Log.d(TAG, "Successfully synced ${deletedExpenses.size} deleted expenses")
+    }
+
     private fun resolveConflict(
         local: ExpenseEntity,
         remote: ExpenseEntity
@@ -214,16 +248,14 @@ class ExpenseSyncManager @Inject constructor(
         return if (local.updatedAt >= remote.updatedAt) {
             // Local is newer or same, keep local but ensure it's marked as synced
             local.copy(
-                firestoreId = local.firestoreId ?: remote.firestoreId, // Preserve firestoreId
                 isSynced = true,
                 needsSync = false,
                 lastSyncedAt = System.currentTimeMillis()
             )
         } else {
-            // Remote is newer, use remote data
+            // Remote is newer, use remote data but preserve local primary key
             remote.copy(
                 expenseId = local.expenseId, // Preserve local primary key
-                firestoreId = local.firestoreId ?: remote.firestoreId, // Preserve firestoreId
                 isSynced = true,
                 needsSync = false,
                 lastSyncedAt = System.currentTimeMillis()

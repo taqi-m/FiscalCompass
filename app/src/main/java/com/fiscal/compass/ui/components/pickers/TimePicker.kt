@@ -8,32 +8,35 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.fiscal.compass.domain.util.DateTimeUtil
+import com.fiscal.compass.domain.util.DateTimeUtil.calendarToDate
+import com.fiscal.compass.domain.util.DateTimeUtil.formatTime
+import com.fiscal.compass.domain.util.DateTimeUtil.formatTimestampAsTime
+import com.fiscal.compass.domain.util.DateTimeUtil.getCurrentCalendar
+import com.fiscal.compass.domain.util.DateTimeUtil.getCurrentTimestamp
+import com.fiscal.compass.domain.util.DateTimeUtil.setTimeOnTimestamp
+import com.fiscal.compass.domain.util.DateTimeUtil.timestampToCalendar
 import com.fiscal.compass.ui.components.dialogs.TimePickerDialog
 import com.fiscal.compass.ui.components.input.ReadOnlyDataEntryTextField
-import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimePicker(
     modifier: Modifier = Modifier,
+    selectedTime: Long? = null,
     label: String = "Time",
-    selectedTime: Calendar? = null,
     timeFormat: String = "hh:mm a",
     isError: Boolean = false,
     errorMessage: String? = null,
-    onTimeSelected: (Calendar) -> Unit = {}
+    onTimeSelected: (Long) -> Unit = {}
 ) {
     var showTimePicker by remember { mutableStateOf(false) }
-
-    val timeFormatter = remember { SimpleDateFormat(timeFormat, Locale.getDefault()) }
-    val displayValue = selectedTime?.let { timeFormatter.format(it.time) } ?: ""
 
     ReadOnlyDataEntryTextField(
         modifier = modifier,
         label = label,
-        value = displayValue,
+        value = formatTimestampAsTime(selectedTime ?: getCurrentTimestamp(), timeFormat),
         isError = isError,
         errorMessage = errorMessage,
         onClick = { showTimePicker = true }
@@ -41,14 +44,12 @@ fun TimePicker(
 
     if (showTimePicker) {
         TimePickerDialog(
-            initialTime = selectedTime ?: Calendar.getInstance(),
+            initialTime = timestampToCalendar(selectedTime ?: getCurrentTimestamp()),
             onDismiss = { showTimePicker = false },
             onConfirm = { timePickerState ->
-                val calendar = Calendar.getInstance().apply {
-                    set(Calendar.HOUR_OF_DAY, timePickerState.hour)
-                    set(Calendar.MINUTE, timePickerState.minute)
-                }
-                onTimeSelected(calendar)
+                val currentTime = getCurrentTimestamp()
+                val selectedTime = setTimeOnTimestamp(currentTime, timePickerState.hour, timePickerState.minute)
+                onTimeSelected(selectedTime)
             }
         )
     }
@@ -57,10 +58,9 @@ fun TimePicker(
 @Preview(showBackground = true)
 @Composable
 fun TimePickerPreview() {
-    var selectedTime by remember { mutableStateOf<Calendar?>(null) }
+    var selectedTime by remember { mutableStateOf<Long?>(null) }
     TimePicker(
         label = "Select Time",
-        selectedTime = selectedTime,
         onTimeSelected = { selectedTime = it }
     )
 }

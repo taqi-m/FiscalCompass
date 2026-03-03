@@ -1,11 +1,12 @@
 package com.fiscal.compass.domain.usecase.analytics
 
-import com.fiscal.compass.data.rbac.Permission
+import com.fiscal.compass.domain.model.rbac.Permission
 import com.fiscal.compass.domain.model.MonthlyReport
 import com.fiscal.compass.domain.repository.CategoryRepository
 import com.fiscal.compass.domain.repository.ExpenseRepository
 import com.fiscal.compass.domain.repository.IncomeRepository
 import com.fiscal.compass.domain.repository.UserRepository
+import com.fiscal.compass.domain.usecase.auth.SessionUseCase
 import com.fiscal.compass.domain.usecase.rbac.CheckPermissionUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -14,16 +15,15 @@ import javax.inject.Inject
 
 class GetMonthlyReportUseCase @Inject constructor(
     private val userRepository: UserRepository,
+    private val sessionUseCase: SessionUseCase,
     private val checkPermission: CheckPermissionUseCase,
     private val incomesRepository: IncomeRepository,
     private val expensesRepository: ExpenseRepository,
     private val categoryRepository: CategoryRepository
 ) {
     suspend operator fun invoke(month: Int, year: Int): Flow<MonthlyReport> {
-        val userId = userRepository.getLoggedInUser()?.userId
-        if (userId == null) {
-            throw IllegalStateException("User is not logged in")
-        }
+        val userId = sessionUseCase.getCurrentUser()?.uid
+            ?: throw IllegalStateException("User is not logged in")
 
         val userIds = mutableListOf(userId)
         val canViewAll = checkPermission(Permission.VIEW_ALL_ANALYTICS)

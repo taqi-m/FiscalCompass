@@ -28,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.fiscal.compass.domain.util.TransactionType
 import com.fiscal.compass.presentation.mappers.toCategory
@@ -44,7 +43,6 @@ import com.fiscal.compass.ui.theme.FiscalCompassTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoriesScreen(
-    appNavController: NavHostController,
     state: CategoriesScreenState,
     onEvent: (CategoriesEvent) -> Unit,
 ) {
@@ -341,11 +339,11 @@ fun CategoriesScreenPreview() {
         canEdit = true,
         canDelete = true,
         categories = CategoryUi.dummyList,
-        transactionType = TransactionType.EXPENSE,
+        transactionType = TransactionType.entries.first(),
         currentDialog = CategoriesDialog.Hidden,
         dialogState = CategoryDialogState.Idle
     )
-    FiscalCompassTheme { CategoriesScreen(appNavController = appNavController, state = state, onEvent = {}) }
+    FiscalCompassTheme { CategoriesScreen(state = state, onEvent = {}) }
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL)
@@ -362,5 +360,5 @@ fun CategoriesScreenNoAddPreview() {
         currentDialog = CategoriesDialog.Hidden,
         dialogState = CategoryDialogState.Idle
     )
-    FiscalCompassTheme { CategoriesScreen(appNavController = appNavController, state = state, onEvent = {}) }
+    FiscalCompassTheme { CategoriesScreen(state = state, onEvent = {}) }
 }

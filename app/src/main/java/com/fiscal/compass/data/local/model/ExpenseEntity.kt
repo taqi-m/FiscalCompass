@@ -34,19 +34,15 @@ import java.util.UUID
     indices = [Index("categoryId"), Index("userId"), Index("personId")],
 )
 data class ExpenseEntity(
-    @PrimaryKey(autoGenerate = true)
-    val expenseId: Long = 0,
-    val firestoreId: String? = null,  // Firestore document ID
-    val localId: String = UUID.randomUUID().toString(), // Unique local identifier
+    @PrimaryKey
+    val expenseId: String,
+    val categoryId: String,
+    val userId: String,
+    val personId: String? = null,
     val amount: Double,
     val amountPaid: Double = 0.0,
     val description: String,
     val date: Long,
-    val categoryId: Long,
-    val categoryFirestoreId: String? = null,
-    val userId: String,
-    val personId: Long? = null, // Nullable if not associated with a person
-    val personFirestoreId: String? = null,
     val paymentMethod: String? = null,
     val location: String? = null,
     val receipt: String? = null, // URL to receipt image

@@ -3,12 +3,14 @@ package com.fiscal.compass.presentation.screens.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
-import com.fiscal.compass.data.managers.AppInitializationManager
+import com.fiscal.compass.domain.initialization.AppInitializationManager
 import com.fiscal.compass.domain.sync.SyncDependencyManager
 import com.fiscal.compass.domain.model.Resource
+import com.fiscal.compass.domain.service.analytics.AnalyticsEvent
+import com.fiscal.compass.domain.service.analytics.AnalyticsService
+import com.fiscal.compass.domain.service.crashlytics.CrashlyticsService
 import com.fiscal.compass.domain.usecase.auth.LoginUseCase
 import com.fiscal.compass.domain.usecase.auth.SessionUseCase
-import com.fiscal.compass.domain.usecase.auth.SignUpUseCase
 import com.fiscal.compass.presentation.navigation.MainScreens
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,10 +23,11 @@ import javax.inject.Inject
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
-    private val signUpUseCase: SignUpUseCase,
     private val sessionUseCase: SessionUseCase,
     private val initializationManager: AppInitializationManager,
-    private val dependencyManager: SyncDependencyManager
+    private val dependencyManager: SyncDependencyManager,
+    private val analyticsService: AnalyticsService,
+    private val crashlyticsService: CrashlyticsService
 ) : ViewModel() {
 
     val initializationStatus = initializationManager.initializationStatus
@@ -40,17 +43,13 @@ class AuthViewModel @Inject constructor(
     fun resetFields() {
         _state.update {
             it.copy(
-                username = "", email = "", password = ""
+                email = "", password = ""
             )
         }
     }
 
     fun onEvent(event: AuthEvent) {
         when (event) {
-            is AuthEvent.UsernameChanged -> {
-                _state.update { it.copy(username = event.username) }
-            }
-
             is AuthEvent.EmailChanged -> {
                 _state.update { it.copy(email = event.email) }
             }
@@ -63,13 +62,6 @@ class AuthViewModel @Inject constructor(
                 signIn(state.value.email, state.value.password)
             }
 
-            is AuthEvent.SignUpClicked -> {
-                signUp(state.value.username, state.value.email, state.value.password)
-            }
-
-            is AuthEvent.SwitchState -> {
-                _state.update { it.copy(isSignUp = !it.isSignUp) }
-            }
 
             is AuthEvent.LoginSuccess -> {
                 viewModelScope.launch { initializeApp(event.appNavController) }
@@ -160,28 +152,9 @@ class AuthViewModel @Inject constructor(
     }
 
 
-    fun signUp(username: String, email: String, password: String) {
-        _state.update { it.copy(isLoading = true) }
-        viewModelScope.launch {
-            signUpUseCase(username, email, password).collect { result ->
-                _state.update {
-                    when (result) {
-                        is Resource.Loading -> it.copy(isLoading = true, error = "")
-                        is Resource.Success -> it.copy(
-                            isLoading = false, isSuccess = true, error = ""
-                        )
-
-                        is Resource.Error -> it.copy(
-                            isLoading = false, error = result.message ?: "Sign up failed"
-                        )
-                    }
-                }
-            }
-        }
-    }
-
     fun signIn(email: String, password: String) {
         _state.update { it.copy(isLoading = true) }
+        analyticsService.logEvent(AnalyticsEvent.LoginStarted)
         viewModelScope.launch {
             val loginResult = loginUseCase(email, password)
             handleResult(loginResult)
@@ -190,6 +163,10 @@ class AuthViewModel @Inject constructor(
 
     private fun handleResult(result: Result<String>) {
         if (result.isSuccess) {
+            val userId = result.getOrNull()
+            analyticsService.logEvent(AnalyticsEvent.LoginSuccess())
+            analyticsService.setUserId(userId)
+            crashlyticsService.setUserId(userId)
             _state.update {
                 it.copy(
                     isLoading = false,
@@ -199,11 +176,14 @@ class AuthViewModel @Inject constructor(
                 )
             }
         } else {
+            val errorMsg = result.exceptionOrNull()?.message ?: "Login failed"
+            analyticsService.logEvent(AnalyticsEvent.LoginFailed(errorMsg))
+            crashlyticsService.log("Login failed: $errorMsg")
             _state.update {
                 it.copy(
                     isLoading = false,
                     isSuccess = false,
-                    error = result.exceptionOrNull()?.message ?: "Login failed"
+                    error = errorMsg
                 )
             }
         }
@@ -211,6 +191,9 @@ class AuthViewModel @Inject constructor(
 
 
     fun logout() {
+        analyticsService.logEvent(AnalyticsEvent.Logout)
+        analyticsService.setUserId(null)
+        crashlyticsService.setUserId(null)
         sessionUseCase.logout()
     }
 

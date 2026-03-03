@@ -18,7 +18,7 @@ class IncomeServiceImpl @Inject constructor(
 
     override suspend fun addIncome(
         amount: Double,
-        categoryId: Long,
+        categoryId: String,
         description: String,
         date: Date,
         amountPaid: Double
@@ -32,14 +32,12 @@ class IncomeServiceImpl @Inject constructor(
             PaymentValidation.validatePaymentAmount(amount, amountPaid).getOrElse {
                 return Result.failure(it)
             }
+            
+            val newIncomeId = incomeRepository.getNextIncomeId()
+
 
             val newIncome = Income(
-                amount = amount,
-                amountPaid = amountPaid,
-                description = description,
-                date = date,
-                categoryId = categoryId,
-                userId = uid
+                newIncomeId, amount, amountPaid, description, date, categoryId, uid
             )
 
             incomeRepository.addIncome(newIncome)
@@ -57,13 +55,13 @@ class IncomeServiceImpl @Inject constructor(
         return incomeRepository.getIncomesWithCategory(userId)
     }
 
-    override suspend fun getSingleFullIncomeById(id: Long): IncomeFull {
-        val income = incomeRepository.getSingleFullIncomeById(id)
+    override suspend fun getSingleFullIncomeById(incomeId: String): IncomeFull {
+        val income = incomeRepository.getSingleFullIncomeById(incomeId)
             ?: throw IllegalArgumentException("Income not found")
         return income
     }
 
-    override suspend fun updateIncomePayment(incomeId: Long, newAmountPaid: Double): Result<Unit> {
+    override suspend fun updateIncomePayment(incomeId: String, newAmountPaid: Double): Result<Unit> {
         return try {
             val income = incomeRepository.getIncomeById(incomeId)
                 ?: return Result.failure(IllegalArgumentException("Income not found with ID: $incomeId"))
@@ -84,7 +82,7 @@ class IncomeServiceImpl @Inject constructor(
         }
     }
 
-    override suspend fun addPayment(incomeId: Long, paymentAmount: Double): Result<Unit> {
+    override suspend fun addPayment(incomeId: String, paymentAmount: Double): Result<Unit> {
         return try {
             if (paymentAmount <= 0) {
                 return Result.failure(IllegalArgumentException("Payment amount must be greater than zero"))
@@ -105,7 +103,7 @@ class IncomeServiceImpl @Inject constructor(
         }
     }
 
-    override suspend fun markAsFullyReceived(incomeId: Long): Result<Unit> {
+    override suspend fun markAsFullyReceived(incomeId: String): Result<Unit> {
         return try {
             val income = incomeRepository.getIncomeById(incomeId)
                 ?: return Result.failure(IllegalArgumentException("Income not found with ID: $incomeId"))

@@ -9,8 +9,5 @@ data class AddTransactionState(
     val uiState: UiState = UiState.Idle,
     val transaction: Transaction = Transaction.default(),
     val allCategories: List<Category> = emptyList(),
-    val allPersons: List<Person> = emptyList(),
-    val navigateToCategorySelection: Boolean = false,
-    val navigateToPersonSelection: Boolean = false,
-    val navigateToAmountScreen: Boolean = false
+    val allPersons: List<Person> = emptyList()
 )

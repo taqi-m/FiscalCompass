@@ -11,4 +11,5 @@ data class TransactionDetailsScreenState(
     val transaction: TransactionUi? = null,
     val category: CategoryUi? = null,
     val person: PersonUi? = null,
+    val showDeleteDialog: Boolean = false,
 )

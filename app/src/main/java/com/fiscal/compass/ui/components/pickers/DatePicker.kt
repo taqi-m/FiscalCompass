@@ -7,11 +7,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.fiscal.compass.domain.util.DateTimeUtil
 import com.fiscal.compass.ui.components.dialogs.DatePickerDialog
 import com.fiscal.compass.ui.components.input.ReadOnlyDataEntryTextField
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @Composable
 fun DatePicker(
@@ -25,8 +23,9 @@ fun DatePicker(
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
 
-    val dateFormatter = remember { SimpleDateFormat(dateFormat, Locale.getDefault()) }
-    val displayValue = selectedDate?.let { dateFormatter.format(Date(it)) } ?: ""
+    val displayValue = selectedDate?.let {
+        DateTimeUtil.formatTimestampAsDate(it, dateFormat)
+    } ?: ""
 
     ReadOnlyDataEntryTextField(
         modifier = modifier,
@@ -39,7 +38,7 @@ fun DatePicker(
 
     if (showDatePicker) {
         DatePickerDialog(
-            selectedDate = selectedDate ?: System.currentTimeMillis(),
+            selectedDate = selectedDate ?: DateTimeUtil.getCurrentTimestamp(),
             onDismissRequest = { showDatePicker = false },
             onDateSelected = { date ->
                 date?.let { onDateSelected(it) }

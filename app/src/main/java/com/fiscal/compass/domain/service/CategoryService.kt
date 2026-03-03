@@ -1,7 +1,6 @@
 package com.fiscal.compass.domain.service
 
 import com.fiscal.compass.domain.model.base.Category
-import com.fiscal.compass.domain.model.base.CategoryTree
 import com.fiscal.compass.domain.util.TransactionType
 import kotlinx.coroutines.flow.Flow
 
@@ -37,27 +36,6 @@ interface CategoryService {
     /**
      * Gets all categories as a tree structure with Flow
      */
-    suspend fun getAllCategoryTreeFlow(): Flow<CategoryTree>
-
-    /**
-     * Gets expense categories as a tree structure with Flow
-     */
-    suspend fun getExpenseCategoryTreeFlow(): Flow<CategoryTree>
-
-    /**
-     * Gets income categories as a tree structure with Flow
-     */
-    suspend fun getIncomeCategoryTreeFlow(): Flow<CategoryTree>
-
-    /**
-     * Gets income categories as a tree structure
-     */
-    suspend fun getIncomeCategoriesTree(): CategoryTree
-
-    /**
-     * Gets expense categories as a tree structure
-     */
-    suspend fun getExpenseCategoriesTree(): CategoryTree
 
     /**
      * Gets expense categories with Flow
@@ -82,7 +60,7 @@ interface CategoryService {
     /**
      * Gets a category by its ID
      */
-    suspend fun getCategoryById(id: Long): Category?
+    suspend fun getCategoryById(categoryId: String): Category?
 
     /**
      * Gets a category by its name

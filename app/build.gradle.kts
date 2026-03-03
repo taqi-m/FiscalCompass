@@ -3,8 +3,10 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.hiltAndroid)
     alias(libs.plugins.devtools.ksp)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -37,15 +39,15 @@ android {
 
             buildConfigField("Boolean", "USE_EMULATOR", "true")
             buildConfigField("String", "EMULATOR_HOST", "\"localhost\"")
-            // Match the ports from your emulator output
             buildConfigField("int", "AUTH_EMULATOR_PORT", "9099")
             buildConfigField("int", "FIRESTORE_EMULATOR_PORT", "8080")
             buildConfigField("int", "STORAGE_EMULATOR_PORT", "9199")
             buildConfigField("int", "FUNCTIONS_EMULATOR_PORT", "5001")
 
-
-
             resValue("string", "app_name", "FiscalCompass Dev")
+            buildConfigField("String", "GITHUB_REPO_OWNER", "\"taqi-m\"")
+            buildConfigField("String", "GITHUB_REPO_NAME", "\"FiscalCompass\"")
+
         }
 
         create("prod") {
@@ -55,19 +57,23 @@ android {
             buildConfigField("String", "EMULATOR_HOST", "\"\"")
             buildConfigField("int", "FIRESTORE_EMULATOR_PORT", "0")
             buildConfigField("int", "AUTH_EMULATOR_PORT", "0")
+            buildConfigField("int", "FUNCTIONS_EMULATOR_PORT", "0")
 
             resValue("string", "app_name", "FiscalCompass")
+            buildConfigField("String", "GITHUB_REPO_OWNER", "\"taqi-m\"")
+            buildConfigField("String", "GITHUB_REPO_NAME", "\"FiscalCompass\"")
         }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-            signingConfig = signingConfigs.getByName("test-release")
+            // signingConfig removed (prod-release was removed for security)
         }
         debug {
             isMinifyEnabled = false
@@ -124,12 +130,19 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.functions)
 
     //Coil dependencies
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
 
     implementation(libs.gson)
+
+    //Update system dependencies
+    implementation(libs.okhttp)
+    implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

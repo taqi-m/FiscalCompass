@@ -15,6 +15,9 @@ interface UserDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertUser(userEntity: UserEntity): Long
     
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertUsers(users: List<UserEntity>)
+    
     @Update
     suspend fun updateUser(userEntity: UserEntity)
     
@@ -38,7 +41,16 @@ interface UserDao {
     
     @Query("SELECT * FROM users")
     fun getAllUsers(): Flow<List<UserEntity>>
+    
+    @Query("SELECT * FROM users")
+    suspend fun getAllUsersSync(): List<UserEntity>
 
     @Query("UPDATE users SET lastLoginAt = :loginTime WHERE userId = :userId")
     fun markUserAsLoggedIn(userId: String, loginTime: Long)
+
+    @Query("UPDATE users SET lastLoginAt = NULL WHERE userId = :userId")
+    suspend fun clearUserLogin(userId: String)
+
+    @Query("DELETE FROM users")
+    suspend fun clearAllUsers()
 }

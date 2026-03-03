@@ -12,34 +12,30 @@ interface IncomeRepository {
 
     suspend fun deleteIncome(income: Income)
 
-    suspend fun deleteIncomeById(id: Long)
+    suspend fun deleteIncomeById(id: String)
 
     suspend fun getAllIncomes(): Flow<List<Income>>
 
-    suspend fun getIncomeById(id: Long): Income?
+    suspend fun getIncomeById(id: String): Income?
 
     suspend fun getIncomesByUser(userId: String): Flow<List<Income>>
 
-    suspend fun getIncomesByCategory(categoryId: Long): List<Income>
 
     suspend fun getIncomesWithCategory(userId: String): Flow<List<IncomeWithCategory>>
 
-    suspend fun getSingleFullIncomeById(id: Long): IncomeFull?
+    suspend fun getSingleFullIncomeById(id: String): IncomeFull?
 
     suspend fun getAllFiltered(
-        userIds: List<String>? = emptyList() ,
-        personIds: List<Long>? = emptyList(),   // pass null to ignore
-        categoryIds: List<Long>? = emptyList(),  // pass null to ignore
+        userIds: List<String>? = emptyList(),
+        personIds: List<String>? = emptyList(),   // pass null to ignore
+        categoryIds: List<String>? = emptyList(),  // pass null to ignore - changed from Long to String
         startDate: Long? = null,       // nullable → open start
         endDate: Long? = null          // nullable → open end
     ): Flow<List<Income>>
 
-    suspend fun getTotalIncomes(): Double
-
     suspend fun getSumByDateRange(userId:String? = null, startDate: Long, endDate: Long): Flow<Double>
 
-    suspend fun getIncomesByDateRange(startDate: String, endDate: String): List<Income>
-    suspend fun getIncomesByDateRangeAndUser(startDate: String, endDate: String, userId: String): List<Income>
 
     suspend fun getIncomesByMonth(month: Int, year: Int): Flow<List<Income>>
+    fun getNextIncomeId(): String
 }

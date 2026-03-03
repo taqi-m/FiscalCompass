@@ -6,31 +6,15 @@ import kotlinx.coroutines.flow.Flow
 import java.util.Date
 
 interface TransactionService {
-    suspend fun getTransactionById(transactionId: Long, isExpense: Boolean): Transaction
+    suspend fun getTransactionById(transactionId: String, isExpense: Boolean): Transaction
 
     suspend fun addTransaction(transaction: Transaction): Result<Long>
 
     suspend fun updateTransaction(transaction: Transaction): Result<Unit>
 
-    suspend fun deleteTransaction(transactionId: Long, isExpense: Boolean)
-
-/*    suspend fun searchTransactions(
-        personIds: List<Long>? = null,
-        categoryIds: List<Long>? = null,
-        dateRange: DateRange? = null,
-        filterType: String? = null
-    ): Map<Date, List<Transaction>>
-
-    suspend fun searchTransactions(
-        personIds: List<Long>?,
-        categoryIds: List<Long>?,
-        startDate: Long?,
-        endDate: Long?,
-        filterType: String? = null
-    ): Map<Date, List<Transaction>>*/
+    suspend fun deleteTransaction(transactionId: String, isExpense: Boolean)
 
     suspend fun searchTransactions(searchCriteria: SearchCriteria): Flow<Map<Date, List<Transaction>>>
-
 
     suspend fun loadCurrentMonthTransactions(date: Date? = null): Flow<Map<Date, List<Transaction>>>
 

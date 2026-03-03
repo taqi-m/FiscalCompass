@@ -1,7 +1,7 @@
 package com.fiscal.compass.presentation.model
 
 data class IncomeUi(
-    val incomeId: Long = 0,
+    val incomeId: String = "",
     val formatedAmount: String = "",
     val formatedAmountPaid: String = "",
     val formatedRemainingAmount: String = "",
@@ -13,7 +13,7 @@ data class IncomeUi(
 ) {
     companion object {
         val dummy = IncomeUi(
-            incomeId = 1L,
+            incomeId = "1",
             formatedAmount = "$1,000.00",
             formatedAmountPaid = "$600.00",
             formatedRemainingAmount = "$400.00",
@@ -25,7 +25,7 @@ data class IncomeUi(
         )
 
         val dummyFullyPaid = IncomeUi(
-            incomeId = 2L,
+            incomeId = "2",
             formatedAmount = "$500.00",
             formatedAmountPaid = "$500.00",
             formatedRemainingAmount = "$0.00",
@@ -37,7 +37,7 @@ data class IncomeUi(
         )
 
         val dummyUnpaid = IncomeUi(
-            incomeId = 3L,
+            incomeId = "3",
             formatedAmount = "$2,500.00",
             formatedAmountPaid = "$0.00",
             formatedRemainingAmount = "$2,500.00",

@@ -2,8 +2,10 @@ package com.fiscal.compass.presentation.screens.category
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fiscal.compass.data.rbac.Permission
+import com.fiscal.compass.domain.model.rbac.Permission
 import com.fiscal.compass.domain.service.CategoryService
+import com.fiscal.compass.domain.service.analytics.AnalyticsEvent
+import com.fiscal.compass.domain.service.analytics.AnalyticsService
 import com.fiscal.compass.domain.usecase.rbac.CheckPermissionUseCase
 import com.fiscal.compass.domain.util.TransactionType
 import com.fiscal.compass.presentation.mappers.toCategory
@@ -21,7 +23,8 @@ import javax.inject.Inject
 @HiltViewModel
 class CategoriesViewModel @Inject constructor(
     private val categoryService: CategoryService,
-    private val checkPermissionUseCase: CheckPermissionUseCase
+    private val checkPermissionUseCase: CheckPermissionUseCase,
+    private val analyticsService: AnalyticsService
 ) : ViewModel() {
 
     private suspend fun checkPermission(permission: Permission): Boolean {
@@ -153,6 +156,12 @@ class CategoriesViewModel @Inject constructor(
                         return@launch
                     }
                     if (result.isSuccess) {
+                        analyticsService.logEvent(
+                            AnalyticsEvent.CategoryCreated(
+                                categoryName = event.name,
+                                isExpenseCategory = _state.value.transactionType == TransactionType.EXPENSE
+                            )
+                        )
                         updateState { copy(uiState = UiState.Success(result.getOrNull() ?: "Category added successfully")) }
                     }
                 }
@@ -172,6 +181,7 @@ class CategoriesViewModel @Inject constructor(
                         }
                         return@launch
                     }
+                    analyticsService.logEvent(AnalyticsEvent.CategoryEdited(event.category.categoryId))
                     updateState {
                         copy(
                             uiState = UiState.Success(
@@ -192,6 +202,7 @@ class CategoriesViewModel @Inject constructor(
                         }
                     }
                     if (result.isSuccess) {
+                        analyticsService.logEvent(AnalyticsEvent.CategoryDeleted(category.categoryId))
                         updateState {
                             copy(uiState = UiState.Success(result.getOrNull() ?: "Category deleted successfully"))
                         }

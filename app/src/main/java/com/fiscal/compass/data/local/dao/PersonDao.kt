@@ -21,21 +21,25 @@ interface PersonDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(persons: List<PersonEntity>)
 
-    @Query("SELECT * FROM persons")
+    @Query("SELECT * FROM persons WHERE isDeleted = 0")
     suspend fun getAll(): List<PersonEntity>
 
-    @Query("SELECT * FROM persons WHERE personId = :id LIMIT 1")
-    suspend fun getPersonById(id: Long?): PersonEntity?
+    @Query("SELECT * FROM persons WHERE personId = :personId AND isDeleted = 0 LIMIT 1")
+    suspend fun getPersonById(personId: String?): PersonEntity?
 
-    @Query("SELECT * FROM persons")
+    @Query("SELECT * FROM persons WHERE isDeleted = 0")
     fun getAllWithFlow(): Flow<List<PersonEntity>>
 
-    @Query("SELECT * FROM persons WHERE personId = :id")
-    suspend fun getById(id: Long): PersonEntity?
-    @Query("SELECT * FROM persons WHERE personType = :type")
+    @Query("SELECT * FROM persons WHERE personId = :personId AND isDeleted = 0")
+    suspend fun getById(personId: String): PersonEntity?
+
+    @Query("SELECT * FROM persons WHERE personId = :personId")
+    suspend fun getByIdIncludeDeleted(personId: String): PersonEntity?
+
+    @Query("SELECT * FROM persons WHERE personType = :type AND isDeleted = 0")
     suspend fun getByPersonType(type: String): List<PersonEntity>
 
-    @Query("SELECT * FROM persons WHERE personType = :type")
+    @Query("SELECT * FROM persons WHERE personType = :type AND isDeleted = 0")
     fun getByPersonTypeWithFlow(type: String): Flow<List<PersonEntity>>
 
     @Delete
@@ -44,26 +48,8 @@ interface PersonDao {
     @Query("DELETE FROM persons")
     suspend fun deleteAll()
 
-    suspend fun getPersonLocalId(personId: Long?): String? {
-        if (personId == null) return null
-        return runCatching {
-            val person = getById(personId)
-            person?.localId
-        }.getOrNull()
-    }
-
-    suspend fun getPersonFirestoreId(personId: Long?): String? {
-        if (personId == null) return null
-        return runCatching {
-            val person = getById(personId)
-            person?.firestoreId
-        }.getOrNull()
-    }
-
-    @Query("SELECT personId FROM persons WHERE localId = :localId LIMIT 1")
-    suspend fun getPersonIdByLocalId(localId: String?): Long?
-
-
+    @Query("UPDATE persons SET isDeleted = 1, needsSync = 1, updatedAt = :timestamp WHERE personId = :personId")
+    suspend fun markAsDeleted(personId: String, timestamp: Long = System.currentTimeMillis()): Int
 
     /** Sync timestamp queries
      *  These help in determining what data needs to be synced
@@ -102,9 +88,6 @@ interface PersonDao {
     WHERE updatedAt > :timestamp
     """)
     suspend fun getUpdatedPersonsSince(timestamp: Long): Int
-
-    @Query("SELECT * FROM persons WHERE firestoreId = :id LIMIT 1")
-    suspend fun getPersonByFirestoreId(id: String): PersonEntity?
 
 
 }

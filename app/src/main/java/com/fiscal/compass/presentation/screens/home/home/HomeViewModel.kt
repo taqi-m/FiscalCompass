@@ -2,9 +2,10 @@ package com.fiscal.compass.presentation.screens.home.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fiscal.compass.data.rbac.Permission
+import com.fiscal.compass.domain.model.rbac.Permission
+import com.fiscal.compass.domain.service.analytics.AnalyticsEvent
+import com.fiscal.compass.domain.service.analytics.AnalyticsService
 import com.fiscal.compass.domain.usecase.rbac.CheckPermissionUseCase
-import com.fiscal.compass.presentation.navigation.MainScreens
 import com.fiscal.compass.presentation.screens.category.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -18,6 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val checkPermissionUseCase: CheckPermissionUseCase,
+    private val analyticsService: AnalyticsService
 ): ViewModel() {
 
     private val _state = MutableStateFlow(HomeScreenState())
@@ -29,6 +31,7 @@ class HomeViewModel @Inject constructor(
 
     init {
         _state.update { it.copy(uiState = UiState.Loading) }
+        analyticsService.logEvent(AnalyticsEvent.HomeViewed)
         viewModelScope.launch(Dispatchers.IO) {
             _state.value = _state.value.copy(
                 canViewCategories = checkPermission(Permission.VIEW_CATEGORIES),
@@ -42,7 +45,13 @@ class HomeViewModel @Inject constructor(
     fun onEvent(event: HomeEvent) {
         when (event) {
             is HomeEvent.ToggleFabExpanded -> {
-                _state.update { it.copy(isFabExpanded = !it.isFabExpanded) }
+                val willExpand = !_state.value.isFabExpanded
+                if (willExpand) {
+                    analyticsService.logEvent(AnalyticsEvent.FabExpanded)
+                } else {
+                    analyticsService.logEvent(AnalyticsEvent.FabCollapsed)
+                }
+                _state.update { it.copy(isFabExpanded = willExpand) }
             }
         }
     }

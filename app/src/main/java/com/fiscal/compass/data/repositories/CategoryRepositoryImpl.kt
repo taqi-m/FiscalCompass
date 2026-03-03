@@ -2,19 +2,18 @@ package com.fiscal.compass.data.repositories
 
 import androidx.room.withTransaction
 import com.fiscal.compass.data.local.AppDatabase
-import com.fiscal.compass.data.managers.AutoSyncManager
-import com.fiscal.compass.data.managers.SyncType
-import com.fiscal.compass.data.mappers.toCategoryEntity
-import com.fiscal.compass.data.mappers.toCategoryTree
-import com.fiscal.compass.data.mappers.toDomain
-import com.fiscal.compass.data.mappers.toEntityList
 import com.fiscal.compass.data.local.dao.CategoryDao
+import com.fiscal.compass.data.mappers.toCategoryEntity
+import com.fiscal.compass.data.mappers.toDomain
+import com.fiscal.compass.data.remote.RemoteUtil
+import com.fiscal.compass.data.remote.RemoteUtil.ensureValidCategoryId
+import com.fiscal.compass.data.remote.RemoteUtil.generateCategoryId
 import com.fiscal.compass.domain.model.base.Category
-import com.fiscal.compass.domain.model.base.CategoryTree
+import com.fiscal.compass.domain.model.sync.SyncType
 import com.fiscal.compass.domain.repository.CategoryRepository
+import com.fiscal.compass.domain.sync.AutoSyncManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.transform
 import javax.inject.Inject
 
 class CategoryRepositoryImpl @Inject constructor(
@@ -45,9 +44,6 @@ class CategoryRepositoryImpl @Inject constructor(
             isSynced = false,
             updatedAt = currentTime,
             createdAt = existingCategory?.createdAt ?: currentTime,
-            firestoreId = existingCategory?.firestoreId,
-            parentCategoryFirestoreId = existingCategory?.parentCategoryFirestoreId,
-            localId = existingCategory?.localId ?: category.toCategoryEntity().localId
         )
 
         val dbResult = categoryDao.update(categoryEntity)
@@ -72,38 +68,6 @@ class CategoryRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getAllCategoriesTreeFlow(): Flow<CategoryTree> {
-        return categoryDao.getAllCategoriesFlow().transform {
-            val categories = it.toCategoryTree()
-            emit(categories)
-        }
-    }
-
-    override suspend fun getExpenseCategoriesTreeFLow(): Flow<CategoryTree> {
-        return categoryDao.getExpenseCategoriesFlow().map {
-            it.toCategoryTree()
-        }
-    }
-
-    override suspend fun getExpenseCategoriesTree(): CategoryTree {
-        return categoryDao.getExpenseCategories().toCategoryTree()
-    }
-
-    override suspend fun getIncomeCategoriesTreeFLow(): Flow<CategoryTree> {
-        return categoryDao.getIncomeCategoriesFlow().transform {
-            val categories = it.toCategoryTree()
-            emit(categories)
-        }
-    }
-
-    override suspend fun getIncomeCategoriesTree(): CategoryTree {
-        return categoryDao.getIncomeCategories().toCategoryTree()
-    }
-
-    override suspend fun seedDefaultCategories(defaultCategories: Map<Category, List<Category>>) {
-        val defaultEntities = defaultCategories.toEntityList()
-        categoryDao.insertAll(defaultEntities)
-    }
 
     override suspend fun getIncomeCategoriesWithFlow(): Flow<List<Category>> {
         return categoryDao.getIncomeCategoriesFlow().map { categoryEntities ->
@@ -129,11 +93,11 @@ class CategoryRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getCategoryNameById(id: Long): String? {
+    override suspend fun getCategoryNameById(id: String): String? {
         return categoryDao.getCategoryById(id)?.name
     }
 
-    override suspend fun getCategoryById(id: Long): Category? {
+    override suspend fun getCategoryById(id: String): Category? {
         return categoryDao.getCategoryById(id)?.toDomain()
     }
 
@@ -141,11 +105,17 @@ class CategoryRepositoryImpl @Inject constructor(
         return categoryDao.getCategoryByName(name)?.toDomain()
     }
 
-    override suspend fun isCategoryUsedInExpenses(categoryId: Long): Boolean {
+    override suspend fun getNextCategoryId(): String {
+        val newCategoryId = generateCategoryId()
+        val validCategoryId = ensureValidCategoryId(newCategoryId)
+        return validCategoryId
+    }
+
+    override suspend fun isCategoryUsedInExpenses(categoryId: String): Boolean {
         return categoryDao.isCategoryUsedInExpenses(categoryId)
     }
 
-    override suspend fun isCategoryUsedInIncomes(categoryId: Long): Boolean {
+    override suspend fun isCategoryUsedInIncomes(categoryId: String): Boolean {
         return categoryDao.isCategoryUsedInIncomes(categoryId)
     }
 }

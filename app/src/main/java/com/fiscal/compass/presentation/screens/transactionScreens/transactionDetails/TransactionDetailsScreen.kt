@@ -111,7 +111,7 @@ fun TransactionDetailsScreen(
                         .padding(paddingValues),
                     state = state,
                     onDeleteClick = {
-
+                        onEvent(TransactionDetailsEvent.ShowDeleteDialog)
                     },
                     onUpdateClick = {
                         val encodedJsonTransaction = Uri.encode(transactionJson)
@@ -122,6 +122,18 @@ fun TransactionDetailsScreen(
                         )
                     }
                 )
+
+                // Show delete confirmation dialog
+                if (state.showDeleteDialog) {
+                    DeleteConfirmationDialog(
+                        onDismiss = { onEvent(TransactionDetailsEvent.DismissDeleteDialog) },
+                        onConfirm = {
+                            onEvent(TransactionDetailsEvent.ConfirmDelete)
+                            // Navigate back after successful deletion
+                            appNavController.popBackStack()
+                        }
+                    )
+                }
             }
 
             is UiState.Error -> {
@@ -396,6 +408,52 @@ fun DeleteAndUpdateCard(
             onClick = onUpdateClick
         )
     }
+}
+
+@Composable
+private fun DeleteConfirmationDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                painter = painterResource(R.drawable.ic_delete_24),
+                contentDescription = "Delete",
+                tint = MaterialTheme.colorScheme.error
+            )
+        },
+        title = {
+            Text(
+                text = "Delete Transaction",
+                style = MaterialTheme.typography.headlineSmall
+            )
+        },
+        text = {
+            Text(
+                text = "Are you sure you want to delete this transaction? This action cannot be undone.",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        },
+        confirmButton = {
+            androidx.compose.material3.TextButton(
+                onClick = onConfirm,
+                colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text("Delete")
+            }
+        },
+        dismissButton = {
+            androidx.compose.material3.TextButton(
+                onClick = onDismiss
+            ) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 

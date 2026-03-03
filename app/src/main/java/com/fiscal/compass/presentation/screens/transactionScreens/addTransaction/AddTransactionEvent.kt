@@ -13,16 +13,9 @@ sealed class AddTransactionEvent {
     object OnUiReset : AddTransactionEvent()
 
     data class DateSelected(val selectedDate: Long) : AddTransactionEvent()
-    data class TimeSelected(val selectedTime: Calendar) : AddTransactionEvent()
-
-    // Navigation events for ItemSelectionScreen
-    object NavigateToCategorySelection : AddTransactionEvent()
-    object NavigateToPersonSelection : AddTransactionEvent()
-    object NavigateToAmountScreen : AddTransactionEvent()
-
-    object ResetNavigation : AddTransactionEvent()
+    data class TimeSelected(val selectedTime: Long) : AddTransactionEvent()
 
     // Update events from ItemSelectionScreen
-    data class UpdateSelectedCategory(val categoryId: Long) : AddTransactionEvent()
-    data class UpdateSelectedPerson(val personId: Long?) : AddTransactionEvent()
+    data class UpdateSelectedCategory(val categoryId: String) : AddTransactionEvent()
+    data class UpdateSelectedPerson(val personId: String?) : AddTransactionEvent()
 }

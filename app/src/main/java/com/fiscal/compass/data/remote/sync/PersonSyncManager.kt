@@ -2,12 +2,12 @@ package com.fiscal.compass.data.remote.sync
 
 import android.util.Log
 import com.fiscal.compass.data.local.dao.PersonDao
-import com.fiscal.compass.data.managers.SyncTimestampManager
-import com.fiscal.compass.data.managers.SyncType
+import com.fiscal.compass.data.remote.model.PersonDto
+import com.fiscal.compass.domain.sync.SyncTimestampManager
 import com.fiscal.compass.data.mappers.toDto
-import com.fiscal.compass.data.mappers.toFirestoreMap
 import com.fiscal.compass.data.mappers.toPersonEntity
-import com.fiscal.compass.data.remote.sync.EnhancedSyncManager.Companion.TAG
+import com.fiscal.compass.domain.model.sync.SyncType
+import com.fiscal.compass.domain.sync.EnhancedSyncManager.Companion.TAG
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -31,29 +31,22 @@ class PersonSyncManager @Inject constructor(
         try {
             val globalPersonRef = firestore.collection("globalPersons")
             val currentSyncTime = System.currentTimeMillis()
+
             unsyncedPersons.forEach { person ->
                 try {
-                    val personDto = person.toDto()
-                    var firestoreDocId = person.firestoreId
-
-                    if (firestoreDocId == null) {
-                        Log.d(TAG, "Person ${person.name} has no Firestore ID, generating new one")
-                        firestoreDocId = globalPersonRef.document().id
+                    val personDto = person.toDto().apply {
+                        lastSyncedAt = Timestamp(currentSyncTime / 1000, ((currentSyncTime % 1000) * 1_000_000).toInt())
+                        updatedAt = Timestamp(currentSyncTime / 1000, ((currentSyncTime % 1000) * 1_000_000).toInt())
                     }
 
-                    Log.d(TAG, "Uploading person '${person.name}' with firestoreId=$firestoreDocId")
+                    Log.d(TAG, "Uploading person '${person.name}' with personId=${person.personId}")
 
-                    val personMap = personDto.toFirestoreMap(
-                        firestoreId = firestoreDocId,
-                        syncTime = currentSyncTime
-                    )
-
-                    globalPersonRef.document(firestoreDocId).set(personMap).await()
+                    // Use personId as Firestore document ID and serialize DTO directly
+                    globalPersonRef.document(person.personId).set(personDto).await()
 
                     // Update local entity with sync status
                     personDao.update(
                         person.copy(
-                            firestoreId = firestoreDocId,
                             isSynced = true,
                             needsSync = false,
                             lastSyncedAt = currentSyncTime
@@ -63,6 +56,8 @@ class PersonSyncManager @Inject constructor(
                     Log.e(TAG, "Error uploading person ${person.name}", e)
                 }
             }
+
+            timestampManager.updateLastSyncTimestamp(SyncType.PERSONS)
         } catch (e: Exception) {
             Log.e(TAG, "Error in uploadLocalPersons", e)
             throw e
@@ -81,9 +76,13 @@ class PersonSyncManager @Inject constructor(
 
             Log.d(TAG, "Found ${globalPersons.documents.size} remote persons to sync")
 
+            // Process all persons using direct DTO deserialization
             globalPersons.documents.forEach { doc ->
                 try {
-                    processRemotePerson(doc.data ?: return@forEach)
+                    val personDto = doc.toObject(PersonDto::class.java)
+                    if (personDto != null) {
+                        processRemotePerson(personDto)
+                    }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error processing person from Firestore", e)
                 }
@@ -96,26 +95,26 @@ class PersonSyncManager @Inject constructor(
         }
     }
 
-    private suspend fun processRemotePerson(personData: Map<String, Any>) {
-        val parsedPerson = personData.toPersonEntity()
-        val existingPerson = parsedPerson.firestoreId?.let {
-            personDao.getPersonByFirestoreId(it)
-        }
+    private suspend fun processRemotePerson(personDto: PersonDto) {
+        // Convert DTO to entity using mapper
+        val parsedPerson = personDto.toPersonEntity()
+        val existingPerson = personDao.getPersonById(parsedPerson.personId)
 
         if (existingPerson == null) {
+            // New person from remote - insert directly
             personDao.insert(parsedPerson)
             return
         }
 
+        // Update only if remote version is newer
         val remoteUpdateTime = parsedPerson.updatedAt
         val localUpdateTime = existingPerson.updatedAt
 
         if (remoteUpdateTime > localUpdateTime) {
             personDao.update(
                 parsedPerson.copy(
-                    personId = existingPerson.personId,
                     isSynced = true,
-                    needsSync = false,
+                    needsSync = false
                 )
             )
         }

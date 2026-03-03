@@ -70,15 +70,13 @@ fun Income.toIncomeEntity(): IncomeEntity {
  */
 fun IncomeEntity.toDto(): IncomeDto {
     return IncomeDto(
-        firestoreId = firestoreId ?: "",
-        localId = localId,
+        id = incomeId,
+        userId = userId,
+        categoryId = categoryId,
         amount = amount,
         amountPaid = amountPaid,
         description = description,
         date = Timestamp(date / 1000, ((date % 1000) * 1_000_000).toInt()),
-        categoryFirestoreId = categoryFirestoreId ?: "",
-        userId = userId,
-        personFirestoreId = personFirestoreId,
         source = source,
         isRecurring = isRecurring,
         recurringFrequency = recurringFrequency,
@@ -86,8 +84,6 @@ fun IncomeEntity.toDto(): IncomeDto {
         createdAt = Timestamp(createdAt / 1000, ((createdAt % 1000) * 1_000_000).toInt()),
         updatedAt = Timestamp(updatedAt / 1000, ((updatedAt % 1000) * 1_000_000).toInt()),
         isDeleted = isDeleted,
-        isSynced = isSynced,
-        needsSync = needsSync,
         lastSyncedAt = lastSyncedAt?.let {
             Timestamp(it / 1000, ((it % 1000) * 1_000_000).toInt())
         }
@@ -99,17 +95,14 @@ fun IncomeEntity.toDto(): IncomeDto {
  */
 fun IncomeDto.toEntity(): IncomeEntity {
     return IncomeEntity(
-        firestoreId = firestoreId.ifBlank { null },
-        localId = localId,
+        incomeId = id,
+        userId = userId,
+        categoryId = categoryId,
+        personId = personId,
         amount = amount,
         amountPaid = amountPaid,
         description = description,
         date = date.toDate().time,
-        categoryId = 0,
-        categoryFirestoreId = categoryFirestoreId.ifBlank { null },
-        userId = userId,
-        personId = 0,
-        personFirestoreId = personFirestoreId?.ifBlank { null },
         source = source,
         isRecurring = isRecurring,
         recurringFrequency = recurringFrequency,
@@ -117,36 +110,20 @@ fun IncomeDto.toEntity(): IncomeEntity {
         createdAt = createdAt.toDate().time,
         updatedAt = updatedAt.toDate().time,
         isDeleted = isDeleted,
-        isSynced = isSynced,
-        needsSync = needsSync,
+        isSynced = true,
+        needsSync = false,
         lastSyncedAt = lastSyncedAt?.toDate()?.time
     )
 }
 
 /**
- * Converts an [IncomeDto] to a Firestore map.
+ * Updates an [IncomeDto] with sync timestamps for Firestore upload.
  */
-fun IncomeDto.toFirestoreMap(firestoreId: String, syncTime: Long): Map<String, Any?> {
-    return mapOf(
-        "firestoreId" to firestoreId,
-        "localId" to localId,
-        "amount" to amount,
-        "amountPaid" to amountPaid,
-        "description" to description,
-        "date" to date,
-        "categoryFirestoreId" to categoryFirestoreId,
-        "userId" to userId,
-        "personFirestoreId" to personFirestoreId,
-        "source" to source,
-        "isRecurring" to isRecurring,
-        "recurringFrequency" to recurringFrequency,
-        "isTaxable" to isTaxable,
-        "createdAt" to createdAt,
-        "updatedAt" to Timestamp(syncTime / 1000, ((syncTime % 1000) * 1_000_000).toInt()),
-        "isDeleted" to isDeleted,
-        "isSynced" to true,
-        "needsSync" to false,
-        "lastSyncedAt" to Timestamp(syncTime / 1000, ((syncTime % 1000) * 1_000_000).toInt())
+fun IncomeDto.withSyncTimestamp(syncTime: Long = System.currentTimeMillis()): IncomeDto {
+    val timestamp = Timestamp(syncTime / 1000, ((syncTime % 1000) * 1_000_000).toInt())
+    return this.copy(
+        updatedAt = timestamp,
+        lastSyncedAt = timestamp
     )
 }
 
@@ -157,15 +134,14 @@ fun DocumentSnapshot.toIncomeDto(): IncomeDto? {
     if (!exists()) return null
 
     return IncomeDto(
-        firestoreId = getString("firestoreId") ?: "",
-        localId = getString("localId") ?: "",
+        id = id, // Document ID as String
         amount = getDouble("amount") ?: 0.0,
         amountPaid = getDouble("amountPaid") ?: 0.0,
+        userId = getString("userId") ?: "",
+        categoryId = getString("categoryId") ?: "",
+        personId = getString("personId"),
         description = getString("description") ?: "",
         date = getTimestamp("date") ?: Timestamp.now(),
-        categoryFirestoreId = getString("categoryFirestoreId") ?: "",
-        userId = getString("userId") ?: "",
-        personFirestoreId = getString("personFirestoreId"),
         source = getString("source"),
         isRecurring = getBoolean("isRecurring") ?: false,
         recurringFrequency = getString("recurringFrequency"),
@@ -173,8 +149,6 @@ fun DocumentSnapshot.toIncomeDto(): IncomeDto? {
         createdAt = getTimestamp("createdAt") ?: Timestamp.now(),
         updatedAt = getTimestamp("updatedAt") ?: Timestamp.now(),
         isDeleted = getBoolean("isDeleted") ?: false,
-        isSynced = getBoolean("isSynced") ?: false,
-        needsSync = getBoolean("needsSync") ?: true,
         lastSyncedAt = getTimestamp("lastSyncedAt")
     )
 }

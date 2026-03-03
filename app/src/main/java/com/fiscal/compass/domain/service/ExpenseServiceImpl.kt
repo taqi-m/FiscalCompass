@@ -17,7 +17,7 @@ class ExpenseServiceImpl @Inject constructor(
 
     override suspend fun addExpense(
         amount: Double,
-        categoryId: Long,
+        categoryId: String,
         description: String,
         date: Date,
         amountPaid: Double
@@ -32,7 +32,10 @@ class ExpenseServiceImpl @Inject constructor(
                 return Result.failure(it)
             }
 
+            val newExpenseId = expenseRepository.getNextExpenseId()
+
             val newExpense = Expense(
+                expenseId = newExpenseId,
                 amount = amount,
                 amountPaid = amountPaid,
                 description = description,
@@ -52,13 +55,13 @@ class ExpenseServiceImpl @Inject constructor(
         return expenseRepository.getExpensesByUser(userId)
     }
 
-    override suspend fun getExpenseWithCategoryAndPerson(id: Long): ExpenseFull {
-        val expense = expenseRepository.getSingleFulExpenseById(id)
+    override suspend fun getExpenseWithCategoryAndPerson(expenseId: String): ExpenseFull {
+        val expense = expenseRepository.getSingleFulExpenseById(expenseId)
             ?: throw IllegalArgumentException("Expense not found")
         return expense
     }
 
-    override suspend fun updateExpensePayment(expenseId: Long, newAmountPaid: Double): Result<Unit> {
+    override suspend fun updateExpensePayment(expenseId: String, newAmountPaid: Double): Result<Unit> {
         return try {
             val expense = expenseRepository.getExpenseById(expenseId)
                 ?: return Result.failure(IllegalArgumentException("Expense not found with ID: $expenseId"))
@@ -79,7 +82,7 @@ class ExpenseServiceImpl @Inject constructor(
         }
     }
 
-    override suspend fun addPayment(expenseId: Long, paymentAmount: Double): Result<Unit> {
+    override suspend fun addPayment(expenseId: String, paymentAmount: Double): Result<Unit> {
         return try {
             if (paymentAmount <= 0) {
                 return Result.failure(IllegalArgumentException("Payment amount must be greater than zero"))
@@ -100,7 +103,7 @@ class ExpenseServiceImpl @Inject constructor(
         }
     }
 
-    override suspend fun markAsFullyPaid(expenseId: Long): Result<Unit> {
+    override suspend fun markAsFullyPaid(expenseId: String): Result<Unit> {
         return try {
             val expense = expenseRepository.getExpenseById(expenseId)
                 ?: return Result.failure(IllegalArgumentException("Expense not found with ID: $expenseId"))

@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fiscal.compass.domain.model.Transaction
 import com.fiscal.compass.domain.service.TransactionService
+import com.fiscal.compass.domain.service.analytics.AnalyticsEvent
+import com.fiscal.compass.domain.service.analytics.AnalyticsService
 import com.fiscal.compass.presentation.screens.category.UiState
 import com.fiscal.compass.presentation.utils.AmountInputType
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,7 +18,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AmountViewModel @Inject constructor(
-    private val transactionService: TransactionService
+    private val transactionService: TransactionService,
+    private val analyticsService: AnalyticsService
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -103,6 +106,24 @@ class AmountViewModel @Inject constructor(
                 "Transaction added successfully"
             }
             result.onSuccess {
+                // Log analytics event
+                if (state.value.editMode) {
+                    analyticsService.logEvent(
+                        AnalyticsEvent.TransactionEdited(
+                            type = if (transaction.isExpense) "expense" else "income"
+                        )
+                    )
+                } else {
+                    analyticsService.logEvent(
+                        AnalyticsEvent.TransactionAdded(
+                            type = transaction.transactionType,
+                            amount = transaction.amount,
+                            categoryId = transaction.categoryId,
+                            hasDescription = !transaction.description.isNullOrEmpty(),
+                            hasPerson = transaction.personId != null
+                        )
+                    )
+                }
                 updateState {
                     copy(
                         uiState = UiState.Success(successMessage),

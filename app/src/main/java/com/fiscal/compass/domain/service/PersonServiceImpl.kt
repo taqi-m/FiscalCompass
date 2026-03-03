@@ -1,18 +1,14 @@
 package com.fiscal.compass.domain.service
 
-import com.fiscal.compass.data.local.dao.PersonDao
-import com.fiscal.compass.data.mappers.toDomain
-import com.fiscal.compass.data.mappers.toEntity
 import com.fiscal.compass.domain.model.base.Person
 import com.fiscal.compass.domain.repository.PersonRepository
 import com.fiscal.compass.domain.util.PersonType
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class PersonServiceImpl @Inject constructor(
-    private val personRepository: PersonRepository,
-    private val personDao: PersonDao
+    private val personRepository: PersonRepository
 ) : PersonService {
 
     override suspend fun addPerson(
@@ -21,8 +17,9 @@ class PersonServiceImpl @Inject constructor(
         personType: String
     ): Result<Any> {
         return try {
+            val newPersonId = personRepository.getNextPersonId()
             val person = Person(
-                personId = 0,
+                personId = newPersonId,
                 name = name,
                 personType = PersonType.valueOf(personType).name,
                 contact = contact
@@ -34,8 +31,9 @@ class PersonServiceImpl @Inject constructor(
         }
     }
 
+
     override suspend fun updatePerson(
-        personId: Long,
+        personId: String,
         name: String,
         contact: String,
         personType: String
@@ -55,16 +53,15 @@ class PersonServiceImpl @Inject constructor(
     }
 
     override suspend fun updatePerson(updatedPerson: Person): Result<Any> {
-        val currentPerson = personDao.getById(updatedPerson.personId)
-        if (currentPerson == null) {
-            return Result.failure(Exception("Person not found."))
-        }
+        val currentPerson = personRepository.getPersonById(updatedPerson.personId) ?: return Result.failure(
+            Exception("Person not found.")
+        )
         val newPerson = currentPerson.copy(
             name = updatedPerson.name,
             contact = updatedPerson.contact,
-            personType = PersonType.valueOf(updatedPerson.personType.uppercase())
+            personType = updatedPerson.personType.uppercase()
         )
-        val result = personDao.update(newPerson)
+        val result = personRepository.updatePerson(newPerson)
         return if (result > 0) {
             Result.success("Person updated successfully.")
         } else {
@@ -74,7 +71,7 @@ class PersonServiceImpl @Inject constructor(
 
     override suspend fun deletePerson(person: Person): Result<Any> {
         return try {
-            personDao.delete(person.toEntity())
+            personRepository.deletePerson(person)
             Result.success("Person deleted successfully.")
         } catch (e: Exception) {
             Result.failure(e)
@@ -82,22 +79,14 @@ class PersonServiceImpl @Inject constructor(
     }
 
     override suspend fun getAllPersonsWithFlow(): Flow<List<Person>> {
-        return personDao.getAllWithFlow().map { personList ->
-            personList.map { it.toDomain() }
-        }
+        return personRepository.getAllPersons()
     }
 
     override suspend fun getAllPersons(): List<Person> {
-        return personDao.getAll().map { it.toDomain() }
+        return personRepository.getAllPersons().first()
     }
 
-    override suspend fun getPersonByType(type: String): Flow<List<Person>> {
-        return personDao.getByPersonTypeWithFlow(type).map { list ->
-            list.map { it.toDomain() }
-        }
-    }
-
-    override suspend fun getPersonById(id: Long): Person? {
-        return personRepository.getPersonById(id)
+    override suspend fun getPersonById(personId: String): Person? {
+        return personRepository.getPersonById(personId)
     }
 }

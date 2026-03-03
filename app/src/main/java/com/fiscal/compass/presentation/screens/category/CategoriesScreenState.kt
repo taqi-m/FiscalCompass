@@ -33,7 +33,7 @@ data class CategoriesScreenState(
     val canEdit: Boolean = false,
     val canDelete: Boolean = false,
     val categories: List<CategoryUi> = emptyList(),
-    val transactionType: TransactionType = TransactionType.EXPENSE,
+    val transactionType: TransactionType = TransactionType.entries.first(),
     val currentDialog: CategoriesDialog = CategoriesDialog.Hidden,
     val dialogState: CategoryDialogState = CategoryDialogState.Idle
 )

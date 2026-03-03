@@ -2,15 +2,17 @@ package com.fiscal.compass.domain.model
 
 import com.fiscal.compass.domain.model.base.Category
 import com.fiscal.compass.domain.model.base.Person
+import com.fiscal.compass.domain.util.DateTimeUtil.getCurrentDate
+import com.fiscal.compass.domain.util.TransactionType
 import java.util.Date
 
 data class Transaction(
-    val transactionId: Long,
+    val transactionId: String,
     val amount: Double,
     val amountPaid: Double = 0.0,
-    val categoryId: Long,
+    val categoryId: String,
     val category: Category? = null,
-    val personId: Long? = null,
+    val personId: String? = null,
     val person: Person? = null,
     val date: Date,
     val description: String? = null,
@@ -19,70 +21,70 @@ data class Transaction(
 ) {
     companion object {
         fun default(): Transaction = Transaction(
-            transactionId = 1L,
+            transactionId = "1",
             amount = 100.0,
             amountPaid = 0.0,
-            categoryId = 1L,
+            categoryId = "1",
             category = null,
             personId = null,
             person = null,
-            date = Date(),
+            date = getCurrentDate(),
             description = "Default transaction",
-            isExpense = true,
-            transactionType = "EXPENSE"
+            isExpense = false,
+            transactionType = TransactionType.entries.first().name
         )
 
         fun empty(): Transaction = Transaction(
-            transactionId = 0L,
+            transactionId = "",
             amount = 0.0,
             amountPaid = 0.0,
-            categoryId = 0L,
+            categoryId = "",
             category = null,
             personId = null,
             person = null,
-            date = Date(),
+            date = getCurrentDate(),
             description = null,
-            isExpense = true,
-            transactionType = "EXPENSE"
+            isExpense = false,
+            transactionType = TransactionType.entries.first().name
         )
 
         fun nullTransaction(): Transaction = Transaction(
-            transactionId = 0L,
+            transactionId = "",
             amount = 0.0,
             amountPaid = 0.0,
-            categoryId = 0L,
+            categoryId = "",
             category = null,
             personId = null,
             person = null,
-            date = Date(),
+            date = getCurrentDate(),
             description = null,
             isExpense = true,
             transactionType = "NONE"
         )
 
         fun sampleExpense(): Transaction = Transaction(
-            transactionId = 101L,
+            transactionId = "101",
             amount = 45.50,
             amountPaid = 45.50,
-            categoryId = 2L,
+            categoryId = "2",
             category = null,
             personId = null,
             person = null,
-            date = Date(),
+            date = getCurrentDate(),
             description = "Lunch at cafe",
             isExpense = true,
             transactionType = "CARD"
         )
 
         fun sampleIncome(): Transaction = Transaction(
-            transactionId = 102L,
+            transactionId = "102",
             amount = 1500.0,
             amountPaid = 1500.0,
-            categoryId = 3L,
+            categoryId = "3",
             category = null,
             personId = null,
             person = null,
-            date = Date(),
+            date = getCurrentDate(),
             description = "Monthly salary",
             isExpense = false,
             transactionType = "BANK"

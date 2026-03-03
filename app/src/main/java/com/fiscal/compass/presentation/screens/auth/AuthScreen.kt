@@ -28,13 +28,11 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -52,8 +50,6 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.Wallpapers
 import androidx.compose.ui.unit.dp
@@ -61,11 +57,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.fiscal.compass.R
-import com.fiscal.compass.data.managers.InitializationStatus
+import com.fiscal.compass.domain.initialization.InitializationStatus
 import com.fiscal.compass.ui.components.drawings.MountainSpikes
 import com.fiscal.compass.ui.components.drawings.RelativeCircle
 import com.fiscal.compass.ui.components.input.EmailField
-import com.fiscal.compass.ui.components.input.FormTextField
 import com.fiscal.compass.ui.components.input.PasswordField
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
 
@@ -183,9 +178,7 @@ private fun AuthContent(
                     .size(96.dp)
             )
             Text(
-                text = stringResource(
-                    if (state.isSignUp) R.string.sign_up_headline else R.string.sign_in_headline
-                ),
+                text = stringResource(R.string.sign_in_headline),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -193,9 +186,7 @@ private fun AuthContent(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = stringResource(
-                    if (state.isSignUp) R.string.sign_up_prompt else R.string.sign_in_prompt
-                ),
+                text = stringResource(R.string.sign_in_prompt),
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.onGloballyPositioned { coordinates ->
@@ -211,32 +202,6 @@ private fun AuthContent(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             )
             {
-                AnimatedContent(
-                    targetState = state.isSignUp,
-                    label = "UsernameFieldAnimation"
-                ) { isSignUp ->
-                    if (isSignUp) {
-                        FormTextField(
-                            value = state.username,
-                            label = stringResource(R.string.username_label),
-                            placeholder = stringResource(R.string.username_placeholder),
-                            onValueChange = { onEvent(AuthEvent.UsernameChanged(it)) },
-                            keyboardType = KeyboardType.Text,
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_person_24),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            imeAction = ImeAction.Next
-                        )
-                    } else {
-                        // Empty composable when not showing username field
-                        Spacer(modifier = Modifier.height(0.dp))
-                    }
-                }
-
                 EmailField(
                     value = state.email,
                     onValueChange = { onEvent(AuthEvent.EmailChanged(it)) },
@@ -253,15 +218,11 @@ private fun AuthContent(
             Button(
                 onClick = {
                     if (!state.isLoading) {
-                        if (state.isSignUp) {
-                            onEvent(AuthEvent.SignUpClicked)
-                        } else {
-                            onEvent(AuthEvent.LoginClicked)
-                        }
+                        onEvent(AuthEvent.LoginClicked)
                     }
                 },
                 modifier = Modifier.widthIn(min = 250.dp, max = 250.dp),
-                enabled = state.email.isNotEmpty() && state.password.isNotEmpty() && if (state.isSignUp) state.username.isNotEmpty() else true
+                enabled = state.email.isNotEmpty() && state.password.isNotEmpty()
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -294,29 +255,10 @@ private fun AuthContent(
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Text(
-                                stringResource(
-                                    if (state.isSignUp) R.string.sign_up_button else R.string.sign_in_button
-                                )
-                            )
+                            Text(stringResource(R.string.sign_in_button))
                         }
                     }
                 }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            TextButton(
-                onClick = {
-                    onEvent(AuthEvent.SwitchState)
-                },
-                enabled = !state.isLoading
-            ) {
-                Text(
-                    stringResource(
-                        if (state.isSignUp) R.string.already_have_account else R.string.create_account
-                    )
-                )
             }
         }
     }
@@ -335,8 +277,7 @@ fun AuthScreenPreview() {
         AuthScreen(
             state = AuthScreenState(
                 email = "",
-                password = "",
-                isSignUp = false
+                password = ""
             ),
             onEvent = {},
             appNavController = rememberNavController(),

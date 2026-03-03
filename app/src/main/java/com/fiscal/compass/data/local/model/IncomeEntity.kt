@@ -34,20 +34,16 @@ import java.util.UUID
     indices = [Index("categoryId"), Index("userId"), Index("personId")]
 )
 data class IncomeEntity(
-    @PrimaryKey(autoGenerate = true)
-    val incomeId: Long = 0,
-    val firestoreId: String? = null,  // Firestore document ID
-    val localId: String = UUID.randomUUID().toString(), // Unique local identifier
+    @PrimaryKey
+    val incomeId: String,
+    val userId: String,
+    val personId: String? = null,
+    val source: String? = null,
     val amount: Double,
     val amountPaid: Double = 0.0,
     val description: String,
     val date: Long,
-    val categoryId: Long,
-    val categoryFirestoreId: String? = null,
-    val userId: String,
-    val personId: Long? = null,
-    val personFirestoreId: String? = null,
-    val source: String? = null,
+    val categoryId: String,
     val isRecurring: Boolean = false,
     val recurringFrequency: String? = null,
     val isTaxable: Boolean = true,

@@ -1,6 +1,6 @@
 package com.fiscal.compass.domain.repository
 
-import com.fiscal.compass.data.rbac.Role
+import com.fiscal.compass.domain.model.rbac.Role
 import com.fiscal.compass.domain.model.Resource
 import com.fiscal.compass.domain.model.dto.UserInfo
 import com.google.firebase.auth.AuthResult

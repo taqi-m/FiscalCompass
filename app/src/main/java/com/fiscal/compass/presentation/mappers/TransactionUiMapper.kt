@@ -1,23 +1,21 @@
 package com.fiscal.compass.presentation.mappers
 
 import com.fiscal.compass.domain.model.Transaction
+import com.fiscal.compass.domain.util.DateTimeUtil
 import com.fiscal.compass.domain.validation.PaymentValidation
 import com.fiscal.compass.presentation.utilities.CurrencyFormater
 import com.fiscal.compass.presentation.model.TransactionUi
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 
-
-private const val DATE_FORMAT = "dd MMM, yyyy"
-private const val TIME_FORMAT = "hh:mm a"
+private const val DATE_FORMAT = DateTimeUtil.SHORT_DATE_FORMAT
+private const val TIME_FORMAT = DateTimeUtil.DEFAULT_TIME_FORMAT
 
 fun formatDate(date: Date): String {
-    return SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).format(date)
+    return DateTimeUtil.formatDate(date, DATE_FORMAT)
 }
 
 fun formatTime(date: Date): String {
-    return SimpleDateFormat(TIME_FORMAT, Locale.getDefault()).format(date)
+    return DateTimeUtil.formatTime(date, TIME_FORMAT)
 }
 
 fun Transaction.toUi(): TransactionUi {
@@ -44,14 +42,16 @@ fun Transaction.toUi(): TransactionUi {
 
 fun TransactionUi.toTransaction(): Transaction {
     val dateTimeString = "$formatedDate $formatedTime"
-    val dateFormat = SimpleDateFormat("$DATE_FORMAT $TIME_FORMAT", Locale.getDefault())
+    val combinedFormat = "$DATE_FORMAT $TIME_FORMAT"
+    val parsedDate = DateTimeUtil.parseDateOrNull(dateTimeString, combinedFormat) ?: Date()
+
     return Transaction(
         transactionId = transactionId,
         amount = CurrencyFormater.parseCurrency(formatedAmount),
         amountPaid = CurrencyFormater.parseCurrency(formatedPaidAmount),
         categoryId = categoryId,
         personId = personId,
-        date = dateFormat.parse(dateTimeString) ?: Date(),
+        date = parsedDate,
         description = description,
         isExpense = isExpense,
         transactionType = transactionType
