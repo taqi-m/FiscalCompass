@@ -250,7 +250,7 @@ exports/
 # === CLEANUP: Removed from tracking ===
 /.idea/
 /functions/
-/EMULATOR_SETUP.md
+/markdowns/EMULATOR_SETUP.md
 /firebase.json
 /firestore.rules
 /firestore.indexes.json
@@ -263,3 +263,4 @@ exports/
 # === Temporary files ===
 temp_output.txt
 
+/markdowns/
