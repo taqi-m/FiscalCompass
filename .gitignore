@@ -215,9 +215,9 @@ cmake-build-*/
 replay_pid*
 
 /app/google-services.json
-!/.idea/copilotDiffState.xml
-!/gradle.properties
-!/.idea/misc.xml
+/.idea/copilotDiffState.xml
+/gradle.properties
+/.idea/misc.xml
 /.idea/**
 /app/release/**
 /app/schemas/com.app.uniqueplant.data.datasource.local.AppDatabase/1.json
