@@ -11,6 +11,7 @@ plugins {
 
 android {
     signingConfigs {
+
         create("test-release") {
             storeFile = file("testConfig.jks")
             storePassword = "testConfig"
