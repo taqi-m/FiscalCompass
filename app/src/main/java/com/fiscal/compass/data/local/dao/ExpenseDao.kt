@@ -3,7 +3,6 @@ package com.fiscal.compass.data.local.dao
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
-import androidx.room.MapColumn
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
@@ -81,9 +80,6 @@ interface ExpenseDao {
     
     @Query("SELECT SUM(amount) FROM expenses WHERE (:userId IS NULL OR userId = :userId) AND isDeleted = 0 AND date BETWEEN :startDate AND :endDate")
     fun getExpenseSumByDateRange(userId: String? = null, startDate: Long, endDate: Long): Flow<Double>
-    
-    @Query("SELECT categoryId, SUM(amount) as total FROM expenses WHERE userId = :userId AND isDeleted = 0 GROUP BY categoryId ORDER BY total DESC")
-    fun getExpenseSumByCategory(userId: String): Flow<Map<@MapColumn("categoryId") String?, @MapColumn("total") Double>>
 
     @Query("SELECT COUNT(*) FROM expenses WHERE userId = :userId AND isDeleted = 0")
     suspend fun getExpenseCount(userId: String): Int
