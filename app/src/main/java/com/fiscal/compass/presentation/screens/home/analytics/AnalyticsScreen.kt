@@ -1,5 +1,6 @@
 package com.fiscal.compass.presentation.screens.home.analytics
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.fiscal.compass.R
 import com.fiscal.compass.ui.components.ListTable
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AnalyticsScreen(
     state: AnalyticsScreenState,
@@ -43,7 +45,7 @@ fun AnalyticsScreen(
                 )
             }
         }
-    ) {
+    ) { paddingValues ->
         AnalyticsScreenContent(
             state = state,
             onEvent = onEvent
