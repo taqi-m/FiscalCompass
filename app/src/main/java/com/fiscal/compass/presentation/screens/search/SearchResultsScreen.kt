@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.fiscal.compass.R
 import com.fiscal.compass.domain.model.Transaction
 import com.fiscal.compass.domain.util.DateTimeUtil
+import com.fiscal.compass.presentation.screens.search.navigation.SearchNavigation
 import com.fiscal.compass.ui.components.cards.ChipFlow
 import com.fiscal.compass.ui.components.cards.TransactionCard
 import com.google.gson.Gson

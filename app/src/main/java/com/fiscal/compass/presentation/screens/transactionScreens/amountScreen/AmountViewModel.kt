@@ -2,7 +2,6 @@ package com.fiscal.compass.presentation.screens.transactionScreens.amountScreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fiscal.compass.domain.model.Transaction
 import com.fiscal.compass.domain.service.TransactionService
 import com.fiscal.compass.domain.service.analytics.AnalyticsEvent
 import com.fiscal.compass.domain.service.analytics.AnalyticsService
@@ -27,11 +26,21 @@ class AmountViewModel @Inject constructor(
     )
     val state: StateFlow<AmountScreenState> = _state.asStateFlow()
 
+    fun loadTransaction(transaction: com.fiscal.compass.domain.model.Transaction, editMode: Boolean) {
+        val totalAmount = transaction.amount
+        val paidAmount = transaction.amountPaid
+        updateState {
+            copy(
+                editMode = editMode,
+                transaction = transaction,
+                totalAmount = totalAmount,
+                paidAmount = paidAmount
+            )
+        }
+    }
+
     fun onEvent(event: AmountEvent) {
         when (event) {
-            is AmountEvent.LoadTransaction -> {
-                loadTransactionDetails(event.transaction, event.editMode)
-            }
 
             is AmountEvent.OnAmountChange -> {
                 when (event.inputType) {
@@ -61,19 +70,6 @@ class AmountViewModel @Inject constructor(
     }
 
 
-    private fun loadTransactionDetails(transaction: Transaction, editMode: Boolean) {
-        val totalAmount = transaction.amount
-        val paidAmount = transaction.amountPaid
-        
-        updateState {
-            copy(
-                editMode= editMode,
-                transaction = transaction,
-                totalAmount = totalAmount,
-                paidAmount = paidAmount
-            )
-        }
-    }
 
     private fun updateTransaction() {
         // Validate amountPaid does not exceed amount

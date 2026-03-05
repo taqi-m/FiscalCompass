@@ -10,9 +10,9 @@ import com.fiscal.compass.domain.repository.CategoryRepository
 import com.fiscal.compass.domain.repository.ExpenseRepository
 import com.fiscal.compass.domain.repository.IncomeRepository
 import com.fiscal.compass.domain.repository.PersonRepository
-import com.fiscal.compass.domain.repository.UserRepository
 import com.fiscal.compass.domain.usecase.auth.SessionUseCase
 import com.fiscal.compass.domain.usecase.rbac.CheckPermissionUseCase
+import com.fiscal.compass.domain.util.DateTimeUtil
 import com.fiscal.compass.domain.util.SearchCriteria
 import com.fiscal.compass.domain.util.TransactionType
 import com.fiscal.compass.domain.validation.PaymentValidation
@@ -21,9 +21,10 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
@@ -34,17 +35,13 @@ class TransactionServiceImpl @Inject constructor(
     private val incomeRepository: IncomeRepository,
     private val categoryRepository: CategoryRepository,
     private val personRepository: PersonRepository,
-    private val userRepository: UserRepository,
     private val checkPermissionUseCase: CheckPermissionUseCase
 ) : TransactionService {
 
     override suspend fun getTransactionById(transactionId: String, isExpense: Boolean): Transaction {
         if (isExpense) {
             val expenseFull = expenseRepository.getSingleFulExpenseById(transactionId)
-
-            if (expenseFull == null) {
-                throw IllegalArgumentException("Transaction not found")
-            }
+                ?: throw IllegalArgumentException("Transaction not found")
 
             val transaction = expenseFull.expense.toTransaction()
             return transaction.copy(
@@ -55,10 +52,7 @@ class TransactionServiceImpl @Inject constructor(
             )
         } else {
             val incomeFull = incomeRepository.getSingleFullIncomeById(transactionId)
-
-            if (incomeFull == null) {
-                throw IllegalArgumentException("Transaction not found")
-            }
+                ?: throw IllegalArgumentException("Transaction not found")
 
             val transaction = incomeFull.income.toTransaction()
             return transaction.copy(
@@ -138,7 +132,7 @@ class TransactionServiceImpl @Inject constructor(
                 return Result.failure(it)
             }
 
-            val uid = sessionUseCase.getCurrentUser()?.uid
+            sessionUseCase.getCurrentUser()?.uid
                 ?: return Result.failure(IllegalStateException("User is not logged in"))
 
             val isExpense = transaction.transactionType.equals(TransactionType.EXPENSE.name, ignoreCase = true)
@@ -220,38 +214,22 @@ class TransactionServiceImpl @Inject constructor(
         }
     }
 
-    override suspend fun searchTransactions(searchCriteria: SearchCriteria): Flow<Map<Date, List<Transaction>>> {
+    override fun searchTransactions(searchCriteria: SearchCriteria): Flow<Map<Date, List<Transaction>>> = flow {
         val dateRange = searchCriteria.dateRange
-        val adjustedStartDate = dateRange?.startDate?.let {
-            val calendar = Calendar.getInstance()
-            calendar.timeInMillis = it
-            calendar.set(Calendar.HOUR_OF_DAY, 0)
-            calendar.set(Calendar.MINUTE, 0)
-            calendar.set(Calendar.SECOND, 0)
-            calendar.set(Calendar.MILLISECOND, 0)
-            calendar.timeInMillis
-        }
-        val adjustedEndDate = dateRange?.endDate?.let {
-            val calendar = Calendar.getInstance()
-            calendar.timeInMillis = it
-            calendar.set(Calendar.HOUR_OF_DAY, 23)
-            calendar.set(Calendar.MINUTE, 59)
-            calendar.set(Calendar.SECOND, 59)
-            calendar.set(Calendar.MILLISECOND, 999)
-            calendar.timeInMillis
-        }
+        val adjustedStartDate = dateRange?.startDate?.let { DateTimeUtil.toStartOfDay(it) }
+        val adjustedEndDate = dateRange?.endDate?.let { DateTimeUtil.toEndOfDay(it) }
 
         val filterType = searchCriteria.transactionType
 
         val personIds = searchCriteria.getPersonIds()
         val categoryIds = searchCriteria.getCategoryIds()
 
-        // Build userIds list based on permissions
+        // Build userIds list based on permissions — suspend calls are safe inside flow {}
         val userIds: List<String>? = if (checkPermissionUseCase(Permission.VIEW_ALL_TRANSACTIONS)) {
-            // Admin: Pass null to indicate no user filtering (all users)
+            // Admin: null means no user filtering (all users)
             null
         } else {
-            // Employee: Filter by current user only
+            // Employee: filter by current user only
             val userId = sessionUseCase.getCurrentUser()?.uid
                 ?: throw IllegalStateException("User is not logged in")
             listOf(userId)
@@ -259,8 +237,10 @@ class TransactionServiceImpl @Inject constructor(
 
         Log.d("TransactionServiceImpl", "canViewAll: ${userIds == null} | users: $userIds | persons: $personIds | categories: $categoryIds | start: $adjustedStartDate | end: $adjustedEndDate")
 
-        val expenseFlow = expenseRepository.getAllFiltered(userIds, personIds, categoryIds, adjustedStartDate, adjustedEndDate).map { expenses -> expenses.map { it.toTransaction() } }
-        val incomeFlow = incomeRepository.getAllFiltered(userIds, personIds, categoryIds, adjustedStartDate, adjustedEndDate).map { incomes -> incomes.map { it.toTransaction() } }
+        val expenseFlow = expenseRepository.getAllFiltered(userIds, personIds, categoryIds, adjustedStartDate, adjustedEndDate)
+            .map { expenses -> expenses.map { it.toTransaction() } }
+        val incomeFlow = incomeRepository.getAllFiltered(userIds, personIds, categoryIds, adjustedStartDate, adjustedEndDate)
+            .map { incomes -> incomes.map { it.toTransaction() } }
 
         val transactionFlow: Flow<List<Transaction>> = when (filterType) {
             TransactionType.EXPENSE -> expenseFlow
@@ -269,7 +249,8 @@ class TransactionServiceImpl @Inject constructor(
                 expenses + incomes
             }
         }
-        return mergeAndGroupTransactions(transactionFlow)
+
+        emitAll(mergeAndGroupTransactions(transactionFlow))
     }
 
     override suspend fun loadCurrentMonthTransactions(date: Date?): Flow<Map<Date, List<Transaction>>> {
@@ -284,20 +265,9 @@ class TransactionServiceImpl @Inject constructor(
             listOf(userId)
         }
 
-        val calendar = Calendar.getInstance()
-        date?.let { calendar.time = it }
-        val month = calendar.get(Calendar.MONTH)
-        val year = calendar.get(Calendar.YEAR)
-        val startDate = calendar.apply {
-            set(Calendar.MONTH, month)
-            set(Calendar.YEAR, year)
-            set(Calendar.DAY_OF_MONTH, 1)
-        }.time.time
-        val endDate = calendar.apply {
-            set(Calendar.MONTH, month)
-            set(Calendar.YEAR, year)
-            set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
-        }.time.time
+        val baseTimestamp = date?.time ?: DateTimeUtil.getCurrentTimestamp()
+        val startDate = DateTimeUtil.toStartOfMonth(baseTimestamp)
+        val endDate = DateTimeUtil.toEndOfMonth(baseTimestamp)
 
         val expenseFlow = expenseRepository.getAllFiltered(
             userIds = userIds,
@@ -324,22 +294,9 @@ class TransactionServiceImpl @Inject constructor(
                 ?: throw IllegalStateException("User is not logged in")
         }
 
-        val calendar = Calendar.getInstance()
-        date?.let { calendar.time = it }
-        val startDate = calendar.apply {
-            set(Calendar.DAY_OF_MONTH, 1)
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.time.time
-        val endDate = calendar.apply {
-            set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
-            set(Calendar.HOUR_OF_DAY, 23)
-            set(Calendar.MINUTE, 59)
-            set(Calendar.SECOND, 59)
-            set(Calendar.MILLISECOND, 999)
-        }.time.time
+        val baseTimestamp = date?.time ?: DateTimeUtil.getCurrentTimestamp()
+        val startDate = DateTimeUtil.toStartOfMonth(baseTimestamp)
+        val endDate = DateTimeUtil.toEndOfMonth(baseTimestamp)
         return incomeRepository.getSumByDateRange(
             userId = userId,
             startDate = startDate,
@@ -358,22 +315,9 @@ class TransactionServiceImpl @Inject constructor(
                 ?: throw IllegalStateException("User is not logged in")
         }
 
-        val calendar = Calendar.getInstance()
-        date?.let { calendar.time = it }
-        val startDate = calendar.apply {
-            set(Calendar.DAY_OF_MONTH, 1)
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.time.time
-        val endDate = calendar.apply {
-            set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
-            set(Calendar.HOUR_OF_DAY, 23)
-            set(Calendar.MINUTE, 59)
-            set(Calendar.SECOND, 59)
-            set(Calendar.MILLISECOND, 999)
-        }.time.time
+        val baseTimestamp = date?.time ?: DateTimeUtil.getCurrentTimestamp()
+        val startDate = DateTimeUtil.toStartOfMonth(baseTimestamp)
+        val endDate = DateTimeUtil.toEndOfMonth(baseTimestamp)
         return expenseRepository.getSumByDateRange(
             userId = userId,
             startDate = startDate,
@@ -389,18 +333,12 @@ class TransactionServiceImpl @Inject constructor(
         if (canViewAll) {
             userId = null
         }
-        val calendar = Calendar.getInstance()
-        val startDate = calendar.apply {
-            set(Calendar.MONTH, month)
-            set(Calendar.YEAR, year)
-            set(Calendar.DAY_OF_MONTH, 1)
-            set(Calendar.HOUR_OF_DAY, 0)
-        }.time.time
-        val endDate = calendar.apply {
-            set(Calendar.MONTH, month)
-            set(Calendar.YEAR, year)
-            set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
-        }.time.time
+        val baseTimestamp = DateTimeUtil.setMonth(
+            DateTimeUtil.setYear(DateTimeUtil.getCurrentTimestamp(), year),
+            month
+        )
+        val startDate = DateTimeUtil.toStartOfMonth(baseTimestamp)
+        val endDate = DateTimeUtil.toEndOfMonth(baseTimestamp)
 
         val expenseSum = expenseRepository.getSumByDateRange(userId, startDate, endDate)
         val incomeSum = incomeRepository.getSumByDateRange(userId, startDate, endDate)
@@ -411,10 +349,7 @@ class TransactionServiceImpl @Inject constructor(
     }
 
     override suspend fun getCurrentMonthBalance(): Flow<Double> {
-        val calendar = Calendar.getInstance()
-        val currentMonth = calendar.get(Calendar.MONTH)
-        val currentYear = calendar.get(Calendar.YEAR)
-        return getMonthlyBalance(currentMonth, currentYear)
+        return getMonthlyBalance(DateTimeUtil.getCurrentMonth(), DateTimeUtil.getCurrentYear())
     }
 
 

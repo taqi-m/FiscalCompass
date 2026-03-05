@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.util.Calendar
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -87,10 +87,13 @@ class AddTransactionViewModel @Inject constructor(
                 updateState { copy(transaction = updatedTransaction) }
             }
             is AddTransactionEvent.OnResetClicked -> {
-                val date = Calendar.getInstance()
                 _state.value = AddTransactionState(
-                    transaction = Transaction.empty().copy(date = date.time)
+                    transaction = Transaction.empty().copy(date = Date())
                 )
+            }
+
+            is AddTransactionEvent.SetEditMode -> {
+                updateState { copy(editMode = event.editMode) }
             }
 
             is AddTransactionEvent.OnUiReset -> {

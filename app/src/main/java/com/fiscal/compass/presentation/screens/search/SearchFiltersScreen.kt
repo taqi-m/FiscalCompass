@@ -43,11 +43,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.fiscal.compass.R
 import com.fiscal.compass.domain.util.TransactionType
-import com.fiscal.compass.presentation.screens.itemselection.SelectableItem
+import com.fiscal.compass.presentation.screens.search.navigation.SearchNavigation
 import com.fiscal.compass.ui.components.cards.ChipFlow
 import com.fiscal.compass.ui.components.pickers.DatePicker
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
-import com.google.gson.Gson
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,6 +55,14 @@ fun SearchFiltersScreen(
     onEvent: (SearchEvent) -> Unit,
     onNavigate: (SearchNavigation) -> Unit,
 ) {
+
+    // Initialize tempSearchCriteria to match searchCriteria when entering the screen
+    // Only if tempSearchCriteria is empty (first time or after clearing)
+    LaunchedEffect(Unit) {
+        if (!state.tempSearchCriteria.areAnyFiltersActive() && state.searchCriteria.areAnyFiltersActive()) {
+            onEvent(SearchEvent.ResetTempFilters)
+        }
+    }
 
     var tempFilterType by remember {
         mutableStateOf(state.tempSearchCriteria.transactionType?.name ?: "")
@@ -154,23 +161,7 @@ fun SearchFiltersScreen(
                         .fillMaxWidth()
                         .clip(MaterialTheme.shapes.small)
                         .clickable {
-                            val allSelectableItems = state.allCategories.map { category ->
-                                SelectableItem(
-                                    id = category.categoryId.toString(),
-                                    name = category.name,
-                                    isSelected = state.tempSearchCriteria.getCategoryIds()
-                                        .contains(category.categoryId)
-                                )
-                            }
-                            val itemsJson = Gson().toJson(allSelectableItems)
-                            val selectedIds =
-                                state.tempSearchCriteria.getCategoryIds().joinToString(",")
-                            onNavigate(
-                                SearchNavigation.NavigateToCategorySelection(
-                                    allSelectableItemsJson = itemsJson,
-                                    selectedIds = selectedIds
-                                )
-                            )
+                            onNavigate(SearchNavigation.NavigateToCategorySelection)
                         },
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
@@ -227,23 +218,7 @@ fun SearchFiltersScreen(
                         .fillMaxWidth()
                         .clip(MaterialTheme.shapes.small)
                         .clickable {
-                            val allSelectableItems = state.allPersons.map { person ->
-                                SelectableItem(
-                                    id = person.personId.toString(),
-                                    name = person.name,
-                                    isSelected = state.tempSearchCriteria.getPersonIds()
-                                        .contains(person.personId)
-                                )
-                            }
-                            val itemsJson = Gson().toJson(allSelectableItems)
-                            val selectedIds =
-                                state.tempSearchCriteria.getPersonIds().joinToString(",")
-                            onNavigate(
-                                SearchNavigation.NavigateToPersonSelection(
-                                    allSelectableItemsJson = itemsJson,
-                                    selectedIds = selectedIds
-                                )
-                            )
+                            onNavigate(SearchNavigation.NavigateToPersonSelection)
                         },
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),

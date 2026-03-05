@@ -44,6 +44,7 @@ import com.fiscal.compass.domain.model.Transaction
 import com.fiscal.compass.presentation.model.CategoryUi
 import com.fiscal.compass.presentation.model.PersonUi
 import com.fiscal.compass.presentation.model.TransactionUi
+import com.fiscal.compass.presentation.navigation.EditAmount
 import com.fiscal.compass.presentation.navigation.MainScreens
 import com.fiscal.compass.presentation.screens.category.UiState
 import com.fiscal.compass.ui.components.buttons.CardTextButton
@@ -116,9 +117,7 @@ fun TransactionDetailsScreen(
                     onUpdateClick = {
                         val encodedJsonTransaction = Uri.encode(transactionJson)
                         appNavController.navigate(
-                            MainScreens.Amount.editTransaction(
-                                encodedJsonTransaction
-                            )
+                            EditAmount.editTransaction(encodedJsonTransaction)
                         )
                     }
                 )

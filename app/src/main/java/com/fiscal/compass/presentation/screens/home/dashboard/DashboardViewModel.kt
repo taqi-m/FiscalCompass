@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.fiscal.compass.domain.service.TransactionService
 import com.fiscal.compass.domain.usecase.analytics.GetUserInfoUseCase
 import com.fiscal.compass.domain.usecase.rbac.CheckPermissionUseCase
+import com.fiscal.compass.presentation.navigation.AddTransactionGraph
 import com.fiscal.compass.presentation.navigation.MainScreens
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -59,7 +60,7 @@ class DashboardViewModel @Inject constructor(
             }
 
             is DashboardEvent.OnAddTransactionClicked -> {
-                navigateTo(MainScreens.AddTransaction)
+                navigateTo(AddTransactionGraph)
             }
 
             is DashboardEvent.OnSynClicked -> {

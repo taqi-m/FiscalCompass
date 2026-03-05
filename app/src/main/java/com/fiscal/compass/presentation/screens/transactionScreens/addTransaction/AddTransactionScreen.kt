@@ -62,7 +62,6 @@ import com.fiscal.compass.ui.components.pickers.TimePicker
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
-import java.util.Calendar
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -213,12 +212,7 @@ fun AddTransactionFormContent(
                         // Could show error - for now just don't navigate
                         return@SelectionField
                     }
-                    onNavigate(
-                        AddTransactionNavigation.NavigateToCategorySelection(
-                            categoriesJson = com.google.gson.Gson().toJson(state.allCategories),
-                            currentCategoryId = state.transaction.categoryId
-                        )
-                    )
+                    onNavigate(AddTransactionNavigation.NavigateToCategorySelection)
                 }
             )
 
@@ -227,12 +221,7 @@ fun AddTransactionFormContent(
                 label = "Person",
                 selectedValue = selectedPerson?.name ?: "Select Person",
                 onClick = {
-                    onNavigate(
-                        AddTransactionNavigation.NavigateToPersonSelection(
-                            personsJson = com.google.gson.Gson().toJson(state.allPersons),
-                            currentPersonId = state.transaction.personId
-                        )
-                    )
+                    onNavigate(AddTransactionNavigation.NavigateToPersonSelection)
                 }
             )
 
@@ -273,8 +262,7 @@ fun AddTransactionFormContent(
         Button(
             shape = RoundedCornerShape(8.dp),
             onClick = {
-                val transactionJson = com.google.gson.Gson().toJson(state.transaction)
-                onNavigate(AddTransactionNavigation.NavigateToAmountScreen(transactionJson))
+                onNavigate(AddTransactionNavigation.NavigateToAmountScreen(editMode = false))
             },
             modifier = Modifier
                 .fillMaxWidth()

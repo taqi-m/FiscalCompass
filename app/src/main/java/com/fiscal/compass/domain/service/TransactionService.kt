@@ -14,7 +14,7 @@ interface TransactionService {
 
     suspend fun deleteTransaction(transactionId: String, isExpense: Boolean)
 
-    suspend fun searchTransactions(searchCriteria: SearchCriteria): Flow<Map<Date, List<Transaction>>>
+    fun searchTransactions(searchCriteria: SearchCriteria): Flow<Map<Date, List<Transaction>>>
 
     suspend fun loadCurrentMonthTransactions(date: Date? = null): Flow<Map<Date, List<Transaction>>>
 

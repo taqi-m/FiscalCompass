@@ -7,6 +7,7 @@ import com.fiscal.compass.presentation.screens.category.UiState
 
 data class AddTransactionState(
     val uiState: UiState = UiState.Idle,
+    val editMode: Boolean = false,
     val transaction: Transaction = Transaction.default(),
     val allCategories: List<Category> = emptyList(),
     val allPersons: List<Person> = emptyList()

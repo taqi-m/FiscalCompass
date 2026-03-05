@@ -1,15 +1,6 @@
 package com.fiscal.compass.presentation.navigation
 
-import android.annotation.SuppressLint
 import android.net.Uri
-import android.util.Log
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -17,77 +8,43 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.text.capitalize
-import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.fiscal.compass.domain.model.Transaction
+import com.fiscal.compass.domain.model.base.Person
 import com.fiscal.compass.domain.repository.AppPreferenceRepository
 import com.fiscal.compass.domain.service.analytics.AnalyticsService
+import com.fiscal.compass.presentation.screens.transactionScreens.navigation.AddTransactionNavGraph
+import com.fiscal.compass.presentation.screens.search.navigation.SearchNavGraph
 import com.fiscal.compass.presentation.screens.auth.AuthScreen
 import com.fiscal.compass.presentation.screens.auth.AuthViewModel
 import com.fiscal.compass.presentation.screens.category.CategoriesScreen
 import com.fiscal.compass.presentation.screens.category.CategoriesViewModel
 import com.fiscal.compass.presentation.screens.home.home.HomeScreen
 import com.fiscal.compass.presentation.screens.home.home.HomeViewModel
-import com.fiscal.compass.presentation.screens.itemselection.ItemSelectionEvent
-import com.fiscal.compass.presentation.screens.itemselection.ItemSelectionScreen
-import com.fiscal.compass.presentation.screens.itemselection.ItemSelectionViewModel
-import com.fiscal.compass.presentation.screens.itemselection.SelectableItem
 import com.fiscal.compass.presentation.screens.jobs.JobsScreen
 import com.fiscal.compass.presentation.screens.jobs.JobsViewModel
+import com.fiscal.compass.presentation.screens.person.PersonNavigation
 import com.fiscal.compass.presentation.screens.person.PersonScreen
 import com.fiscal.compass.presentation.screens.person.PersonViewModel
-import com.fiscal.compass.presentation.screens.search.SearchEvent
-import com.fiscal.compass.presentation.screens.search.SearchFiltersScreen
-import com.fiscal.compass.presentation.screens.search.SearchNavigation
-import com.fiscal.compass.presentation.screens.search.SearchResultsScreen
-import com.fiscal.compass.presentation.screens.search.SearchViewModel
+import com.fiscal.compass.presentation.screens.person.addperson.AddPersonScreen
+import com.fiscal.compass.presentation.screens.person.addperson.AddPersonViewModel
+import com.fiscal.compass.presentation.screens.person.editperson.EditPersonEvent
+import com.fiscal.compass.presentation.screens.person.editperson.EditPersonScreen
+import com.fiscal.compass.presentation.screens.person.editperson.EditPersonViewModel
 import com.fiscal.compass.presentation.screens.settings.SettingsScreen
 import com.fiscal.compass.presentation.screens.settings.SettingsViewModel
 import com.fiscal.compass.presentation.screens.sync.SyncScreen
 import com.fiscal.compass.presentation.screens.sync.SyncViewModel
-import com.fiscal.compass.presentation.screens.transactionScreens.addTransaction.AddTransactionScreen
-import com.fiscal.compass.presentation.screens.transactionScreens.addTransaction.AddTransactionViewModel
-import com.fiscal.compass.presentation.screens.transactionScreens.amountScreen.AmountEvent
-import com.fiscal.compass.presentation.screens.transactionScreens.amountScreen.AmountScreen
-import com.fiscal.compass.presentation.screens.transactionScreens.amountScreen.AmountViewModel
 import com.fiscal.compass.presentation.screens.transactionScreens.transactionDetails.TransactionDetailsScreen
 import com.fiscal.compass.presentation.screens.transactionScreens.transactionDetails.TransactionDetailsViewModel
+import com.fiscal.compass.presentation.screens.users.createuser.CreateUserScreen
+import com.fiscal.compass.presentation.screens.users.createuser.CreateUserViewModel
 import com.google.gson.Gson
 
-
-// Animation duration constant for consistent transitions
-private const val TRANSITION_DURATION = 200
-private const val FADE_TRANSITION_DURATION = (TRANSITION_DURATION * 1.5).toInt()
-
-private val fadeIn = fadeIn(animationSpec = tween(FADE_TRANSITION_DURATION))
-private val fadeOut = fadeOut(animationSpec = tween(FADE_TRANSITION_DURATION))
-
-
-// Pre-defined transition animations
-private val enterFromLeft = fadeIn(animationSpec = tween(FADE_TRANSITION_DURATION)) +
-        slideInHorizontally(animationSpec = tween(TRANSITION_DURATION)) { fullWidth -> -fullWidth }
-
-private val enterFromRight = fadeIn(animationSpec = tween(FADE_TRANSITION_DURATION)) +
-        slideInHorizontally(animationSpec = tween(TRANSITION_DURATION)) { fullWidth -> fullWidth }
-
-private val enterFromUp = fadeIn(animationSpec = tween(FADE_TRANSITION_DURATION)) +
-        slideInVertically(animationSpec = tween(TRANSITION_DURATION)) { fullHeight -> fullHeight }
-
-private val exitToLeft = fadeOut(animationSpec = tween(FADE_TRANSITION_DURATION)) +
-        slideOutHorizontally(animationSpec = tween(TRANSITION_DURATION)) { fullWidth -> -fullWidth }
-
-private val exitToRight = fadeOut(animationSpec = tween(FADE_TRANSITION_DURATION)) +
-        slideOutHorizontally(animationSpec = tween(TRANSITION_DURATION)) { fullWidth -> fullWidth }
-
-private val exitToDown = fadeOut(animationSpec = tween(FADE_TRANSITION_DURATION)) +
-        slideOutVertically(animationSpec = tween(TRANSITION_DURATION)) { fullHeight -> fullHeight }
-
-@SuppressLint("UnrememberedGetBackStackEntry")
 @Composable
 fun AppNavigation(
     navController: NavHostController,
@@ -109,23 +66,15 @@ fun AppNavigation(
         startDestination =
             if (prefs.isUserLoggedIn()) {
                 MainScreens.AdminHome.route
-                /*when (prefs.getUserType()) {
-                    "admin" -> MainScreens.AdminHome.route
-                    "employee" -> MainScreens.EmployeeHome.route
-                    else -> MainScreens.Auth.route
-                }*/
             } else {
                 MainScreens.Auth.route
             }
     ) {
 
-        composable(
-            route = MainScreens.Auth.route,
-        ) { backStackEntry ->
+        composable(route = MainScreens.Auth.route) { backStackEntry ->
             val authViewModel: AuthViewModel = hiltViewModel(backStackEntry)
             val authState by authViewModel.state.collectAsState()
             val initializationStatus by authViewModel.initializationStatus.collectAsState()
-
             AuthScreen(
                 appNavController = navController,
                 state = authState,
@@ -134,9 +83,7 @@ fun AppNavigation(
             )
         }
 
-        composable(
-            route = MainScreens.Home.route,
-        ) { backStackEntry ->
+        composable(route = MainScreens.Home.route) { backStackEntry ->
             val homeViewModel: HomeViewModel = hiltViewModel(backStackEntry)
             val homeState by homeViewModel.state.collectAsState()
             HomeScreen(
@@ -144,7 +91,7 @@ fun AppNavigation(
                 state = homeState,
                 onEvent = homeViewModel::onEvent,
                 onSettingsClick = { navController.navigate(MainScreens.Settings.route) },
-                onSearchClick = { navController.navigate(MainScreens.Search.route)},
+                onSearchClick = { navController.navigate(SearchGraph.route) },
                 onSyncClick = { navController.navigate(MainScreens.Sync.route) }
             )
         }
@@ -153,9 +100,7 @@ fun AppNavigation(
             // User home screen content
         }
 
-        composable(
-            route = MainScreens.AdminHome.route,
-        ) { backStackEntry ->
+        composable(route = MainScreens.AdminHome.route) { backStackEntry ->
             val homeViewModel: HomeViewModel = hiltViewModel(backStackEntry)
             val homeState by homeViewModel.state.collectAsState()
             HomeScreen(
@@ -163,180 +108,24 @@ fun AppNavigation(
                 state = homeState,
                 onEvent = homeViewModel::onEvent,
                 onSettingsClick = { navController.navigate(MainScreens.Settings.route) },
-                onSearchClick = { navController.navigate(MainScreens.Search.route)},
+                onSearchClick = { navController.navigate(SearchGraph.route) },
                 onSyncClick = { navController.navigate(MainScreens.Sync.route) }
             )
         }
 
-        composable(
-            route = MainScreens.AddTransaction.route,
-            enterTransition = { fadeIn },
-            exitTransition = { fadeOut }
-        ) { backStackEntry ->
-            val addTransactionViewModel: AddTransactionViewModel = hiltViewModel(backStackEntry)
-            val addTransactionState by addTransactionViewModel.state.collectAsState()
-
-            // Get selected category ID from navigation result
-            LaunchedEffect(backStackEntry) {
-                backStackEntry.savedStateHandle
-                    .get<String>("selectedCategoryId")
-                    ?.let { idsString ->
-                        if (idsString.isNotEmpty()) {
-                            // For single selection, we take the first (and only) ID
-                            val categoryId = idsString.split(",").firstOrNull()
-                            categoryId?.let {
-                                addTransactionViewModel.onEvent(
-                                    com.fiscal.compass.presentation.screens.transactionScreens.addTransaction.AddTransactionEvent.UpdateSelectedCategory(it)
-                                )
-                            }
-                        }
-                        backStackEntry.savedStateHandle.remove<String>("selectedCategoryId")
-                    }
-            }
-
-            // Get selected person ID from navigation result
-            LaunchedEffect(backStackEntry) {
-                backStackEntry.savedStateHandle
-                    .get<String>("selectedPersonId")
-                    ?.let { idsString ->
-                        if (idsString.isNotEmpty()) {
-                            // For single selection, we take the first (and only) ID
-                            val personId = idsString.split(",").firstOrNull()
-                            if (personId?.toLongOrNull() == -1L) {
-                                addTransactionViewModel.onEvent(
-                                    com.fiscal.compass.presentation.screens.transactionScreens.addTransaction.AddTransactionEvent.UpdateSelectedPerson(null)
-                                )
-                            } else {
-                                personId?.let {
-                                    addTransactionViewModel.onEvent(
-                                        com.fiscal.compass.presentation.screens.transactionScreens.addTransaction.AddTransactionEvent.UpdateSelectedPerson(it)
-                                    )
-                                }
-                            }
-                        }
-                        backStackEntry.savedStateHandle.remove<String>("selectedPersonId")
-                    }
-            }
-
-            AddTransactionScreen(
-                state = addTransactionState,
-                onEvent = addTransactionViewModel::onEvent,
-                onNavigate = { navigation ->
-                    when (navigation) {
-                        is com.fiscal.compass.presentation.screens.transactionScreens.addTransaction.AddTransactionNavigation.NavigateBack -> {
-                            navController.navigateUp()
-                        }
-                        is com.fiscal.compass.presentation.screens.transactionScreens.addTransaction.AddTransactionNavigation.NavigateToCategorySelection -> {
-                            val allSelectableItems = addTransactionState.allCategories.map { category ->
-                                SelectableItem(
-                                    id = category.categoryId,
-                                    name = category.name,
-                                    isSelected = category.categoryId == addTransactionState.transaction.categoryId
-                                )
-                            }
-                            val itemsJson = Gson().toJson(allSelectableItems)
-                            val itemsEncoded = Uri.encode(itemsJson)
-                            navController.navigate(
-                                MainScreens.MultiSelection.passParameters(
-                                    itemsEncoded,
-                                    "category",
-                                    "selectedCategoryId",
-                                    singleSelectionMode = true
-                                )
-                            )
-                        }
-                        is com.fiscal.compass.presentation.screens.transactionScreens.addTransaction.AddTransactionNavigation.NavigateToPersonSelection -> {
-                            // Add "N/A" option for persons
-                            val naOption = SelectableItem(
-                                id = "-1",
-                                name = "N/A",
-                                isSelected = addTransactionState.transaction.personId == null
-                            )
-                            val personSelectableItems = addTransactionState.allPersons.map { person ->
-                                SelectableItem(
-                                    id = person.personId,
-                                    name = person.name,
-                                    isSelected = person.personId == addTransactionState.transaction.personId
-                                )
-                            }
-                            val allSelectableItems = listOf(naOption) + personSelectableItems
-
-                            navController.navigate(
-                                MainScreens.MultiSelection.passParameters(
-                                    Uri.encode(Gson().toJson(allSelectableItems)),
-                                    "person",
-                                    "selectedPersonId",
-                                    singleSelectionMode = true
-                                )
-                            )
-                        }
-                        is com.fiscal.compass.presentation.screens.transactionScreens.addTransaction.AddTransactionNavigation.NavigateToAmountScreen -> {
-                            val encodedTransaction = Uri.encode(navigation.transactionJson)
-                            navController.navigate(MainScreens.Amount.passTransaction(encodedTransaction))
-                        }
-                    }
-                }
-            )
-        }
-
-        composable(
-            route = MainScreens.Amount.route,
-            enterTransition = { fadeIn },
-            exitTransition = { fadeOut }
-        ) {
-            val amountViewModel: AmountViewModel = hiltViewModel()
-            val state by amountViewModel.state.collectAsState()
-
-            // Retrieve and decode transaction JSON from navigation arguments
-            val transactionJson = remember {
-                val encodedJsonTransaction = navController.currentBackStackEntry
-                    ?.arguments?.getString("transaction")
-                Uri.decode(encodedJsonTransaction ?: "")
-            }
-
-            val editMode = remember {
-                val editModeArg = navController.currentBackStackEntry?.arguments?.getString("edit")
-                Log.d("AmountScreen", "editModeArg: $editModeArg")
-                editModeArg?.toBoolean() ?: false
-            }
-
-            // Load transaction once when the screen is first composed
-            LaunchedEffect(transactionJson, editMode) {
-                val transaction = Gson().fromJson(transactionJson, Transaction::class.java)
-                amountViewModel.onEvent(AmountEvent.LoadTransaction(transaction, editMode))
-            }
-            
-            AmountScreen(
-                state = state,
-                onEvent = amountViewModel::onEvent,
-                onBack ={
-                    navController.popBackStack()
-                },
-                onSuccess = {
-                    // Try popping back to Search screen, otherwise clear AddTransaction
-                    val poppedToSearch = navController.popBackStack(
-                        route = MainScreens.Search.route,
-                        inclusive = false
-                    )
-                    if (!poppedToSearch) {
-                        navController.popBackStack(
-                            route = MainScreens.AddTransaction.route,
-                            inclusive = true
-                        )
-                    }
-                }
-            )
-        }
+        // ── AddTransaction nested graph (AddTransaction, Amount, EditAmount, inline selections)
+        AddTransactionNavGraph(navController)
 
         composable(
             MainScreens.Settings.route,
-            enterTransition = { enterFromLeft },
-            exitTransition = { exitToLeft },
-            popEnterTransition = { enterFromLeft },
-            popExitTransition = { exitToLeft }) { backStackEntry ->
+            enterTransition = { navEnterFromLeft },
+            exitTransition = { navExitToLeft },
+            popEnterTransition = { navEnterFromLeft },
+            popExitTransition = { navExitToLeft }
+        ) { backStackEntry ->
             val settingsViewModel: SettingsViewModel = hiltViewModel(backStackEntry)
             val state by settingsViewModel.state.collectAsState()
-            val context = androidx.compose.ui.platform.LocalContext.current
+            val context = LocalContext.current
             SettingsScreen(
                 state = state,
                 onEvent = settingsViewModel::onEvent,
@@ -353,10 +142,11 @@ fun AppNavigation(
 
         composable(
             MainScreens.Sync.route,
-            enterTransition = { enterFromUp },
-            exitTransition = { exitToDown },
-            popEnterTransition = { enterFromUp },
-            popExitTransition = { exitToDown }) { backStackEntry ->
+            enterTransition = { navEnterFromUp },
+            exitTransition = { navExitToDown },
+            popEnterTransition = { navEnterFromUp },
+            popExitTransition = { navExitToDown }
+        ) { backStackEntry ->
             val syncViewModel: SyncViewModel = hiltViewModel(backStackEntry)
             val state by syncViewModel.state.collectAsState()
             SyncScreen(
@@ -368,15 +158,16 @@ fun AppNavigation(
 
         composable(
             MainScreens.CreateUser.route,
-            enterTransition = { enterFromRight },
-            exitTransition = { exitToRight },
-            popEnterTransition = { enterFromRight },
-            popExitTransition = { exitToRight }
+            enterTransition = { navEnterFromRight },
+            exitTransition = { navExitToRight },
+            popEnterTransition = { navEnterFromRight },
+            popExitTransition = { navExitToRight }
         ) { backStackEntry ->
-            val createUserViewModel: com.fiscal.compass.presentation.screens.users.createuser.CreateUserViewModel = hiltViewModel(backStackEntry)
+            val createUserViewModel: CreateUserViewModel =
+                hiltViewModel(backStackEntry)
             val state by createUserViewModel.state.collectAsState()
             val hasPermission by createUserViewModel.hasPermission.collectAsState()
-            com.fiscal.compass.presentation.screens.users.createuser.CreateUserScreen(
+            CreateUserScreen(
                 state = state,
                 hasPermission = hasPermission,
                 onEvent = createUserViewModel::onEvent,
@@ -386,10 +177,11 @@ fun AppNavigation(
 
         composable(
             route = MainScreens.Categories.route,
-            enterTransition = { enterFromRight },
-            exitTransition = { exitToRight },
-            popEnterTransition = { enterFromRight },
-            popExitTransition = { exitToRight }) { backStackEntry ->
+            enterTransition = { navEnterFromRight },
+            exitTransition = { navExitToRight },
+            popEnterTransition = { navEnterFromRight },
+            popExitTransition = { navExitToRight }
+        ) { backStackEntry ->
             val categoriesViewModel: CategoriesViewModel = hiltViewModel(backStackEntry)
             val state by categoriesViewModel.state.collectAsState()
             CategoriesScreen(
@@ -400,23 +192,25 @@ fun AppNavigation(
 
         composable(
             route = MainScreens.Person.route,
-            enterTransition = { enterFromRight },
-            exitTransition = { exitToRight },
-            popEnterTransition = { enterFromRight },
-            popExitTransition = { exitToRight }) {
+            enterTransition = { navEnterFromRight },
+            exitTransition = { navExitToRight },
+            popEnterTransition = { navEnterFromRight },
+            popExitTransition = { navExitToRight }
+        ) {
             val personViewModel: PersonViewModel = hiltViewModel()
             val state by personViewModel.state.collectAsState()
 
-            // Observe operation result from child screens
             val operationResult by navController.currentBackStackEntry
                 ?.savedStateHandle
                 ?.getStateFlow<String?>("operationResult", null)
                 ?.collectAsState() ?: remember { mutableStateOf(null) }
 
-            // Clear the result after reading
-            LaunchedEffect(operationResult) {
-                operationResult?.let {
-                    navController.currentBackStackEntry?.savedStateHandle?.remove<String>("operationResult")
+            DisposableEffect(operationResult) {
+                onDispose {
+                    operationResult?.let {
+                        navController.currentBackStackEntry
+                            ?.savedStateHandle?.remove<String>("operationResult")
+                    }
                 }
             }
 
@@ -426,14 +220,13 @@ fun AppNavigation(
                 operationResultMessage = operationResult,
                 onNavigate = { navigation ->
                     when (navigation) {
-                        is com.fiscal.compass.presentation.screens.person.PersonNavigation.NavigateBack -> {
+                        is PersonNavigation.NavigateBack ->
                             navController.navigateUp()
-                        }
-                        is com.fiscal.compass.presentation.screens.person.PersonNavigation.NavigateToAddPerson -> {
+                        is PersonNavigation.NavigateToAddPerson -> {
                             val encodedType = Uri.encode(navigation.selectedType)
                             navController.navigate(MainScreens.AddPerson.passSelectedType(encodedType))
                         }
-                        is com.fiscal.compass.presentation.screens.person.PersonNavigation.NavigateToEditPerson -> {
+                        is PersonNavigation.NavigateToEditPerson -> {
                             val personJson = Gson().toJson(navigation.person)
                             val encodedPerson = Uri.encode(personJson)
                             navController.navigate(MainScreens.EditPerson.passPersonJson(encodedPerson))
@@ -445,19 +238,20 @@ fun AppNavigation(
 
         composable(
             route = MainScreens.AddPerson.route,
-            enterTransition = { enterFromRight },
-            exitTransition = { exitToRight },
-            popEnterTransition = { enterFromRight },
-            popExitTransition = { exitToRight }
+            enterTransition = { navEnterFromRight },
+            exitTransition = { navExitToRight },
+            popEnterTransition = { navEnterFromRight },
+            popExitTransition = { navExitToRight }
         ) {
-            val addPersonViewModel: com.fiscal.compass.presentation.screens.person.addperson.AddPersonViewModel = hiltViewModel()
+            val addPersonViewModel: AddPersonViewModel = hiltViewModel()
             val state by addPersonViewModel.state.collectAsState()
-            com.fiscal.compass.presentation.screens.person.addperson.AddPersonScreen(
+            AddPersonScreen(
                 state = state,
                 onEvent = addPersonViewModel::onEvent,
                 onNavigateBackWithResult = { result ->
                     result?.let {
-                        navController.previousBackStackEntry?.savedStateHandle?.set("operationResult", it)
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle?.set("operationResult", it)
                     }
                     navController.popBackStack()
                 }
@@ -466,34 +260,33 @@ fun AppNavigation(
 
         composable(
             route = MainScreens.EditPerson.route,
-            enterTransition = { enterFromRight },
-            exitTransition = { exitToRight },
-            popEnterTransition = { enterFromRight },
-            popExitTransition = { exitToRight }
+            enterTransition = { navEnterFromRight },
+            exitTransition = { navExitToRight },
+            popEnterTransition = { navEnterFromRight },
+            popExitTransition = { navExitToRight }
         ) { backStackEntry ->
-            val editPersonViewModel: com.fiscal.compass.presentation.screens.person.editperson.EditPersonViewModel = hiltViewModel()
+            val editPersonViewModel: EditPersonViewModel = hiltViewModel()
             val state by editPersonViewModel.state.collectAsState()
 
-            // Parse person JSON from navigation argument
             val personJson = remember {
                 val encodedJson = backStackEntry.arguments?.getString("personJson")
                 Uri.decode(encodedJson ?: "")
             }
 
-            // Load person once when the screen is first composed
             LaunchedEffect(personJson) {
                 if (personJson.isNotEmpty()) {
-                    val person = Gson().fromJson(personJson, com.fiscal.compass.domain.model.base.Person::class.java)
-                    editPersonViewModel.onEvent(com.fiscal.compass.presentation.screens.person.editperson.EditPersonEvent.LoadPerson(person))
+                    val person = Gson().fromJson(personJson, Person::class.java)
+                    editPersonViewModel.onEvent(EditPersonEvent.LoadPerson(person))
                 }
             }
 
-            com.fiscal.compass.presentation.screens.person.editperson.EditPersonScreen(
+            EditPersonScreen(
                 state = state,
                 onEvent = editPersonViewModel::onEvent,
                 onNavigateBackWithResult = { result ->
                     result?.let {
-                        navController.previousBackStackEntry?.savedStateHandle?.set("operationResult", it)
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle?.set("operationResult", it)
                     }
                     navController.popBackStack()
                 }
@@ -502,10 +295,10 @@ fun AppNavigation(
 
         composable(
             route = MainScreens.Jobs.route,
-            enterTransition = { enterFromRight },
-            exitTransition = { exitToRight },
-            popEnterTransition = { enterFromRight },
-            popExitTransition = { exitToRight }
+            enterTransition = { navEnterFromRight },
+            exitTransition = { navExitToRight },
+            popEnterTransition = { navEnterFromRight },
+            popExitTransition = { navExitToRight }
         ) {
             val jobsViewModel: JobsViewModel = hiltViewModel()
             val state by jobsViewModel.state.collectAsState()
@@ -517,9 +310,9 @@ fun AppNavigation(
 
         composable(
             route = MainScreens.TransactionDetail.route,
-            enterTransition = { fadeIn },
-            exitTransition = { fadeOut }
-        ) { backstackEntry ->
+            enterTransition = { navFadeIn },
+            exitTransition = { navFadeOut }
+        ) {
             val transactionDetailsViewModel: TransactionDetailsViewModel = hiltViewModel()
             val state by transactionDetailsViewModel.state.collectAsState()
             TransactionDetailsScreen(
@@ -529,284 +322,7 @@ fun AppNavigation(
             )
         }
 
-        composable(
-            route = MainScreens.Search.route,
-            enterTransition = { fadeIn },
-            exitTransition = { fadeOut }
-        ) { backStackEntry ->
-            val searchViewModel: SearchViewModel = hiltViewModel()
-            val state by searchViewModel.state.collectAsState()
-
-            // Handle category selection results
-            val selectedCategoryIds by backStackEntry.savedStateHandle
-                .getStateFlow<String?>("selectedIds", null)
-                .collectAsState()
-
-            LaunchedEffect(selectedCategoryIds) {
-                selectedCategoryIds?.let { idsString ->
-                    val ids = if (idsString.isEmpty()) emptyList()
-                    else idsString.split(",")
-                    searchViewModel.onEvent(SearchEvent.UpdateSelectedCategories(ids))
-                    backStackEntry.savedStateHandle.remove<String>("selectedIds")
-                }
-            }
-
-            // Handle person selection results
-            val selectedPersonIds by backStackEntry.savedStateHandle
-                .getStateFlow<String?>("selectedPersonIds", null)
-                .collectAsState()
-
-            LaunchedEffect(selectedPersonIds) {
-                selectedPersonIds?.let { idsString ->
-                    val ids = if (idsString.isEmpty()) emptyList()
-                    else idsString.split(",")
-                    searchViewModel.onEvent(SearchEvent.UpdateSelectedPersons(ids))
-                    backStackEntry.savedStateHandle.remove<String>("selectedPersonIds")
-                }
-            }
-
-            SearchResultsScreen(
-                state = state,
-                onEvent = searchViewModel::onEvent,
-                onNavigate = { navigation ->
-                    when (navigation) {
-                        is SearchNavigation.NavigateBack -> {
-                            navController.navigateUp()
-                        }
-                        is SearchNavigation.NavigateToFilters -> {
-                            // Reset temp filters to match current applied filters when entering filter screen
-                            searchViewModel.onEvent(SearchEvent.ResetTempFilters)
-                            navController.navigate(MainScreens.SearchFilters.route)
-                        }
-                        is SearchNavigation.NavigateToTransactionDetail -> {
-                            val encodedTransaction = Uri.encode(navigation.transactionJson)
-                            navController.navigate(
-                                MainScreens.TransactionDetail.passTransaction(encodedTransaction)
-                            )
-                        }
-                        is SearchNavigation.NavigateToCategorySelection -> {
-                            val encodedItems = Uri.encode(navigation.allSelectableItemsJson)
-                            navController.navigate(
-                                MainScreens.MultiSelection.passParameters(
-                                    encodedItems,
-                                    "category",
-                                    "selectedIds"
-                                )
-                            )
-                        }
-                        is SearchNavigation.NavigateToPersonSelection -> {
-                            val encodedItems = Uri.encode(navigation.allSelectableItemsJson)
-                            navController.navigate(
-                                MainScreens.MultiSelection.passParameters(
-                                    encodedItems,
-                                    "person",
-                                    "selectedPersonIds"
-                                )
-                            )
-                        }
-                    }
-                }
-            )
-        }
-
-        composable(
-            route = MainScreens.SearchFilters.route,
-            enterTransition = { enterFromRight },
-            exitTransition = { exitToRight },
-            popEnterTransition = { enterFromRight },
-            popExitTransition = { exitToRight }
-        ) { backStackEntry ->
-            // Use ViewModel scoped to this destination to avoid relying on Search being in back stack
-            val searchViewModel: SearchViewModel = hiltViewModel(backStackEntry)
-            val state by searchViewModel.state.collectAsState()
-
-            // Handle category selection results
-            val selectedCategoryIds by backStackEntry.savedStateHandle
-                .getStateFlow<String?>("selectedIds", null)
-                .collectAsState()
-
-            LaunchedEffect(selectedCategoryIds) {
-                selectedCategoryIds?.let { idsString ->
-                    val ids = if (idsString.isEmpty()) emptyList()
-                    else idsString.split(",")
-                    searchViewModel.onEvent(SearchEvent.UpdateSelectedCategories(ids))
-                    backStackEntry.savedStateHandle.remove<String>("selectedIds")
-                }
-            }
-
-            // Handle person selection results
-            val selectedPersonIds by backStackEntry.savedStateHandle
-                .getStateFlow<String?>("selectedPersonIds", null)
-                .collectAsState()
-
-            LaunchedEffect(selectedPersonIds) {
-                selectedPersonIds?.let { idsString ->
-                    val ids = if (idsString.isEmpty()) emptyList()
-                    else idsString.split(",")
-                    searchViewModel.onEvent(SearchEvent.UpdateSelectedPersons(ids))
-                    backStackEntry.savedStateHandle.remove<String>("selectedPersonIds")
-                }
-            }
-
-            SearchFiltersScreen(
-                state = state,
-                onEvent = searchViewModel::onEvent,
-                onNavigate = { navigation ->
-                    when (navigation) {
-                        is SearchNavigation.NavigateBack -> {
-                            navController.navigateUp()
-                        }
-                        is SearchNavigation.NavigateToCategorySelection -> {
-                            val encodedItems = Uri.encode(navigation.allSelectableItemsJson)
-                            navController.navigate(
-                                MainScreens.MultiSelection.passParameters(
-                                    encodedItems,
-                                    "category",
-                                    "selectedIds"
-                                )
-                            )
-                        }
-                        is SearchNavigation.NavigateToPersonSelection -> {
-                            val encodedItems = Uri.encode(navigation.allSelectableItemsJson)
-                            navController.navigate(
-                                MainScreens.MultiSelection.passParameters(
-                                    encodedItems,
-                                    "person",
-                                    "selectedPersonIds"
-                                )
-                            )
-                        }
-                        is SearchNavigation.NavigateToFilters,
-                        is SearchNavigation.NavigateToTransactionDetail -> {
-                            // These navigation events shouldn't happen from filters screen
-                        }
-                    }
-                }
-            )
-        }
-
-        composable(
-            route = MainScreens.MultiSelection.route,
-            enterTransition = { enterFromLeft },
-            exitTransition = { exitToLeft },
-            popEnterTransition = { enterFromLeft },
-            popExitTransition = { exitToLeft }
-        ) { backStackEntry ->
-            val navKey = backStackEntry.arguments?.getString("navKey") ?: ""
-            val title = backStackEntry.arguments?.getString("title") ?: ""
-            val singleMode = backStackEntry.arguments?.getString("singleMode")?.toBoolean() ?: false
-            val allSelectableItemsJson = backStackEntry.arguments?.getString("allIds")
-            val decodedJson = allSelectableItemsJson?.let { Uri.decode(it) }
-            val allSelectableItems = if (!decodedJson.isNullOrEmpty()) {
-                try {
-                    Gson().fromJson(decodedJson, Array<SelectableItem>::class.java).toList()
-                } catch (e: Exception) {
-                    emptyList()
-                }
-            } else {
-                emptyList()
-            }
-
-            val itemSelectionViewModel: ItemSelectionViewModel = hiltViewModel()
-            val itemSelectionState by itemSelectionViewModel.state.collectAsState()
-
-            val preSelectedSelectableItems =
-                remember(allSelectableItems) {
-                    allSelectableItems.filter { selectableItem ->
-                        selectableItem.isSelected
-                    }
-                }
-
-            // Initialize the screen
-            if (itemSelectionState.allItems.isEmpty()) {
-                itemSelectionViewModel.onEvent(
-                    ItemSelectionEvent.InitializeScreen(
-                        allItems = allSelectableItems,
-                        preSelectedItems = preSelectedSelectableItems,
-                        singleSelectionMode = singleMode
-                    )
-                )
-            }
-
-            ItemSelectionScreen(
-                state = itemSelectionState,
-                onEvent = itemSelectionViewModel::onEvent,
-                title = "${title.capitalize(Locale.current)} selection",
-                searchPlaceholder = "Search $title...",
-                singleSelectionMode = singleMode,
-                onConfirm = { selectedCategories ->
-                    val selectedIds = selectedCategories.joinToString(",") { it.id }
-                    navController.previousBackStackEntry
-                        ?.savedStateHandle
-                        ?.set(navKey, selectedIds)
-                    navController.popBackStack()
-                },
-                onCancel = {
-                    navController.popBackStack()
-                }
-            )
-        }
-
-        composable(
-            route = MainScreens.PersonSelection.route,
-            enterTransition = { enterFromLeft },
-            exitTransition = { exitToLeft },
-            popEnterTransition = { enterFromLeft },
-            popExitTransition = { exitToLeft }
-        ) { backStackEntry ->
-            val preSelectedIdsString = backStackEntry.arguments?.getString("preSelectedIds") ?: ""
-            val preSelectedIds = if (preSelectedIdsString.isEmpty()) emptyList()
-            else preSelectedIdsString.split(",").map { it.toLong() }
-
-            // Use SearchViewModel scoped to this destination instead of relying on Search being present
-            val searchViewModel: SearchViewModel = hiltViewModel(backStackEntry)
-            val searchState by searchViewModel.state.collectAsState()
-
-            val personViewModel: ItemSelectionViewModel = hiltViewModel()
-            val personState by personViewModel.state.collectAsState()
-
-            val allSelectablePersons = remember(searchState.allPersons) {
-                searchState.allPersons.map { person ->
-                    SelectableItem(
-                        id = person.personId.toString(),
-                        name = person.name
-                    )
-                }
-            }
-
-            val preSelectedSelectablePersons = remember(allSelectablePersons, preSelectedIds) {
-                allSelectablePersons.filter { selectableItem ->
-                    preSelectedIds.contains(selectableItem.id.toLong())
-                }
-            }
-
-            // Initialize the screen
-            if (personState.allItems.isEmpty()) {
-                personViewModel.onEvent(
-                    ItemSelectionEvent.InitializeScreen(
-                        allItems = allSelectablePersons,
-                        preSelectedItems = preSelectedSelectablePersons
-                    )
-                )
-            }
-
-            ItemSelectionScreen(
-                state = personState,
-                onEvent = personViewModel::onEvent,
-                title = "Select Persons",
-                searchPlaceholder = "Search persons...",
-                onConfirm = { selectedPersons ->
-                    val selectedIds = selectedPersons.joinToString(",") { it.id }
-                    navController.previousBackStackEntry
-                        ?.savedStateHandle
-                        ?.set("selectedPersonIds", selectedIds)
-                    navController.popBackStack()
-                },
-                onCancel = {
-                    navController.popBackStack()
-                }
-            )
-        }
-
+        // ── Search nested graph (Search, SearchFilters, inline category/person selections)
+        SearchNavGraph(navController)
     }
 }
