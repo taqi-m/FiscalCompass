@@ -36,6 +36,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.fiscal.compass.R
 import com.fiscal.compass.presentation.model.TransactionUi
+import com.fiscal.compass.presentation.navigation.AddTransactionGraph
 import com.fiscal.compass.presentation.navigation.MainScreens
 import com.fiscal.compass.presentation.utilities.CurrencyFormater
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
@@ -53,7 +54,7 @@ fun DashboardScreen(
 
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { appNavController.navigate(MainScreens.AddTransaction.route) },
+                onClick = { appNavController.navigate(AddTransactionGraph.route) },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
             ) {

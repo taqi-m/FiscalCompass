@@ -2,41 +2,18 @@ package com.fiscal.compass.presentation.screens.transactionScreens.addTransactio
 
 /**
  * Sealed interface representing all possible navigation destinations from AddTransactionScreen.
- * This allows for type-safe navigation without passing NavHostController directly to the screen.
+ * No JSON payloads — all data is passed through the shared AddTransactionViewModel state.
  */
 sealed interface AddTransactionNavigation {
-    /**
-     * Navigate back to the previous screen
-     */
     data object NavigateBack : AddTransactionNavigation
+    data object NavigateToCategorySelection : AddTransactionNavigation
+    data object NavigateToPersonSelection : AddTransactionNavigation
 
     /**
-     * Navigate to category selection screen
-     * @param categoriesJson JSON string of categories list
-     * @param currentCategoryId Currently selected category ID
+     * Navigate to amount screen.
+     * @param editMode whether this is an edit operation
      */
-    data class NavigateToCategorySelection(
-        val categoriesJson: String,
-        val currentCategoryId: String
-    ) : AddTransactionNavigation
-
-    /**
-     * Navigate to person selection screen
-     * @param personsJson JSON string of persons list
-     * @param currentPersonId Currently selected person ID (nullable)
-     */
-    data class NavigateToPersonSelection(
-        val personsJson: String,
-        val currentPersonId: String?
-    ) : AddTransactionNavigation
-
-    /**
-     * Navigate to amount screen
-     * @param transactionJson JSON string of transaction data
-     */
-    data class NavigateToAmountScreen(
-        val transactionJson: String
-    ) : AddTransactionNavigation
+    data class NavigateToAmountScreen(val editMode: Boolean = false) : AddTransactionNavigation
 }
 
 

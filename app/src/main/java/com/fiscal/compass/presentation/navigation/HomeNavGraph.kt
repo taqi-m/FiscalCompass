@@ -1,10 +1,6 @@
 package com.fiscal.compass.presentation.navigation
 
 import android.net.Uri
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -29,12 +25,6 @@ import com.fiscal.compass.presentation.screens.users.UserScreen
 import com.fiscal.compass.presentation.screens.users.UserViewModel
 import com.google.gson.Gson
 
-private const val TRANSITION_DURATION = 300
-
-private val defaultTransitionSpec = tween<Float>(
-    durationMillis = TRANSITION_DURATION,
-    easing = FastOutSlowInEasing
-)
 
 
 @Composable
@@ -47,16 +37,8 @@ fun HomeNavGraph(
         homeNavController,
         startDestination = HomeBottomScreen.Dashboard.route,
         modifier = modifier,
-        enterTransition = {
-            fadeIn(
-                animationSpec = defaultTransitionSpec
-            )
-        },
-        exitTransition = {
-            fadeOut(
-                animationSpec = defaultTransitionSpec
-            )
-        }
+        enterTransition = { navFadeIn },
+        exitTransition = { navFadeOut }
     ) {
         composable(
             route = HomeBottomScreen.Dashboard.route,
