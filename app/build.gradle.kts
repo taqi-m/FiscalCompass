@@ -26,8 +26,13 @@ android {
         applicationId = "com.fiscal.compass"
         minSdk = 25
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+
+        val major = property("VERSION_MAJOR").toString().toInt()
+        val minor = property("VERSION_MINOR").toString().toInt()
+        val patch = property("VERSION_PATCH").toString().toInt()
+
+        versionCode = property("VERSION_CODE").toString().toInt()
+        versionName = "$major.$minor.$patch"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

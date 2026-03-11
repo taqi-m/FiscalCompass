@@ -25,13 +25,11 @@ import com.fiscal.compass.presentation.screens.users.UserScreen
 import com.fiscal.compass.presentation.screens.users.UserViewModel
 import com.google.gson.Gson
 
-
-
 @Composable
 fun HomeNavGraph(
     modifier: Modifier = Modifier,
     homeNavController: NavHostController,
-    appNavController: NavHostController
+    appNavController: NavHostController,
 ) {
     NavHost(
         homeNavController,
@@ -40,23 +38,17 @@ fun HomeNavGraph(
         enterTransition = { navFadeIn },
         exitTransition = { navFadeOut }
     ) {
-        composable(
-            route = HomeBottomScreen.Dashboard.route,
-
-            ) { backStackEntry ->
+        composable(route = HomeBottomScreen.Dashboard.route) { backStackEntry ->
             val dashboardViewModel: DashboardViewModel = hiltViewModel(backStackEntry)
             val state by dashboardViewModel.state.collectAsState()
+
             DashboardScreen(
-                appNavController = appNavController,
                 state = state,
                 onEvent = dashboardViewModel::onEvent,
             )
         }
 
-        composable(
-            route = HomeBottomScreen.Analytics.route,
-
-            ) { backStackEntry ->
+        composable(route = HomeBottomScreen.Analytics.route) { backStackEntry ->
             val analyticsViewModel: AnalyticsViewModel = hiltViewModel(backStackEntry)
             val state by analyticsViewModel.state.collectAsState()
             AnalyticsScreen(
@@ -65,9 +57,7 @@ fun HomeNavGraph(
             )
         }
 
-        composable(
-            route = HomeBottomScreen.Categories.route
-        ) { backStackEntry ->
+        composable(route = HomeBottomScreen.Categories.route) { backStackEntry ->
             val categoriesViewModel: CategoriesViewModel = hiltViewModel(backStackEntry)
             val state by categoriesViewModel.state.collectAsState()
             CategoriesScreen(
@@ -76,19 +66,15 @@ fun HomeNavGraph(
             )
         }
 
-        composable(
-            route = HomeBottomScreen.People.route
-        ){ backStackEntry ->
+        composable(route = HomeBottomScreen.People.route) {
             val personViewModel: PersonViewModel = hiltViewModel()
             val state by personViewModel.state.collectAsState()
 
-            // Observe operation result from child screens
             val operationResult by appNavController.currentBackStackEntry
                 ?.savedStateHandle
                 ?.getStateFlow<String?>("operationResult", null)
                 ?.collectAsState() ?: remember { mutableStateOf(null) }
 
-            // Clear the result after reading
             LaunchedEffect(operationResult) {
                 operationResult?.let {
                     appNavController.currentBackStackEntry?.savedStateHandle?.remove<String>("operationResult")
@@ -101,9 +87,7 @@ fun HomeNavGraph(
                 operationResultMessage = operationResult,
                 onNavigate = { navigation ->
                     when (navigation) {
-                        is PersonNavigation.NavigateBack -> {
-                            appNavController.navigateUp()
-                        }
+                        is PersonNavigation.NavigateBack -> appNavController.navigateUp()
                         is PersonNavigation.NavigateToAddPerson -> {
                             val encodedType = Uri.encode(navigation.selectedType)
                             appNavController.navigate(MainScreens.AddPerson.passSelectedType(encodedType))
@@ -118,19 +102,13 @@ fun HomeNavGraph(
             )
         }
 
-        composable(
-            route = HomeBottomScreen.Users.route
-        ) {
+        composable(route = HomeBottomScreen.Users.route) {
             val userViewModel: UserViewModel = hiltViewModel()
             val state by userViewModel.state.collectAsState()
-            val canManageUsers by userViewModel.canManageUsers.collectAsState()
             UserScreen(
                 state = state,
-                canManageUsers = canManageUsers,
                 onEvent = userViewModel::onEvent,
-                onNavigateToCreateUser = {
-                    appNavController.navigate(MainScreens.CreateUser.route)
-                }
+                onNavigateToCreateUser = { appNavController.navigate(MainScreens.CreateUser.route) }
             )
         }
     }

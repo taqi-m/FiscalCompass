@@ -12,18 +12,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.fiscal.compass.R
 import com.fiscal.compass.ui.components.ListTable
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -32,25 +27,10 @@ fun AnalyticsScreen(
     state: AnalyticsScreenState,
     onEvent: (AnalyticsEvent) -> Unit,
 ) {
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_save_24),
-                    contentDescription = "Add Transaction"
-                )
-            }
-        }
-    ) { paddingValues ->
-        AnalyticsScreenContent(
-            state = state,
-            onEvent = onEvent
-        )
-    }
+    AnalyticsScreenContent(
+        state = state,
+        onEvent = onEvent
+    )
 }
 
 @Composable

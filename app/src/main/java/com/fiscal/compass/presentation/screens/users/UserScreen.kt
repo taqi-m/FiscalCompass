@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
@@ -25,10 +24,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -56,11 +53,9 @@ import java.util.Date
 @Composable
 fun UserScreen(
     state: UserScreenState,
-    canManageUsers: Boolean = false,
     onEvent: (UserEvent) -> Unit,
     onNavigateToCreateUser: () -> Unit = {}
 ) {
-    // 1. Initial Load Logic
     // Triggers only when the composable enters the composition.
     // The ViewModel's "if (displayState == null)" check ensures this doesn't reload on rotation.
     LaunchedEffect(Unit) {
@@ -68,7 +63,6 @@ fun UserScreen(
     }
     UserScreenContent(
         state = state,
-        canManageUsers = canManageUsers,
         onEvent = onEvent,
         onNavigateToCreateUser = onNavigateToCreateUser
     )
@@ -81,35 +75,18 @@ fun UserScreen(
 @Composable
 fun UserScreenContent(
     state: UserScreenState,
-    canManageUsers: Boolean,
     onEvent: (UserEvent) -> Unit,
     onNavigateToCreateUser: () -> Unit
 ) {
-    Scaffold(
-        floatingActionButton = {
-            if (canManageUsers) {
-                FloatingActionButton(
-                    onClick = onNavigateToCreateUser,
-                    containerColor = MaterialTheme.colorScheme.primary
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Create User"
-                    )
-                }
-            }
-        }
-    ) { padding ->
-        Box(modifier = Modifier.padding(padding)) {
-            when (val displayState = state.displayState) {
-                is DisplayState.Loading -> LoadingScreen()
-                is DisplayState.Error -> ErrorScreen(onRetry = { onEvent(UserEvent.LoadUsers) })
-                is DisplayState.Content -> ContentScreen(
-                    content = displayState,
-                    onEvent = onEvent
-                )
-                null -> LoadingScreen() // Handle initial null state (idle)
-            }
+    Box(modifier = Modifier.fillMaxSize()) {
+        when (val displayState = state.displayState) {
+            is DisplayState.Loading -> LoadingScreen()
+            is DisplayState.Error -> ErrorScreen(onRetry = { onEvent(UserEvent.LoadUsers) })
+            is DisplayState.Content -> ContentScreen(
+                content = displayState,
+                onEvent = onEvent
+            )
+            null -> LoadingScreen() // Handle initial null state (idle)
         }
     }
 }
@@ -344,7 +321,6 @@ fun UserScreenPreview_Idle() {
     FiscalCompassTheme {
         UserScreen(
             state = UserScreenState(displayState = null),
-            canManageUsers = true,
             onEvent = {},
             onNavigateToCreateUser = {}
         )
@@ -379,7 +355,6 @@ fun UserScreenPreview_Content() {
     FiscalCompassTheme {
         UserScreen(
             state = UserScreenState(displayState = contentState),
-            canManageUsers = true,
             onEvent = {},
             onNavigateToCreateUser = {}
         )
@@ -406,7 +381,6 @@ fun UserScreenPreview_Refreshing() {
     FiscalCompassTheme {
         UserScreen(
             state = UserScreenState(displayState = contentState),
-            canManageUsers = true,
             onEvent = {},
             onNavigateToCreateUser = {}
         )
@@ -441,7 +415,6 @@ fun UserScreenPreview_Paginating() {
     FiscalCompassTheme {
         UserScreen(
             state = UserScreenState(displayState = contentState),
-            canManageUsers = true,
             onEvent = {},
             onNavigateToCreateUser = {}
         )
@@ -468,7 +441,6 @@ fun UserScreenPreview_PaginationError() {
     FiscalCompassTheme {
         UserScreen(
             state = UserScreenState(displayState = contentState),
-            canManageUsers = false,
             onEvent = {},
             onNavigateToCreateUser = {}
         )

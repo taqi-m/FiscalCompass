@@ -20,12 +20,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -36,10 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.fiscal.compass.R
 import com.fiscal.compass.domain.model.base.Person
 import com.fiscal.compass.domain.util.PersonType
 import com.fiscal.compass.ui.components.LoadingProgress
@@ -102,49 +99,43 @@ fun PersonScreen(
     }
 
     Scaffold(
-        floatingActionButton = {
-            if (state.permissions.canAdd) {
-                FloatingActionButton(
-                    onClick = { onNavigate(PersonNavigation.NavigateToAddPerson(state.selectedType)) },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_add_24),
-                        contentDescription = "Add Person"
+        snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+        ) {
+            // Content switching based on display state
+            when (state.displayState) {
+                is PersonDisplayState.Loading -> {
+                    LoadingProgress(true)
+                }
+
+                is PersonDisplayState.Error -> {
+                    PersonErrorContent(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background)
+                            .padding(horizontal = 8.dp), errorMessage = state.displayState.message
                     )
                 }
-            }
-        }) {
-        // Content switching based on display state
-        when (state.displayState) {
-            is PersonDisplayState.Loading -> {
-                LoadingProgress(true)
-            }
 
-            is PersonDisplayState.Error -> {
-                PersonErrorContent(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background)
-                        .padding(horizontal = 8.dp), errorMessage = state.displayState.message
-                )
-            }
+                is PersonDisplayState.Content -> {
+                    PersonScreenContent(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background),
+                        state = state,
+                        contentData = state.displayState.data,
+                        onEvent = onEvent,
+                        onNavigate = onNavigate
+                    )
 
-            is PersonDisplayState.Content -> {
-                PersonScreenContent(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background),
-                    state = state,
-                    contentData = state.displayState.data,
-                    onEvent = onEvent,
-                    onNavigate = onNavigate
-                )
-
-                // Show loading overlay during operations
-                if (state.uiState is PersonUiState.Loading) {
-                    LoadingProgress(true)
+                    // Show loading overlay during operations
+                    if (state.uiState is PersonUiState.Loading) {
+                        LoadingProgress(true)
+                    }
                 }
             }
         }
