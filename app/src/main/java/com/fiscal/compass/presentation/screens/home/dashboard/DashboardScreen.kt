@@ -15,29 +15,20 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import com.fiscal.compass.R
 import com.fiscal.compass.presentation.model.TransactionUi
-import com.fiscal.compass.presentation.navigation.AddTransactionGraph
-import com.fiscal.compass.presentation.navigation.MainScreens
 import com.fiscal.compass.presentation.utilities.CurrencyFormater
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
 
@@ -47,34 +38,16 @@ import com.fiscal.compass.ui.theme.FiscalCompassTheme
 fun DashboardScreen(
     state: DashboardScreenState,
     onEvent: (DashboardEvent) -> Unit,
-    appNavController: NavHostController,
 ) {
-    onEvent(DashboardEvent.OnScreenLoad(appNavController))
-    Scaffold(
-
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { appNavController.navigate(AddTransactionGraph.route) },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_add_24),
-                    contentDescription = "Add Transaction"
-                )
-            }
-        }
-    ) {
-        DashboardScreenContent(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-                .background(MaterialTheme.colorScheme.background)
-                .verticalScroll(rememberScrollState()),
-            state = state,
-            onEvent = onEvent,
-        )
-    }
+    DashboardScreenContent(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+            .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState()),
+        state = state,
+        onEvent = onEvent,
+    )
 }
 
 
@@ -359,7 +332,6 @@ fun DashboardScreenPreview() {
     )
     FiscalCompassTheme {
         DashboardScreen(
-            appNavController = rememberNavController(),
             state = state,
             onEvent = {}
         )

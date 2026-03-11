@@ -4,9 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fiscal.compass.domain.service.TransactionService
 import com.fiscal.compass.domain.usecase.analytics.GetUserInfoUseCase
-import com.fiscal.compass.domain.usecase.rbac.CheckPermissionUseCase
-import com.fiscal.compass.presentation.navigation.AddTransactionGraph
-import com.fiscal.compass.presentation.navigation.MainScreens
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -32,57 +29,22 @@ class DashboardViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            launch {
-                loadUserInfo()
-            }
+            launch { loadUserInfo() }
         }
     }
 
     private fun loadUserInfo() {
         userCollectionJob?.cancel()
         userCollectionJob = coroutineScope.launch(Dispatchers.IO) {
-            val userInfo = runBlocking {
-                getUserInfo()
-            }
+            val userInfo = runBlocking { getUserInfo() }
             _state.update { it.copy(userInfo = it.userInfo.copy(name = userInfo.userName, profilePictureUrl = userInfo.profilePicUrl)) }
-
             transactionService.getCurrentMonthBalance().collect { balance ->
                 _state.update { it.copy(userInfo = it.userInfo.copy(balance = balance, month = it.userInfo.month)) }
             }
         }
     }
 
-
     fun onEvent(event: DashboardEvent) {
-        when (event) {
-            is DashboardEvent.OnScreenLoad -> {
-                _state.value = _state.value.copy(appNavController = event.appNavController)
-            }
 
-            is DashboardEvent.OnAddTransactionClicked -> {
-                navigateTo(AddTransactionGraph)
-            }
-
-            is DashboardEvent.OnSynClicked -> {
-                navigateTo(MainScreens.Sync)
-            }
-
-            is DashboardEvent.OnCategoriesClicked -> {
-                navigateTo(MainScreens.Categories)
-            }
-
-            is DashboardEvent.OnPersonsClicked -> {
-                navigateTo(MainScreens.Person)
-            }
-
-            is DashboardEvent.OnJobsClicked -> {
-                navigateTo(MainScreens.Jobs)
-            }
-        }
-    }
-
-    private fun navigateTo(screen: MainScreens) {
-        val appNavController = _state.value.appNavController
-        appNavController?.navigate(screen.route)
     }
 }

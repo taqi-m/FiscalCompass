@@ -58,8 +58,8 @@ sealed class HomeBottomScreen(
     )
     object Analytics : HomeBottomScreen(
         "analytics", "Analysis",
-        R.drawable.ic_outlined_data_report_24,
-        R.drawable.ic_filled_data_report_24
+        R.drawable.chart_outlined_24,
+        R.drawable.chart_bold_24
     )
     object Categories : HomeBottomScreen(
         "categories", "Categories",
