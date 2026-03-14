@@ -4,10 +4,9 @@ import android.util.Log
 import com.fiscal.compass.data.local.dao.IncomeDao
 import com.fiscal.compass.data.local.model.IncomeEntity
 import com.fiscal.compass.domain.sync.SyncTimestampManager
-import com.fiscal.compass.data.mappers.toDto
 import com.fiscal.compass.data.mappers.toEntity
+import com.fiscal.compass.data.mappers.toFirestoreMap
 import com.fiscal.compass.data.mappers.toIncomeDto
-import com.fiscal.compass.data.mappers.withSyncTimestamp
 import com.fiscal.compass.domain.model.sync.SyncType
 import com.fiscal.compass.domain.sync.EnhancedSyncManager.Companion.TAG
 import com.fiscal.compass.domain.sync.strategy.SyncQueryStrategy
@@ -83,12 +82,12 @@ class IncomeSyncManager @Inject constructor(
             val firestoreDocId = income.incomeId
             Log.d(TAG, "  Using incomeId as document ID: $firestoreDocId")
 
-            // Convert to DTO and update sync timestamp
-            val incomeDto = income.toDto().withSyncTimestamp(currentSyncTime)
+            // Convert to stable map and update sync timestamp
+            val incomeMap = income.toFirestoreMap(syncTime = currentSyncTime)
 
             Log.d(TAG, "  Adding to batch: incomes/$firestoreDocId")
             val docRef = userIncomesRef.document(firestoreDocId)
-            batch.set(docRef, incomeDto) // Direct DTO serialization
+            batch.set(docRef, incomeMap) // Stable map serialization
             incomesToUpdate.add(income.incomeId)
             batchCount++
 
@@ -224,13 +223,13 @@ class IncomeSyncManager @Inject constructor(
 
             val docRef = userIncomesRef.document(firestoreDocId)
 
-            // Create DTO with deletion flag and current timestamp
-            val deletionDto = income.toDto().copy(
-                isDeleted = true,
-                updatedAt = Timestamp.now()
+            // Create stable map with deletion flag and current timestamp
+            val deletionMap = income.toFirestoreMap(
+                syncTime = System.currentTimeMillis(),
+                forceDeleted = true
             )
 
-            batch.set(docRef, deletionDto) // Use set instead of update to ensure document exists
+            batch.set(docRef, deletionMap) // Use set instead of update to ensure document exists
             incomesToUpdate.add(income.incomeId)
             batchCount++
 
@@ -286,4 +285,3 @@ class IncomeSyncManager @Inject constructor(
         }
     }
 }
-

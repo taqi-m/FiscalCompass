@@ -65,6 +65,14 @@
 -keep class com.google.firebase.firestore.** { *; }
 -keepclassmembers class * {
     @com.google.firebase.firestore.PropertyName <fields>;
+    @com.google.firebase.firestore.PropertyName <methods>;
+}
+
+# Keep app Firestore DTO models and member names used by sync/parsing
+-keep class com.fiscal.compass.data.remote.model.** { *; }
+-keepclassmembernames class com.fiscal.compass.data.remote.model.** {
+    <fields>;
+    <methods>;
 }
 
 ####################################################################
@@ -258,4 +266,3 @@
 ####################################################################
 -allowaccessmodification
 -repackageclasses
-

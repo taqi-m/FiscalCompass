@@ -5,8 +5,10 @@ import com.fiscal.compass.data.local.dao.CategoryDao
 import com.fiscal.compass.data.local.model.CategoryEntity
 import com.fiscal.compass.data.remote.model.CategoryDto
 import com.fiscal.compass.domain.sync.SyncTimestampManager
+import com.fiscal.compass.data.mappers.toCategoryDto
 import com.fiscal.compass.data.mappers.toCategoryEntity
 import com.fiscal.compass.data.mappers.toDto
+import com.fiscal.compass.data.mappers.toFirestoreMap
 import com.fiscal.compass.domain.model.sync.SyncType
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.CollectionReference
@@ -59,18 +61,15 @@ class CategorySyncManager @Inject constructor(
         syncTime: Long
     ) {
         try {
-            val categoryDto = category.toDto().apply {
-                lastSyncedAt = Timestamp(syncTime / 1000, ((syncTime % 1000) * 1_000_000).toInt())
-                updatedAt = Timestamp(syncTime / 1000, ((syncTime % 1000) * 1_000_000).toInt())
-            }
+            val categoryDto = category.toDto()
 
             Log.d(
                 TAG,
                 "Uploading category '${category.name}' | isDeleted: ${category.isDeleted} with categoryId=${category.categoryId}"
             )
 
-            // Use categoryId as Firestore document ID and serialize DTO directly
-            collectionRef.document(category.categoryId).set(categoryDto).await()
+            // Use categoryId as Firestore document ID with stable field names
+            collectionRef.document(category.categoryId).set(categoryDto.toFirestoreMap(syncTime)).await()
 
             // Update local entity with sync status
             categoryDao.update(
@@ -101,7 +100,7 @@ class CategorySyncManager @Inject constructor(
             // Process all categories using direct DTO deserialization
             globalCategories.documents.forEach { doc ->
                 try {
-                    val categoryDto = doc.toObject(CategoryDto::class.java)
+                    val categoryDto = doc.toCategoryDto()
                     if (categoryDto != null) {
                         processRemoteCategory(categoryDto)
                     }

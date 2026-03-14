@@ -4,7 +4,8 @@ import android.util.Log
 import com.fiscal.compass.data.local.dao.PersonDao
 import com.fiscal.compass.data.remote.model.PersonDto
 import com.fiscal.compass.domain.sync.SyncTimestampManager
-import com.fiscal.compass.data.mappers.toDto
+import com.fiscal.compass.data.mappers.toFirestoreMap
+import com.fiscal.compass.data.mappers.toPersonDto
 import com.fiscal.compass.data.mappers.toPersonEntity
 import com.fiscal.compass.domain.model.sync.SyncType
 import com.fiscal.compass.domain.sync.EnhancedSyncManager.Companion.TAG
@@ -34,15 +35,12 @@ class PersonSyncManager @Inject constructor(
 
             unsyncedPersons.forEach { person ->
                 try {
-                    val personDto = person.toDto().apply {
-                        lastSyncedAt = Timestamp(currentSyncTime / 1000, ((currentSyncTime % 1000) * 1_000_000).toInt())
-                        updatedAt = Timestamp(currentSyncTime / 1000, ((currentSyncTime % 1000) * 1_000_000).toInt())
-                    }
+                    val personMap = person.toFirestoreMap(syncTime = currentSyncTime)
 
                     Log.d(TAG, "Uploading person '${person.name}' with personId=${person.personId}")
 
-                    // Use personId as Firestore document ID and serialize DTO directly
-                    globalPersonRef.document(person.personId).set(personDto).await()
+                    // Use personId as Firestore document ID with stable field names
+                    globalPersonRef.document(person.personId).set(personMap).await()
 
                     // Update local entity with sync status
                     personDao.update(
@@ -79,7 +77,7 @@ class PersonSyncManager @Inject constructor(
             // Process all persons using direct DTO deserialization
             globalPersons.documents.forEach { doc ->
                 try {
-                    val personDto = doc.toObject(PersonDto::class.java)
+                    val personDto = doc.toPersonDto()
                     if (personDto != null) {
                         processRemotePerson(personDto)
                     }

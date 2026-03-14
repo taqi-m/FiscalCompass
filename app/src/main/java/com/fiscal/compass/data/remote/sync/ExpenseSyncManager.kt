@@ -4,10 +4,9 @@ import android.util.Log
 import com.fiscal.compass.data.local.dao.ExpenseDao
 import com.fiscal.compass.data.local.model.ExpenseEntity
 import com.fiscal.compass.domain.sync.SyncTimestampManager
-import com.fiscal.compass.data.mappers.toDto
 import com.fiscal.compass.data.mappers.toEntity
 import com.fiscal.compass.data.mappers.toExpenseDto
-import com.fiscal.compass.data.mappers.withSyncTimestamp
+import com.fiscal.compass.data.mappers.toFirestoreMap
 import com.fiscal.compass.domain.model.sync.SyncType
 import com.fiscal.compass.domain.sync.EnhancedSyncManager.Companion.TAG
 import com.fiscal.compass.domain.sync.strategy.SyncQueryStrategy
@@ -60,12 +59,12 @@ class ExpenseSyncManager @Inject constructor(
             val firestoreDocId = expense.expenseId
             Log.d(TAG, "  Using expenseId as document ID: $firestoreDocId")
 
-            // Convert to DTO and update sync timestamp
-            val expenseDto = expense.toDto().withSyncTimestamp(currentSyncTime)
+            // Convert to stable map and update sync timestamp
+            val expenseMap = expense.toFirestoreMap(syncTime = currentSyncTime)
 
             Log.d(TAG, "  Adding to batch: expenses/$firestoreDocId")
             val docRef = userExpensesRef.document(firestoreDocId)
-            batch.set(docRef, expenseDto) // Direct DTO serialization
+            batch.set(docRef, expenseMap) // Stable map serialization
             expensesToUpdate.add(expense.expenseId)
             batchCount++
 
@@ -201,13 +200,13 @@ class ExpenseSyncManager @Inject constructor(
 
             val docRef = userExpensesRef.document(firestoreDocId)
 
-            // Create DTO with deletion flag and current timestamp
-            val deletionDto = expense.toDto().copy(
-                isDeleted = true,
-                updatedAt = Timestamp.now()
+            // Create stable map with deletion flag and current timestamp
+            val deletionMap = expense.toFirestoreMap(
+                syncTime = System.currentTimeMillis(),
+                forceDeleted = true
             )
 
-            batch.set(docRef, deletionDto) // Use set instead of update to ensure document exists
+            batch.set(docRef, deletionMap) // Use set instead of update to ensure document exists
             expensesToUpdate.add(expense.expenseId)
             batchCount++
 
