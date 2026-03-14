@@ -1,3 +1,49 @@
+# 🚀 FiscalCompass v1.0.1
+
+> **Patch Release** — Critical Firestore schema stability fix for release builds.
+
+---
+
+## 🐛 Bug Fixes
+
+### 🔥 Critical: Firestore Field Names Obfuscated in Release Builds
+- **Root cause:** Kotlin DTO objects were passed directly to `batch.set(docRef, dto)`. R8/ProGuard renamed property names to single-letter identifiers (`a`, `b`, `c` …) in release builds, so all synced records were stored with obfuscated keys in Firestore.
+- **Fixed for:** `incomes`, `expenses`, `globalPersons`, `globalCategories` collections.
+- **How:** All Firestore upload paths now use explicit `Map<String, Any?>` serializers with literal canonical keys — fully obfuscation-proof.
+- **Also fixed:** `PersonSyncManager` and `CategorySyncManager` download paths now use manual `DocumentSnapshot` field parsing instead of reflection-based `toObject()`.
+
+### 🔒 ProGuard Hardening
+- Added `-keep` / `-keepclassmembernames` rules for `com.fiscal.compass.data.remote.model.**`.
+- Extended `@PropertyName` keep rule to cover both fields and methods.
+
+---
+
+## ⚠️ Data Migration Required for Existing Users
+
+If you used **v1.0.0** in production, existing Firestore documents may have obfuscated field names. A migration script prompt is available in `markdowns/FIRESTORE_FIELD_MIGRATION_AGENT_PROMPT.md`.
+
+---
+
+## 📦 Build Info
+
+- **Version Name**: `1.0.1`
+- **Version Code**: `2`
+- **Build Variants**: `dev` (emulator) / `prod` (live Firebase)
+
+---
+
+## 📥 Installation
+
+1. Download the **APK** from the **Assets** section below.
+2. Enable **Install from Unknown Sources** on your Android device.
+3. Install — the in-app updater will detect this version automatically.
+
+---
+
+**Full Changelog**: https://github.com/taqi-m/FiscalCompass/compare/v1.0.0...v1.0.1
+
+---
+
 # 🚀 FiscalCompass v1.0.0
 
 > **First Official Release** — Your personal finance management companion for Android.
