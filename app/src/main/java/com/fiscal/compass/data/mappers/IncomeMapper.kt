@@ -128,6 +128,35 @@ fun IncomeDto.withSyncTimestamp(syncTime: Long = System.currentTimeMillis()): In
 }
 
 /**
+ * Converts an [IncomeEntity] into a stable key/value map for Firestore writes.
+ * This avoids reflection-based serialization that can break under obfuscation.
+ */
+fun IncomeEntity.toFirestoreMap(
+    syncTime: Long = System.currentTimeMillis(),
+    forceDeleted: Boolean = isDeleted
+): Map<String, Any?> {
+    val timestamp = Timestamp(syncTime / 1000, ((syncTime % 1000) * 1_000_000).toInt())
+    return mapOf(
+        "id" to incomeId,
+        "userId" to userId,
+        "categoryId" to categoryId,
+        "personId" to personId,
+        "amount" to amount,
+        "amountPaid" to amountPaid,
+        "description" to description,
+        "date" to Timestamp(date / 1000, ((date % 1000) * 1_000_000).toInt()),
+        "source" to source,
+        "isRecurring" to isRecurring,
+        "recurringFrequency" to recurringFrequency,
+        "isTaxable" to isTaxable,
+        "createdAt" to Timestamp(createdAt / 1000, ((createdAt % 1000) * 1_000_000).toInt()),
+        "updatedAt" to timestamp,
+        "isDeleted" to forceDeleted,
+        "lastSyncedAt" to timestamp
+    )
+}
+
+/**
  * Converts a Firestore [DocumentSnapshot] to [IncomeDto].
  */
 fun DocumentSnapshot.toIncomeDto(): IncomeDto? {

@@ -137,6 +137,36 @@ fun ExpenseDto.withSyncTimestamp(syncTime: Long = System.currentTimeMillis()): E
 }
 
 /**
+ * Converts an [ExpenseEntity] into a stable key/value map for Firestore writes.
+ * This avoids reflection-based serialization that can break under obfuscation.
+ */
+fun ExpenseEntity.toFirestoreMap(
+    syncTime: Long = System.currentTimeMillis(),
+    forceDeleted: Boolean = isDeleted
+): Map<String, Any?> {
+    val timestamp = Timestamp(syncTime / 1000, ((syncTime % 1000) * 1_000_000).toInt())
+    return mapOf(
+        "id" to expenseId,
+        "userId" to userId,
+        "categoryId" to categoryId,
+        "personId" to personId,
+        "amount" to amount,
+        "amountPaid" to amountPaid,
+        "description" to description,
+        "date" to Timestamp(date / 1000, ((date % 1000) * 1_000_000).toInt()),
+        "paymentMethod" to paymentMethod,
+        "location" to location,
+        "receipt" to receipt,
+        "isRecurring" to isRecurring,
+        "recurringFrequency" to recurringFrequency,
+        "createdAt" to Timestamp(createdAt / 1000, ((createdAt % 1000) * 1_000_000).toInt()),
+        "updatedAt" to timestamp,
+        "isDeleted" to forceDeleted,
+        "lastSyncedAt" to timestamp
+    )
+}
+
+/**
  * Converts a Firestore [DocumentSnapshot] to [ExpenseDto].
  */
 fun DocumentSnapshot.toExpenseDto(): ExpenseDto? {

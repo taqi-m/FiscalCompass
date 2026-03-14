@@ -5,6 +5,7 @@ import com.fiscal.compass.domain.util.PersonType
 import com.fiscal.compass.data.remote.model.PersonDto
 import com.fiscal.compass.domain.model.base.Person
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.DocumentSnapshot
 
 fun PersonEntity.toDomain(): Person {
     return Person(
@@ -51,5 +52,40 @@ fun PersonDto.toPersonEntity(): PersonEntity {
         isSynced = true,
         needsSync = false,
         lastSyncedAt = lastSyncedAt?.toDate()?.time
+    )
+}
+
+/**
+ * Converts a [PersonEntity] into a stable key/value map for Firestore writes.
+ */
+fun PersonEntity.toFirestoreMap(syncTime: Long = System.currentTimeMillis()): Map<String, Any?> {
+    val timestamp = Timestamp(syncTime / 1000, ((syncTime % 1000) * 1_000_000).toInt())
+    return mapOf(
+        "personId" to personId,
+        "name" to name,
+        "personType" to personType.name,
+        "contact" to (contact ?: ""),
+        "isDeleted" to isDeleted,
+        "createdAt" to Timestamp(createdAt / 1000, ((createdAt % 1000) * 1_000_000).toInt()),
+        "updatedAt" to timestamp,
+        "lastSyncedAt" to timestamp
+    )
+}
+
+/**
+ * Converts Firestore [DocumentSnapshot] into [PersonDto] without reflection.
+ */
+fun DocumentSnapshot.toPersonDto(): PersonDto? {
+    if (!exists()) return null
+
+    return PersonDto(
+        personId = getString("personId") ?: id,
+        name = getString("name") ?: "",
+        personType = getString("personType") ?: PersonType.CUSTOMER.name,
+        contact = getString("contact") ?: "",
+        isDeleted = getBoolean("isDeleted") ?: false,
+        createdAt = getTimestamp("createdAt") ?: Timestamp.now(),
+        updatedAt = getTimestamp("updatedAt") ?: Timestamp.now(),
+        lastSyncedAt = getTimestamp("lastSyncedAt")
     )
 }
