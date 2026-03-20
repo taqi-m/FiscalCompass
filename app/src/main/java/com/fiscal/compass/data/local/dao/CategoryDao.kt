@@ -38,13 +38,13 @@ interface CategoryDao {
     @Query("SELECT * FROM categories WHERE categoryId = :id")
     suspend fun getCategoryByIdIncludeDeleted(id: String): CategoryEntity?
 
-    @Query("SELECT EXISTS(SELECT 1 FROM expenses WHERE categoryId = :categoryId LIMIT 1)")
+    @Query("SELECT EXISTS(SELECT 1 FROM expenses WHERE categoryId = :categoryId AND isDeleted = 0 LIMIT 1)")
     suspend fun isCategoryUsedInExpenses(categoryId: String): Boolean
 
-    @Query("SELECT EXISTS(SELECT 1 FROM incomes WHERE categoryId = :categoryId LIMIT 1)")
+    @Query("SELECT EXISTS(SELECT 1 FROM incomes WHERE categoryId = :categoryId AND isDeleted = 0 LIMIT 1)")
     suspend fun isCategoryUsedInIncomes(categoryId: String): Boolean
 
-    @Query("SELECT * FROM categories WHERE name = :name LIMIT 1")
+    @Query("SELECT * FROM categories WHERE name = :name AND isDeleted = 0 LIMIT 1")
     suspend fun getCategoryByName(name: String) : CategoryEntity?
 
     @Query("SELECT * FROM categories WHERE isExpenseCategory = 0 AND isDeleted = 0 ORDER BY name ASC")
