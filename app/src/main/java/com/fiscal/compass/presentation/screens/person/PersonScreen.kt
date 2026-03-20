@@ -103,7 +103,6 @@ fun PersonScreen(
     ) { paddingValues ->
         Box(
             modifier = Modifier
-                .padding(paddingValues)
                 .fillMaxSize()
         ) {
             // Content switching based on display state

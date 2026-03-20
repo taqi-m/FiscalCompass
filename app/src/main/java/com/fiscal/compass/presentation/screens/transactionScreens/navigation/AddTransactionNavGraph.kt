@@ -161,6 +161,7 @@ fun NavGraphBuilder.AddTransactionNavGraph(navController: NavHostController) {
                     SelectableItem(
                         id = category.categoryId,
                         name = category.name,
+                        description = category.description,
                         isSelected = category.categoryId == addTransactionState.transaction.categoryId
                     )
                 }
@@ -225,6 +226,7 @@ fun NavGraphBuilder.AddTransactionNavGraph(navController: NavHostController) {
                     SelectableItem(
                         id = person.personId,
                         name = person.name,
+                        description = person.personType,
                         isSelected = person.personId == addTransactionState.transaction.personId
                     )
                 }
