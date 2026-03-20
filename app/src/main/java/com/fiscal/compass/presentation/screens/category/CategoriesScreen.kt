@@ -176,6 +176,7 @@ fun CategoriesList(
                     CategoryItem(
                         modifier = Modifier.padding(vertical = 4.dp),
                         categoryName = category.name,
+                        description = category.description,
                         onEditClick = {
                             onEditCategoryClicked?.invoke(category)
                         },

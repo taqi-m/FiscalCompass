@@ -1,15 +1,19 @@
 package com.fiscal.compass.presentation.screens.itemselection
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -21,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -196,32 +201,40 @@ private fun SelectableItemRow(
     modifier: Modifier = Modifier,
     singleSelectionMode: Boolean = false
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onToggle)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (singleSelectionMode) {
-            androidx.compose.material3.RadioButton(
-                selected = isSelected,
-                onClick = onToggle
-            )
-        } else {
-            Checkbox(
-                checked = isSelected,
-                onCheckedChange = { onToggle() }
-            )
-        }
+Row(
+    modifier = modifier
+        .fillMaxWidth()
+        .clickable(onClick = onToggle)
+        .padding(horizontal = 16.dp, vertical = 8.dp),
+    horizontalArrangement = Arrangement.spacedBy(12.dp),
+    verticalAlignment = Alignment.CenterVertically
+) {
+    when (singleSelectionMode){
+        true -> RadioButton(isSelected, onToggle)
+        false -> Checkbox(isSelected, { onToggle() })
+    }
 
+    Column(modifier = Modifier.weight(1f)) {
         Text(
             text = item.name,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f)
+            style = MaterialTheme.typography.bodyLarge
         )
+        item.description?.takeIf { it.isNotBlank() }?.let { desc ->
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = desc,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier
+                    .background(
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        shape = RoundedCornerShape(25)
+                    )
+                    .padding(horizontal = 8.dp, vertical = 2.dp)
+            )
+        }
     }
+}
 }
 
 @Preview(showBackground = true, name = "Error State")
@@ -249,7 +262,7 @@ fun ItemSelectionScreenErrorPreview() {
 @Composable
 fun ItemSelectionScreenSingleSelectionPreview() {
     val sampleItems = listOf(
-        SelectableItem(id = "apple", name = "Apple"),
+        SelectableItem(id = "apple", name = "Apple", description = "Kg"),
         SelectableItem(id = "banana", name = "Banana"),
         SelectableItem(id = "cherry", name = "Cherry")
     )
@@ -313,7 +326,7 @@ fun ItemSelectionScreenLongNamesPreview() {
 @Composable
 fun ItemSelectionScreenPreview() {
     val sampleItems = listOf(
-        SelectableItem(id = "apple", name = "Apple"),
+        SelectableItem(id = "apple", name = "Apple", description = "Kg."),
         SelectableItem(id = "banana", name = "Banana"),
         SelectableItem(id = "cherry", name = "Cherry"),
         SelectableItem(id = "date", name = "Date"),

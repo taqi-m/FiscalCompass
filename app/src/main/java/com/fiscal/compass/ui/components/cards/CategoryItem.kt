@@ -4,7 +4,10 @@ import android.content.res.Configuration
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -35,7 +38,8 @@ fun CategoryItem(
     modifier: Modifier = Modifier,
     categoryName: String,
     onEditClick: () -> Unit,
-    onDeleteClicked: () -> Unit
+    onDeleteClicked: () -> Unit,
+    description: String? = null
 ) {
 
     var menuExpanded by remember { mutableStateOf(false) }
@@ -44,22 +48,40 @@ fun CategoryItem(
             .clip(RoundedCornerShape(4.dp))
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .clickable(true, onClick = {})
-            .padding(start = 16.dp)
+            .padding(horizontal = 12.dp)
             .fillMaxWidth()
-            .height(50.dp),
+            .height(70.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            text = categoryName,
-            color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.bodyMedium
-        )
-        Row(
-
+            verticalArrangement = Arrangement.Center
         ) {
+            Text(
+                modifier = Modifier
+                .padding(horizontal = 8.dp, vertical = 2.dp),
+                text = categoryName,
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            description?.takeIf { it.isNotBlank() }?.let { desc ->
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = desc,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    modifier = Modifier
+                        .background(
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            shape = RoundedCornerShape(25)
+                        )
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                )
+            }
+        }
+        Row {
             /*IconButton(
                 onClick = {}
             ) {
@@ -110,14 +132,15 @@ fun CategoryItem(
     }
 }
 
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL)
+@Preview
 @Composable
 fun CategoryItemPreview() {
     FiscalCompassTheme {
         CategoryItem(
             categoryName = "Groceries",
+            description = "Food and groceries",
             onEditClick = {},
-            onDeleteClicked = {}
+            onDeleteClicked = {},
         )
     }
 }

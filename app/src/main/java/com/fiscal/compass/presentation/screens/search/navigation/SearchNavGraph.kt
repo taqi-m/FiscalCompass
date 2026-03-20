@@ -141,6 +141,7 @@ fun NavGraphBuilder.SearchNavGraph(navController: NavHostController) {
                     SelectableItem(
                         id = category.categoryId,
                         name = category.name,
+                        description = category.description,
                         isSelected = searchState.tempSearchCriteria
                             .getCategoryIds().contains(category.categoryId)
                     )
@@ -200,6 +201,7 @@ fun NavGraphBuilder.SearchNavGraph(navController: NavHostController) {
                     SelectableItem(
                         id = person.personId,
                         name = person.name,
+                        description = person.personType,
                         isSelected = searchState.tempSearchCriteria
                             .getPersonIds().contains(person.personId)
                     )
