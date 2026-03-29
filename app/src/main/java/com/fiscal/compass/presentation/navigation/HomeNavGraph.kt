@@ -45,6 +45,9 @@ fun HomeNavGraph(
             DashboardScreen(
                 state = state,
                 onEvent = dashboardViewModel::onEvent,
+                onRecentTransactionClick = {
+                    appNavController.navigate(SearchGraph.route)
+                },
             )
         }
 

@@ -3,9 +3,7 @@ package com.fiscal.compass.presentation.screens.home.dashboard
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,23 +11,18 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import com.fiscal.compass.presentation.model.TransactionUi
+import com.fiscal.compass.domain.model.Transaction
 import com.fiscal.compass.presentation.utilities.CurrencyFormater
+import com.fiscal.compass.ui.components.cards.TransactionCard
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
 
 
@@ -38,7 +31,12 @@ import com.fiscal.compass.ui.theme.FiscalCompassTheme
 fun DashboardScreen(
     state: DashboardScreenState,
     onEvent: (DashboardEvent) -> Unit,
+    onRecentTransactionClick: (Transaction) -> Unit,
 ) {
+    LaunchedEffect(Unit) {
+        onEvent(DashboardEvent.OnScreenLoad)
+    }
+
     DashboardScreenContent(
         modifier = Modifier
             .fillMaxSize()
@@ -46,7 +44,7 @@ fun DashboardScreen(
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState()),
         state = state,
-        onEvent = onEvent,
+        onRecentTransactionClick = onRecentTransactionClick,
     )
 }
 
@@ -55,7 +53,7 @@ fun DashboardScreen(
 private fun DashboardScreenContent(
     modifier: Modifier = Modifier,
     state: DashboardScreenState,
-    onEvent: (DashboardEvent) -> Unit,
+    onRecentTransactionClick: (Transaction) -> Unit,
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -81,14 +79,10 @@ private fun DashboardScreenContent(
             userInfo = state.userInfo,
         )
 
-        TopCategoriesSection(
-            modifier = Modifier
-                .fillMaxWidth()
-        )
-
         RecentTransactionsSection(
             modifier = Modifier.fillMaxWidth(),
-            transactions = TransactionUi.dummyList
+            transactions = state.recentTransactions,
+            onTransactionClick = onRecentTransactionClick,
         )
     }
 }
@@ -111,52 +105,19 @@ private fun BalanceOverview(
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "Total Balance",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-            MonthSelector(
-                modifier = Modifier.wrapContentSize(),
-                selectedMonth = "Jan 2023",
-                onMonthSelected = {}
-
-            )
-        }
+        Text(
+            text = "Total Balance",
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
+        )
         Text(
             text = CurrencyFormater.formatCurrency(userInfo.balance),
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onPrimaryContainer
         )
     }
 }
 
-@Composable
-fun MonthSelector(
-    modifier: Modifier = Modifier,
-    selectedMonth: String,
-    onMonthSelected: (String) -> Unit
-) {
-    Box(
-        modifier = modifier
-            .clip(MaterialTheme.shapes.medium)
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Text(
-            modifier = Modifier
-                .padding(8.dp),
-            text = "Jan 2023",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-
-}
 
 //@Preview(showBackground = true)
 @Composable
@@ -168,103 +129,12 @@ private fun BalanceOverviewPreview() {
 }
 
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
-@Composable
-private fun TopCategoriesSection(
-    modifier: Modifier = Modifier,
-    topCategories: List<String> = listOf("Groceries", "Entertainment", "Utilities")
-) {
-    Column(
-        modifier = modifier
-            .wrapContentHeight()
-            .fillMaxWidth()
-            .background(
-                MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.5f),
-                MaterialTheme.shapes.medium
-            )
-            .padding(24.dp),
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text(text = "Top Charts", style = MaterialTheme.typography.titleMedium)
-
-        when {
-            topCategories.isEmpty() ->
-                EmptyPlaceholder()
-
-            else ->
-                NumberedList(items = topCategories)
-        }
-    }
-}
-
 @Composable
 private fun EmptyPlaceholder() {
     Text(
         text = "Start tracking your expenses/incomes to see where your money goes!",
         style = MaterialTheme.typography.bodyMedium,
     )
-}
-
-@Composable
-private fun NumberedList(
-    items: List<String>
-) {
-    items.forEachIndexed { index, category ->
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                val textStyle = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.W500
-                )
-
-                val hashtagPart = "#${index + 1}"
-                val categoryPart = category
-
-                Text(
-                    text = buildAnnotatedString {
-                        pushStyle(SpanStyle(fontWeight = FontWeight.Bold))
-                        append("$hashtagPart ")
-                        pop()
-                        append(" ")
-                        append(categoryPart)
-                    },
-                    style = textStyle,
-                    fontSize = textStyle.fontSize,
-                    letterSpacing = TextUnit.Unspecified
-                )
-            }
-            HorizontalDivider(
-                modifier = Modifier.fillMaxWidth(),
-                thickness = 1.dp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-            )
-        }
-    }
-}
-
-
-//@Preview(
-//    showBackground = true
-//)
-@Composable
-private fun TopCategoriesSectionPreview() {
-    FiscalCompassTheme {
-        TopCategoriesSection(
-            topCategories = listOf(
-                "Groceries",
-                "Entertainment",
-                "Utilities"
-            )
-        )
-    }
 }
 
 @Composable
@@ -282,7 +152,8 @@ private fun GreetingSection(
 @Composable
 private fun RecentTransactionsSection(
     modifier: Modifier = Modifier,
-    transactions: List<TransactionUi> = emptyList()
+    transactions: List<Transaction> = emptyList(),
+    onTransactionClick: (Transaction) -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -302,8 +173,24 @@ private fun RecentTransactionsSection(
             transactions.isEmpty() ->
                 EmptyPlaceholder()
 
-            else ->
-                NumberedList(items = transactions.map { it.formatedAmount })
+            else -> {
+                transactions.forEachIndexed { index, transaction ->
+                    TransactionCard(
+                        transaction = transaction,
+                        onClicked = { onTransactionClick(transaction) },
+                        onEditClicked = {},
+                        onDeleteClicked = {},
+                    )
+
+                    if (index != transactions.lastIndex) {
+                        HorizontalDivider(
+                            modifier = Modifier.fillMaxWidth(),
+                            thickness = 1.dp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -311,9 +198,16 @@ private fun RecentTransactionsSection(
 //@Preview(showBackground = true)
 @Composable
 private fun RecentTransactionsSectionPreview() {
-    val transactions = TransactionUi.dummyList
+    val transactions = listOf(
+        Transaction.sampleExpense(),
+        Transaction.sampleIncome(),
+        Transaction.sampleExpense()
+    )
     FiscalCompassTheme {
-        RecentTransactionsSection(transactions = transactions)
+        RecentTransactionsSection(
+            transactions = transactions,
+            onTransactionClick = {},
+        )
     }
 }
 
@@ -333,7 +227,8 @@ fun DashboardScreenPreview() {
     FiscalCompassTheme {
         DashboardScreen(
             state = state,
-            onEvent = {}
+            onEvent = {},
+            onRecentTransactionClick = {},
         )
     }
 }

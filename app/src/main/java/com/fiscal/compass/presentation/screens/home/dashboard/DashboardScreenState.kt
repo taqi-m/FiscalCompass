@@ -1,5 +1,6 @@
 package com.fiscal.compass.presentation.screens.home.dashboard
 
+import com.fiscal.compass.domain.model.Transaction
 import java.util.Date
 
 data class UserInfo(
@@ -11,6 +12,7 @@ data class UserInfo(
 
 data class DashboardScreenState(
     val userInfo: UserInfo = UserInfo(),
+    val recentTransactions: List<Transaction> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
 )
