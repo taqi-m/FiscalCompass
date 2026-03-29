@@ -23,6 +23,25 @@ data class SearchCriteria(
     val categories: List<Category>? = null
 ) {
     /**
+     * Returns a new SearchCriteria with transaction type updated and any incompatible
+     * category selections removed.
+     */
+    fun withTransactionTypeAndPrunedCategories(transactionType: TransactionType?): SearchCriteria {
+        val compatibleCategories = categories?.filter { category ->
+            when (transactionType) {
+                TransactionType.EXPENSE -> category.isExpenseCategory
+                TransactionType.INCOME -> !category.isExpenseCategory
+                null -> true
+            }
+        }
+
+        return copy(
+            transactionType = transactionType,
+            categories = compatibleCategories
+        )
+    }
+
+    /**
      * Returns a new SearchCriteria with the specified transaction type.
      * @param transactionType The transaction type to set.
      */
