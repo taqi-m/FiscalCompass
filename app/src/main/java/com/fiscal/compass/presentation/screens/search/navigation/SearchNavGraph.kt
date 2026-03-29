@@ -10,6 +10,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import com.fiscal.compass.domain.util.TransactionType
 import com.fiscal.compass.presentation.navigation.MainScreens
 import com.fiscal.compass.presentation.navigation.Search
 import com.fiscal.compass.presentation.navigation.SearchCategorySelection
@@ -137,7 +138,13 @@ fun NavGraphBuilder.SearchNavGraph(navController: NavHostController) {
                 searchState.allCategories,
                 searchState.tempSearchCriteria
             ) {
-                searchState.allCategories.map { category ->
+                val filteredCategories = when (searchState.tempSearchCriteria.transactionType) {
+                    TransactionType.EXPENSE -> searchState.allCategories.filter { it.isExpenseCategory }
+                    TransactionType.INCOME -> searchState.allCategories.filter { !it.isExpenseCategory }
+                    null -> searchState.allCategories
+                }
+
+                filteredCategories.map { category ->
                     SelectableItem(
                         id = category.categoryId,
                         name = category.name,
@@ -148,7 +155,7 @@ fun NavGraphBuilder.SearchNavGraph(navController: NavHostController) {
                 }
             }
 
-            LaunchedEffect(Unit) {
+            LaunchedEffect(allSelectableCategories) {
                 itemSelectionViewModel.onEvent(
                     ItemSelectionEvent.InitializeScreen(
                         allItems = allSelectableCategories,
@@ -236,4 +243,3 @@ fun NavGraphBuilder.SearchNavGraph(navController: NavHostController) {
     }
     // ── End Search nested graph ──────────────────────────────────────────────
 }
-

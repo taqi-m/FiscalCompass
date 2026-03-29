@@ -44,7 +44,8 @@ class SearchViewModel @Inject constructor(
     fun onEvent(event: SearchEvent) {
         when (event) {
             is SearchEvent.UpdateTempFilterType -> {
-                val newCriteria = state.value.tempSearchCriteria.withTransactionType(event.type)
+                val newCriteria = state.value.tempSearchCriteria
+                    .withTransactionTypeAndPrunedCategories(event.type)
                 _state.update { it.copy(tempSearchCriteria = newCriteria) }
             }
 
