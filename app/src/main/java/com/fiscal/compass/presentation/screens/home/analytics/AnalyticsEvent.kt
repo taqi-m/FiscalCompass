@@ -1,5 +1,10 @@
 package com.fiscal.compass.presentation.screens.home.analytics
 
-sealed class AnalyticsEvent {
-    data class LoadAnalytics(val month: Int, val year: Int) : AnalyticsEvent()
+sealed interface AnalyticsEvent {
+    data object LoadAnalytics : AnalyticsEvent
+
+    data class LoadAnalyticsForPeriod(
+        val month: Int,
+        val year: Int,
+    ) : AnalyticsEvent
 }
