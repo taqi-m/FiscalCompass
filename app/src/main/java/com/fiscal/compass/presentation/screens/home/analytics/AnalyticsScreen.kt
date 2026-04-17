@@ -20,12 +20,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.fiscal.compass.R
-import com.fiscal.compass.ui.components.ListTable
+import com.fiscal.compass.ui.components.PieTable
 import com.fiscal.compass.ui.theme.FiscalCompassTheme
 
 @Composable
@@ -86,23 +85,24 @@ private fun AnalyticsScreenContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
-                    .padding(16.dp)
+                    .padding(horizontal =  8.dp)
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top,
             ) {
-                ListTable(
+
+                PieTable(
                     data = displayState.expenses,
-                    amountHeader = "Expenses",
-                    modifier = Modifier.fillMaxWidth(),
+                    header = "Expenses",
+                    modifier = Modifier.fillMaxWidth().padding(8.dp),
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                ListTable(
+                PieTable(
                     data = displayState.incomes,
-                    amountHeader = "Incomes",
-                    modifier = Modifier.fillMaxWidth(),
+                    header = "Incomes",
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                 )
             }
         }
@@ -118,7 +118,7 @@ fun AnalyticsScreenLoadingPreview() {
     )
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun AnalyticsScreenErrorPreview() {
     FiscalCompassTheme {
@@ -131,7 +131,7 @@ fun AnalyticsScreenErrorPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun AnalyticsScreenContentPreview() {
     AnalyticsScreen(
