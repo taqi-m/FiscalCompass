@@ -3,7 +3,7 @@ package com.fiscal.compass.presentation.screens.home.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fiscal.compass.domain.service.TransactionService
-import com.fiscal.compass.domain.usecase.analytics.GetUserInfoUseCase
+import com.fiscal.compass.domain.usecase.analytics.GetOverviewDataUC
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
-    private val getUserInfo: GetUserInfoUseCase,
+    private val getOverviewDataUC: GetOverviewDataUC,
     private val transactionService: TransactionService,
 ) : ViewModel() {
 
@@ -34,16 +34,44 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-    private fun loadUserInfo() {
-        userCollectionJob?.cancel()
-        userCollectionJob = coroutineScope.launch(Dispatchers.IO) {
-            val userInfo = getUserInfo()
-            _state.update { it.copy(userInfo = it.userInfo.copy(name = userInfo.userName, profilePictureUrl = userInfo.profilePicUrl)) }
+private fun loadUserInfo() {
+    userCollectionJob?.cancel()
+    userCollectionJob = coroutineScope.launch(Dispatchers.IO) {
+        val userInfo = getOverviewDataUC()
+        _state.update {
+            it.copy(
+                overviewData = it.overviewData.copy(
+                    name = userInfo.userName,
+                    profilePictureUrl = userInfo.profilePicUrl
+                )
+            )
+        }
+
+        launch {
             transactionService.getCurrentMonthBalance().collect { balance ->
-                _state.update { it.copy(userInfo = it.userInfo.copy(balance = balance, month = it.userInfo.month)) }
+                _state.update {
+                    it.copy(overviewData = it.overviewData.copy(currentBalance = balance))
+                }
+            }
+        }
+
+        launch {
+            transactionService.getCurrentMonthIncome().collect { income ->
+                _state.update {
+                    it.copy(overviewData = it.overviewData.copy(income = income))
+                }
+            }
+        }
+
+        launch {
+            transactionService.getCurrentMonthExpense().collect { expenses ->
+                _state.update {
+                    it.copy(overviewData = it.overviewData.copy(expenses = expenses))
+                }
             }
         }
     }
+}
 
     private fun loadRecentTransactions() {
         recentTransactionsJob?.cancel()
