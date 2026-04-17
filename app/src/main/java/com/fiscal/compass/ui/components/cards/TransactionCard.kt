@@ -41,12 +41,12 @@ fun TransactionCard(
         colors = CardDefaults.cardColors().copy(
             containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(0.8f),
         ),
+        shape = MaterialTheme.shapes.small,
         onClick = onClicked
     ) {
         TransactionCardContent(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
                 .padding(16.dp),
             transaction = transaction,
             onEditClicked = onEditClicked,

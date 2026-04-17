@@ -110,7 +110,7 @@ private fun BalanceOverview(
     modifier: Modifier = Modifier,
     overviewData: OverviewData,
 ) {
-    val cardShape = MaterialTheme.shapes.largeIncreased
+    val cardShape = MaterialTheme.shapes.large
     val cardElevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
     val primary = MaterialTheme.colorScheme.primary
     val primaryContainer = MaterialTheme.colorScheme.primaryContainer
@@ -175,7 +175,7 @@ private fun BalanceOverview(
                         )
                     }
                 }
-                .padding(24.dp)
+                .padding(16.dp)
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -184,19 +184,18 @@ private fun BalanceOverview(
             ) {
                 Text(
                     text = "TOTAL BALANCE",
-                    style = MaterialTheme.typography.titleMediumEmphasized,
+                    style = MaterialTheme.typography.titleSmallEmphasized,
                     color = contentColor
                 )
                 Text(
                     text = CurrencyFormater.formatCurrency(overviewData.currentBalance),
-                    style = MaterialTheme.typography.headlineLarge,
+                    style = MaterialTheme.typography.headlineMedium,
                     color = contentColor
                 )
 
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp),
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     OverviewMini(
@@ -240,7 +239,7 @@ fun OverviewMini(
                 color = borderColor,
                 shape = cardShape,
             )
-            .padding(16.dp),
+            .padding(12.dp),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
@@ -286,39 +285,43 @@ private fun RecentTransactionsSection(
     transactions: List<Transaction> = emptyList(),
     onTransactionClick: (Transaction) -> Unit,
 ) {
-    Column(
-        modifier = modifier
-            .wrapContentHeight()
-            .fillMaxWidth()
-            .background(
-                MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.5f),
-                MaterialTheme.shapes.medium
-            )
-            .padding(24.dp),
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ElevatedCard(
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
     ) {
-        Text(text = "Recent Transactions", style = MaterialTheme.typography.titleMedium)
+        Column(
+            modifier = modifier
+                .wrapContentHeight()
+                .fillMaxWidth()
+                .background(
+                    MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.5f),
+                    MaterialTheme.shapes.medium
+                )
+                .padding(12.dp),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(text = "Recent Transactions", style = MaterialTheme.typography.titleMedium)
 
-        when {
-            transactions.isEmpty() ->
-                EmptyPlaceholder()
+            when {
+                transactions.isEmpty() ->
+                    EmptyPlaceholder()
 
-            else -> {
-                transactions.forEachIndexed { index, transaction ->
-                    TransactionCard(
-                        transaction = transaction,
-                        onClicked = { onTransactionClick(transaction) },
-                        onEditClicked = {},
-                        onDeleteClicked = {},
-                    )
-
-                    if (index != transactions.lastIndex) {
-                        HorizontalDivider(
-                            modifier = Modifier.fillMaxWidth(),
-                            thickness = 1.dp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                else -> {
+                    transactions.forEachIndexed { index, transaction ->
+                        TransactionCard(
+                            transaction = transaction,
+                            onClicked = { onTransactionClick(transaction) },
+                            onEditClicked = {},
+                            onDeleteClicked = {},
                         )
+
+                        if (index != transactions.lastIndex) {
+                            HorizontalDivider(
+                                modifier = Modifier.fillMaxWidth(),
+                                thickness = 1.dp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                            )
+                        }
                     }
                 }
             }
@@ -326,7 +329,7 @@ private fun RecentTransactionsSection(
     }
 }
 
-//@Preview(showBackground = true)
+@Preview(showBackground = true)
 @Composable
 private fun RecentTransactionsSectionPreview() {
     val transactions = listOf(

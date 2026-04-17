@@ -187,11 +187,11 @@ fun HomeScreen(
                     )
                 },
                 actions = {
-                    TopBarActionButton(
+                    /*TopBarActionButton(
                         icon = R.drawable.ic_cloud_sync_24,
                         contentDescription = "Sync Data",
                         onClick = onSyncClick,
-                    )
+                    )*/
                     TopBarActionButton(
                         onClick = onSearchClick,
                         icon = R.drawable.ic_history_24,
