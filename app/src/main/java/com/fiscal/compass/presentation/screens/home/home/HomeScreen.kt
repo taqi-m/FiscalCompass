@@ -1,7 +1,6 @@
 package com.fiscal.compass.presentation.screens.home.home
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,16 +21,17 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,7 +71,7 @@ fun HomeScreen(
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-    var isBottomBarVisible by remember { mutableStateOf(true) }
+    var isBottomBarVisible by rememberSaveable { mutableStateOf(true) }
 
     val bottomBarScrollConnection = remember {
         object : NestedScrollConnection {
@@ -94,8 +94,14 @@ fun HomeScreen(
     }
 
     val homeNavController = rememberNavController()
-    val currentRoute = homeNavController.currentBackStackEntryAsState().value?.destination?.route
-        ?: HomeBottomScreen.Dashboard.route
+    val navBackStackEntry by homeNavController.currentBackStackEntryAsState()
+    var currentRoute by rememberSaveable { mutableStateOf(HomeBottomScreen.Dashboard.route) }
+
+    LaunchedEffect(navBackStackEntry) {
+        navBackStackEntry?.destination?.route?.let { route ->
+            currentRoute = route
+        }
+    }
 
     val fabConfig by remember(currentRoute, state) {
         derivedStateOf {
