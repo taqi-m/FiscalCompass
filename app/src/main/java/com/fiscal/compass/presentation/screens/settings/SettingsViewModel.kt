@@ -12,7 +12,7 @@ import com.fiscal.compass.domain.model.Resource
 import com.fiscal.compass.domain.model.update.UpdateStatus
 import com.fiscal.compass.domain.service.analytics.AnalyticsEvent
 import com.fiscal.compass.domain.service.analytics.AnalyticsService
-import com.fiscal.compass.domain.usecase.analytics.GetUserInfoUseCase
+import com.fiscal.compass.domain.usecase.analytics.GetOverviewDataUC
 import com.fiscal.compass.domain.usecase.auth.SessionUseCase
 import com.fiscal.compass.domain.util.VersionComparator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,7 +28,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val getUserInfoUseCase: GetUserInfoUseCase,
+    private val getOverviewDataUC: GetOverviewDataUC,
     private val sessionUseCase: SessionUseCase,
     private val analyticsService: AnalyticsService,
     private val updateSource: UpdateSource,
@@ -41,7 +41,7 @@ class SettingsViewModel @Inject constructor(
     init {
         viewModelScope.launch(Dispatchers.IO) {
             _state.value = _state.value.copy(isLoading = true)
-            getUserInfoUseCase().let { userInfo ->
+            getOverviewDataUC().let { userInfo ->
                 val userInfo = UserInfo(
                     userName = userInfo.userName,
                     userEmail = userInfo.email,

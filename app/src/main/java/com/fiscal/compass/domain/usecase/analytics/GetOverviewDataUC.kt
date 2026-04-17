@@ -6,7 +6,7 @@ import com.fiscal.compass.domain.model.dto.UserInfo
 import com.fiscal.compass.domain.repository.AuthRepository
 import javax.inject.Inject
 
-class GetUserInfoUseCase @Inject constructor(
+class GetOverviewDataUC @Inject constructor(
     private val authRepository: AuthRepository,
 ) {
     suspend operator fun invoke(): UserInfo {
@@ -14,19 +14,23 @@ class GetUserInfoUseCase @Inject constructor(
         val userResource = authRepository.getUserInfo()
         when (userResource) {
             is Resource.Success -> {
-                Log.d("GetUserInfoUseCase", "User info fetched successfully: ${userResource.data}")
+                Log.d(TAG, "User info fetched successfully: ${userResource.data}")
                 return userResource.data ?: emptyInfo
             }
 
             is Resource.Error -> {
-                Log.e("GetUserInfoUseCase", "Error fetching user info: ${userResource.message}")
+                Log.e(TAG, "Error fetching user info: ${userResource.message}")
                 return emptyInfo.copy("Error", "Error", "")
             }
 
             is Resource.Loading -> {
-                Log.d("GetUserInfoUseCase", "Loading user info...")
+                Log.d(TAG, "Loading user info...")
                 return emptyInfo
             }
         }
+    }
+    
+    companion object {
+        private const val TAG = "GetOverviewDataUC"
     }
 }
