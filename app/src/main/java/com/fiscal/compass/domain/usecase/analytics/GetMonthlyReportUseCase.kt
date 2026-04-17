@@ -52,6 +52,9 @@ class GetMonthlyReportUseCase @Inject constructor(
             incomeFlow,
             expenseFlow
         ) { incomes, expenses ->
+            if (incomes.isEmpty() && expenses.isEmpty()) {
+                throw NoSuchElementException("Add transactions to see reports")
+            }
 
             val incomesByCategory = incomes.groupBy(
                 keySelector = { income ->
