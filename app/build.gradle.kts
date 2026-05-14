@@ -105,6 +105,21 @@ ksp {
 }
 
 dependencies {
+    implementation(project(":core:common"))
+    implementation(project(":domain"))
+    implementation(project(":data"))
+    implementation(project(":data:database"))
+    implementation(project(":data:network"))
+    implementation(project(":ui"))
+    implementation(project(":features:auth"))
+    implementation(project(":features:home"))
+    implementation(project(":features:transactions"))
+    implementation(project(":features:analytics"))
+    implementation(project(":features:people"))
+    implementation(project(":features:categories"))
+    implementation(project(":features:settings"))
+    implementation(project(":features:search"))
+
     implementation(libs.hilt.android)
     implementation(libs.androidx.compose.runtime)
     debugImplementation(libs.ui.tooling)
